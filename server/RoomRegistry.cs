@@ -23,6 +23,7 @@ public sealed class Member
     public long UpdatedAt { get; set; }
     public long ExpiresAt { get; set; }
     public long LastChatAt { get; set; }
+    public long LastPokeAt { get; set; }
     public SemaphoreSlim SendLock { get; } = new(1, 1);
 }
 
@@ -365,6 +366,10 @@ public sealed class RoomRegistry
                     await HandleChatAsync(member, root);
                     break;
 
+                case "poke.send":
+                    await HandlePokeAsync(member, root);
+                    break;
+
                 case "hello":
                     await SendJsonAsync(member, Envelope("welcome", new
                     {
@@ -415,6 +420,61 @@ public sealed class RoomRegistry
 
         member.LastChatAt = now;
         await BroadcastChatAsync(member, text);
+    }
+
+    private async Task HandlePokeAsync(Member member, JsonElement root)
+    {
+        if (!root.TryGetProperty("payload", out var payload) ||
+            payload.ValueKind != JsonValueKind.Object ||
+            !payload.TryGetProperty("targetId", out var targetElement) ||
+            targetElement.ValueKind != JsonValueKind.String)
+        {
+            await SendErrorAsync(member, "bad_poke", "targetId is required");
+            return;
+        }
+
+        var targetId = (targetElement.GetString() ?? string.Empty).Trim();
+        if (targetId.Length == 0 || targetId.Length > 64)
+        {
+            await SendErrorAsync(member, "bad_poke", "targetId is invalid");
+            return;
+        }
+
+        if (string.Equals(targetId, member.Id, StringComparison.Ordinal))
+        {
+            await SendErrorAsync(member, "poke_self", "cannot poke yourself");
+            return;
+        }
+
+        if (!_rooms.TryGetValue(member.RoomId, out var room) ||
+            !room.Members.TryGetValue(targetId, out var target) ||
+            !target.Online ||
+            target.Socket.State != WebSocketState.Open)
+        {
+            await SendErrorAsync(member, "poke_not_found", "member is not online in this room");
+            return;
+        }
+
+        var now = Now();
+        if (now - member.LastPokeAt < 2000)
+        {
+            await SendErrorAsync(member, "slow_down", "poking too fast");
+            return;
+        }
+
+        member.LastPokeAt = now;
+        await SendJsonAsync(target, Envelope("poke.received", new
+        {
+            from = View(member),
+            targetId = target.Id,
+            at = now
+        }));
+        await SendJsonAsync(member, Envelope("poke.sent", new
+        {
+            targetId = target.Id,
+            targetName = target.Name,
+            at = now
+        }));
     }
 
     private async Task HandleProfileUpdateAsync(Member member, JsonElement root)    {

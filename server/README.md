@@ -75,7 +75,7 @@ docker compose up -d --build
 
 WebSocket 消息定义见 [`shared/protocol/`](../shared/protocol/README.md)，
 当前实现 `welcome` / `room.snapshot` / `presence.changed` / `member.joined` / `member.left` /
-`chat.message` / `pong` / `error`。
+`chat.message` / `poke.received` / `poke.sent` / `pong` / `error`。
 
 ## 数据
 
@@ -101,6 +101,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\protocol-smoke.ps1
 ```
 
 覆盖 welcome、snapshot、自身与广播、状态块往返、非法块拒绝、ping/pong、离开通知等断言。
+
+戳一下：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\poke-smoke.ps1 -Server http://127.0.0.1:5080 -Room demo
+```
+
+需要目标房间已存在；覆盖 `poke.received` / `poke.sent`、2 秒限频、戳自己、目标不存在。
 
 ## 本地构建环境
 
