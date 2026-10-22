@@ -47,7 +47,8 @@ public static class StatusComposer
         FocusTimer? timer = null,
         string? todo = null,
         string? commandOutput = null,
-        IReadOnlyList<StatusBlockRule>? layout = null)
+        IReadOnlyList<StatusBlockRule>? layout = null,
+        string? appName = null)
     {
         var rules = layout is { Count: > 0 } ? layout : StatusLayouts.Default();
         var blocks = new List<object>();
@@ -59,7 +60,7 @@ public static class StatusComposer
                 continue;
             }
 
-            var block = BuildBlock(rule, app, media, idle, bootTimeMs, timer, todo, commandOutput);
+            var block = BuildBlock(rule, app, media, idle, bootTimeMs, timer, todo, commandOutput, appName);
             if (block is not null)
             {
                 blocks.Add(block);
@@ -82,7 +83,8 @@ public static class StatusComposer
         long bootTimeMs,
         FocusTimer? timer,
         string? todo,
-        string? commandOutput)
+        string? commandOutput,
+        string? appName)
     {
         var template = string.IsNullOrWhiteSpace(rule.Template) ? null : rule.Template;
 
@@ -98,6 +100,7 @@ public static class StatusComposer
                     {
                         appId = app.Id,
                         category = app.Category,
+                        name = string.IsNullOrWhiteSpace(appName) ? app.Name : appName,
                         idleSeconds = (int)idle.TotalSeconds
                     }
                 };

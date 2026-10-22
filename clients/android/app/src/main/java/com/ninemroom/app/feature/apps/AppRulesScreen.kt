@@ -316,11 +316,15 @@ private fun AppDetail(
 ) {
     val rules by store.rules.collectAsStateWithLifecycle()
     val rule = rules[app.packageName]
+    val effectiveTemplate = categoryStore.find(rule?.category ?: "other")?.template
+        ?: "📡 {app}"
     var name by remember(app.packageName) {
-        mutableStateOf(rule?.displayName ?: "")
+        mutableStateOf(rule?.displayName?.takeUnless { it == "null" } ?: app.label)
     }
     var template by remember(app.packageName) {
-        mutableStateOf(rule?.template ?: "")
+        mutableStateOf(
+            rule?.template?.takeUnless { it == "null" } ?: effectiveTemplate,
+        )
     }
 
     Column(

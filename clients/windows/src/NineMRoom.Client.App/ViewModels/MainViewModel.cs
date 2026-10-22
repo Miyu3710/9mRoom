@@ -3282,7 +3282,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 timer,
                 todo,
                 _commandOutput,
-                CurrentLayout(match.Id, match.Category));
+                CurrentLayout(match.Id, match.Category),
+                ResolveAppName(match.Id));
 
             var windowTitle = _foreground.Current?.WindowTitle;
             if (_settings.ShareWindowTitles &&

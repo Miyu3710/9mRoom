@@ -95,7 +95,8 @@ public static class StatusRenderer
                 }
 
                 var idle = Long(data, "idleSeconds");
-                values["app"] = resolveApp(appId);
+                var customName = Str(data, "name");
+                values["app"] = customName.Length > 0 ? customName : resolveApp(appId);
                 values["category"] = Str(data, "category");
                 values["title"] = Str(data, "title");
                 values["idle"] = idle >= 60 ? $"空闲{idle / 60}分" : string.Empty;
