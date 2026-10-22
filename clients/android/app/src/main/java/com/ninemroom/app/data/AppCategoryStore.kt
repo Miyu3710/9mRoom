@@ -16,14 +16,14 @@ data class AppCategory(
 )
 
 val defaultAppCategories = listOf(
-    AppCategory("coding", "编程", "📡 {app}", builtIn = true),
-    AppCategory("writing", "写作", "📡 {app}", builtIn = true),
-    AppCategory("reading", "阅读", "📡 {app}", builtIn = true),
-    AppCategory("meeting", "会议", "📡 {app}", builtIn = true),
-    AppCategory("media", "影音", "📡 {app}", builtIn = true),
-    AppCategory("game", "游戏", "📡 {app}", builtIn = true),
-    AppCategory("browsing", "浏览", "📡 {app}", builtIn = true),
-    AppCategory("other", "其他", "📡 {app}", builtIn = true),
+    AppCategory("coding", "编程", "", builtIn = true),
+    AppCategory("writing", "写作", "", builtIn = true),
+    AppCategory("reading", "阅读", "", builtIn = true),
+    AppCategory("meeting", "会议", "", builtIn = true),
+    AppCategory("media", "影音", "", builtIn = true),
+    AppCategory("game", "游戏", "", builtIn = true),
+    AppCategory("browsing", "浏览", "", builtIn = true),
+    AppCategory("other", "其他", "", builtIn = true),
 )
 
 class AppCategoryStore(context: Context) {
@@ -33,9 +33,25 @@ class AppCategoryStore(context: Context) {
     val categories: StateFlow<List<AppCategory>> = _categories.asStateFlow()
 
     init {
-        if (_categories.value.isEmpty()) {
+        val initialized = preferences.getBoolean("initialized", false) ||
+            !preferences.getString("categories", "").isNullOrBlank()
+        if (!initialized) {
             _categories.value = defaultAppCategories
             persist()
+            preferences.edit().putBoolean("initialized", true).apply()
+        } else {
+            if (!preferences.getBoolean("category_templates_cleared", false)) {
+                _categories.value = _categories.value.map { category ->
+                    if (category.builtIn && category.template == "📡 {app}") {
+                        category.copy(template = "")
+                    } else {
+                        category
+                    }
+                }
+                preferences.edit().putBoolean("category_templates_cleared", true).apply()
+                persist()
+            }
+            preferences.edit().putBoolean("initialized", true).apply()
         }
     }
 
@@ -48,7 +64,7 @@ class AppCategoryStore(context: Context) {
         val category = AppCategory(
             id = "custom-" + UUID.randomUUID().toString().take(8),
             name = trimmed,
-            template = template.trim().ifBlank { "📡 {app}" },
+            template = template.trim().take(80),
             builtIn = false,
         )
         _categories.value = _categories.value + category
@@ -61,7 +77,7 @@ class AppCategoryStore(context: Context) {
             if (it.id == id) {
                 it.copy(
                     name = name.trim().take(12).ifBlank { it.name },
-                    template = template.trim().take(80).ifBlank { "📡 {app}" },
+                    template = template.trim().take(80),
                 )
             } else {
                 it
@@ -71,11 +87,20 @@ class AppCategoryStore(context: Context) {
     }
 
     fun delete(id: String): Boolean {
-        val category = find(id) ?: return false
-        if (category.builtIn) return false
+        if (find(id) == null) return false
         _categories.value = _categories.value.filterNot { it.id == id }
         persist()
         return true
+    }
+
+    fun move(from: Int, to: Int) {
+        if (from == to) return
+        val current = _categories.value.toMutableList()
+        if (from !in current.indices || to !in current.indices) return
+        val item = current.removeAt(from)
+        current.add(to, item)
+        _categories.value = current
+        persist()
     }
 
     private fun persist() {
@@ -105,7 +130,7 @@ class AppCategoryStore(context: Context) {
                             id = json.optString("id"),
                             name = json.optString("name"),
                             template = json.optString("template").takeUnless { it == "null" }
-                                ?: "📡 {app}",
+                                ?: "",
                             builtIn = json.optBoolean("builtIn"),
                         ),
                     )

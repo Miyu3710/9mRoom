@@ -113,6 +113,10 @@ fun AppRulesScreen(
     val categoryStore = app.appCategoryStore
     val rules by store.rules.collectAsStateWithLifecycle()
     val categories by categoryStore.categories.collectAsStateWithLifecycle()
+    val layoutRules by app.statusLayoutStore.rules.collectAsStateWithLifecycle()
+    val globalAppTemplate = layoutRules.firstOrNull { it.type == "app" }?.template
+        ?.takeIf { it.isNotBlank() }
+        ?: "📡 {app}"
     var apps by remember { mutableStateOf<List<InstalledApp>>(emptyList()) }
     var loading by remember { mutableStateOf(true) }
     var query by remember { mutableStateOf("") }
@@ -227,6 +231,7 @@ fun AppRulesScreen(
                 store = store,
                 categoryStore = categoryStore,
                 categories = categories,
+                globalAppTemplate = globalAppTemplate,
                 onDismiss = { selected = null },
             )
         }
@@ -312,19 +317,19 @@ private fun AppDetail(
     store: AppRuleStore,
     categoryStore: AppCategoryStore,
     categories: List<AppCategory>,
+    globalAppTemplate: String,
     onDismiss: () -> Unit,
 ) {
     val rules by store.rules.collectAsStateWithLifecycle()
     val rule = rules[app.packageName]
-    val effectiveTemplate = categoryStore.find(rule?.category ?: "other")?.template
-        ?: "📡 {app}"
+    val categoryTemplate = categoryStore.find(rule?.category ?: "other")?.template
+        ?.takeIf { it.isNotBlank() }
+    val effectiveTemplate = categoryTemplate ?: globalAppTemplate
     var name by remember(app.packageName) {
         mutableStateOf(rule?.displayName?.takeUnless { it == "null" } ?: app.label)
     }
     var template by remember(app.packageName) {
-        mutableStateOf(
-            rule?.template?.takeUnless { it == "null" } ?: effectiveTemplate,
-        )
+        mutableStateOf(rule?.template?.takeUnless { it == "null" } ?: "")
     }
 
     Column(
@@ -397,10 +402,7 @@ private fun AppDetail(
                 store.setTemplate(app.packageName, template)
             },
             placeholder = {
-                Text(
-                    categoryStore.find(rule?.category ?: "other")?.template
-                        ?: "📡 {app}",
-                )
+                Text(effectiveTemplate)
             },
             singleLine = true,
             supportingText = {

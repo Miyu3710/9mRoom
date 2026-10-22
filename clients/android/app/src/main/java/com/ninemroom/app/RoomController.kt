@@ -59,6 +59,8 @@ data class RoomUiState(
     val notifyFocusDone: Boolean = true,
     val shareApp: Boolean = true,
     val shareMusic: Boolean = true,
+    val mediaWhitelistEnabled: Boolean = false,
+    val mediaWhitelistPackages: Set<String> = emptySet(),
     val autoStart: Boolean = true,
     val autoConnect: Boolean = true,
     val homeRoomCode: String = "",
@@ -66,8 +68,8 @@ data class RoomUiState(
     val roomKind: String = "",
     val currentTodo: String = "",
     val overlayOpacity: Float = 0.9f,
-    val overlaySize: Int = 120,
-    val overlayMargin: Int = 12,
+    val overlaySize: Int = 140,
+    val overlayMargin: Int = 8,
 ) {
     val isServerRoom: Boolean
         get() = roomKind == "server"
@@ -114,6 +116,8 @@ class RoomController(
             notifyFocusDone = settings.notifyFocusDone,
             shareApp = settings.shareApp,
             shareMusic = settings.shareMusic,
+            mediaWhitelistEnabled = settings.mediaWhitelistEnabled,
+            mediaWhitelistPackages = settings.mediaWhitelistPackages,
             autoStart = settings.autoStart,
             autoConnect = settings.autoConnect,
             homeRoomCode = settings.homeRoomCode,
@@ -354,8 +358,12 @@ class RoomController(
                 "app" -> {
                     if (current.shareApp && app != null && appRule?.hidden != true) {
                         val categoryId = appRule?.category ?: app.category ?: "other"
+                        val categoryTemplate = appCategories.find(categoryId)?.template
+                            ?.takeIf { it.isNotBlank() }
                         val appTemplate = appRule?.template?.takeUnless { it == "null" }
-                            ?: appCategories.find(categoryId)?.template
+                            ?.takeIf { it.isNotBlank() }
+                            ?: categoryTemplate
+                            ?: rule.template.takeUnless { it.isBlank() || it == "null" }
                             ?: defaultStatusTemplate("app")
                         blocks.put(
                             JSONObject()
@@ -470,6 +478,22 @@ class RoomController(
         sendPresence()
     }
 
+    fun setMediaWhitelistEnabled(enabled: Boolean) {
+        settings.mediaWhitelistEnabled = enabled
+        _state.update { it.copy(mediaWhitelistEnabled = enabled) }
+        sendPresence()
+    }
+
+    fun setMediaWhitelistPackages(packages: Set<String>) {
+        val normalized = packages
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+            .toSet()
+        settings.mediaWhitelistPackages = normalized
+        _state.update { it.copy(mediaWhitelistPackages = normalized) }
+        sendPresence()
+    }
+
     fun setAutoStart(enabled: Boolean) {
         settings.autoStart = enabled
         _state.update { it.copy(autoStart = enabled) }
@@ -548,7 +572,7 @@ class RoomController(
     }
 
     fun setOverlayMargin(value: Int) {
-        val margin = value.coerceIn(4, 48)
+        val margin = value.coerceIn(4, 24)
         settings.overlayMargin = margin
         _state.update { it.copy(overlayMargin = margin) }
     }

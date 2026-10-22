@@ -8,6 +8,7 @@ import android.media.session.MediaSessionManager
 import android.media.session.PlaybackState
 
 data class MediaInfo(
+    val packageName: String,
     val title: String,
     val artist: String,
     val isPlaying: Boolean,
@@ -16,6 +17,7 @@ data class MediaInfo(
 )
 
 class MediaReader(private val context: Context) {
+    private val settings = AppSettings(context)
     fun isEnabled(): Boolean {
         val enabled = android.provider.Settings.Secure.getString(
             context.contentResolver,
@@ -29,7 +31,14 @@ class MediaReader(private val context: Context) {
         return try {
             val manager = context.getSystemService(MediaSessionManager::class.java)
             val component = ComponentName(context, com.ninemroom.app.service.MediaListenerService::class.java)
+            val allowed = if (settings.mediaWhitelistEnabled) {
+                settings.mediaWhitelistPackages
+            } else {
+                null
+            }
+            if (allowed != null && allowed.isEmpty()) return null
             val sessions = manager.getActiveSessions(component)
+                .filter { allowed == null || it.packageName in allowed }
             val session = sessions.firstOrNull { controller ->
                 controller.playbackState?.state == PlaybackState.STATE_PLAYING
             } ?: sessions.firstOrNull() ?: return null
@@ -39,6 +48,7 @@ class MediaReader(private val context: Context) {
             val position = session.playbackState?.position ?: 0L
             val duration = metadata.getLong(MediaMetadata.METADATA_KEY_DURATION)
             MediaInfo(
+                packageName = session.packageName,
                 title = title,
                 artist = metadata.getString(MediaMetadata.METADATA_KEY_ARTIST).orEmpty(),
                 isPlaying = session.playbackState?.state == PlaybackState.STATE_PLAYING,

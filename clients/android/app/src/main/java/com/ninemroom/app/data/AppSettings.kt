@@ -50,6 +50,18 @@ class AppSettings(context: Context) {
         get() = preferences.getBoolean("share_music", true)
         set(value) = preferences.edit().putBoolean("share_music", value).apply()
 
+    var mediaWhitelistEnabled: Boolean
+        get() = preferences.getBoolean("media_whitelist_enabled", false)
+        set(value) = preferences.edit().putBoolean("media_whitelist_enabled", value).apply()
+
+    var mediaWhitelistPackages: Set<String>
+        get() = preferences.getStringSet("media_whitelist_packages", emptySet())
+            .orEmpty()
+            .toSet()
+        set(value) = preferences.edit()
+            .putStringSet("media_whitelist_packages", value)
+            .apply()
+
     var autoStart: Boolean
         get() = preferences.getBoolean("auto_start", true)
         set(value) = preferences.edit().putBoolean("auto_start", value).apply()
@@ -71,12 +83,12 @@ class AppSettings(context: Context) {
         set(value) = preferences.edit().putFloat("overlay_opacity", value.coerceIn(0.3f, 1f)).apply()
 
     var overlaySize: Int
-        get() = preferences.getInt("overlay_size", 120).coerceIn(80, 180)
+        get() = preferences.getInt("overlay_size", 140).coerceIn(80, 180)
         set(value) = preferences.edit().putInt("overlay_size", value.coerceIn(80, 180)).apply()
 
     var overlayMargin: Int
-        get() = preferences.getInt("overlay_margin", 12).coerceIn(4, 48)
-        set(value) = preferences.edit().putInt("overlay_margin", value.coerceIn(4, 48)).apply()
+        get() = preferences.getInt("overlay_margin", 8).coerceIn(4, 24)
+        set(value) = preferences.edit().putInt("overlay_margin", value.coerceIn(4, 24)).apply()
 
     val clientId: String
         get() {

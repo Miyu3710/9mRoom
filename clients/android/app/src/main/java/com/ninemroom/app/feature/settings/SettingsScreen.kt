@@ -1,6 +1,7 @@
 package com.ninemroom.app.feature.settings
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -10,8 +11,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Apps
@@ -26,16 +30,19 @@ import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,7 +57,9 @@ import androidx.compose.ui.unit.dp
 import com.ninemroom.app.data.ConnectionStatus
 import com.ninemroom.app.data.UpdateChecker
 import com.ninemroom.app.data.UpdateInfo
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 @Composable
 fun SettingsScreen(
@@ -67,6 +76,8 @@ fun SettingsScreen(
     notifyFocusDone: Boolean,
     shareApp: Boolean,
     shareMusic: Boolean,
+    mediaWhitelistEnabled: Boolean,
+    mediaWhitelistPackages: Set<String>,
     autoStart: Boolean,
     autoConnect: Boolean,
     homeRoomCode: String,
@@ -81,6 +92,8 @@ fun SettingsScreen(
     onNotifyFocusDoneChange: (Boolean) -> Unit,
     onShareAppChange: (Boolean) -> Unit,
     onShareMusicChange: (Boolean) -> Unit,
+    onMediaWhitelistEnabledChange: (Boolean) -> Unit,
+    onMediaWhitelistPackagesChange: (Set<String>) -> Unit,
     onAutoStartChange: (Boolean) -> Unit,
     onAutoConnectChange: (Boolean) -> Unit,
     onSetHomeRoom: () -> Unit,
@@ -95,6 +108,7 @@ fun SettingsScreen(
     onDisconnect: () -> Unit,
 ) {
     var checkingUpdate by remember { mutableStateOf(false) }
+    var showMediaPicker by remember { mutableStateOf(false) }
     var updateStatus by remember { mutableStateOf("") }
     var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
     val context = LocalContext.current
@@ -228,10 +242,10 @@ fun SettingsScreen(
                     onValueChange = { onOverlaySizeChange(it.toInt()) },
                 )
                 SettingSlider(
-                    title = "边距",
+                    title = "左右内边距",
                     valueText = "$overlayMargin dp",
                     value = overlayMargin.toFloat(),
-                    valueRange = 4f..48f,
+                    valueRange = 4f..24f,
                     onValueChange = { onOverlayMarginChange(it.toInt()) },
                 )
             }
@@ -279,6 +293,27 @@ fun SettingsScreen(
                     checked = shareMusic,
                     onCheckedChange = onShareMusicChange,
                 )
+                SettingSwitch(
+                    title = "仅显示指定应用的媒体",
+                    description = "开启后只上报白名单应用的媒体状态",
+                    checked = mediaWhitelistEnabled,
+                    onCheckedChange = onMediaWhitelistEnabledChange,
+                )
+                if (mediaWhitelistEnabled) {
+                    OutlinedButton(
+                        onClick = { showMediaPicker = true },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text("选择应用（${mediaWhitelistPackages.size}）")
+                    }
+                    if (mediaWhitelistPackages.isEmpty()) {
+                        Text(
+                            "还没有选择应用，当前不会上报媒体状态。",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
                 SettingAction(
                     title = "使用情况访问权限",
                     description = "允许 9mRoom 识别当前前台应用",
@@ -378,7 +413,124 @@ fun SettingsScreen(
             },
         )
     }
+
+    if (showMediaPicker) {
+        MediaWhitelistDialog(
+            selected = mediaWhitelistPackages,
+            onDismiss = { showMediaPicker = false },
+            onConfirm = {
+                onMediaWhitelistPackagesChange(it)
+                showMediaPicker = false
+            },
+        )
+    }
 }
+
+@Composable
+private fun MediaWhitelistDialog(
+    selected: Set<String>,
+    onDismiss: () -> Unit,
+    onConfirm: (Set<String>) -> Unit,
+) {
+    val context = LocalContext.current
+    var options by remember { mutableStateOf<List<MediaAppOption>>(emptyList()) }
+    var draft by remember(selected) { mutableStateOf(selected) }
+    var query by remember { mutableStateOf("") }
+
+    LaunchedEffect(Unit) {
+        options = withContext(Dispatchers.IO) {
+            val manager = context.packageManager
+            manager.getInstalledApplications(PackageManager.MATCH_ALL)
+                .asSequence()
+                .filter { it.enabled }
+                .map {
+                    MediaAppOption(
+                        label = it.loadLabel(manager).toString().ifBlank { it.packageName },
+                        packageName = it.packageName,
+                    )
+                }
+                .distinctBy { it.packageName }
+                .sortedBy { it.label.lowercase() }
+                .toList()
+        }
+    }
+
+    val filtered = options.filter {
+        query.isBlank() ||
+            it.label.contains(query, ignoreCase = true) ||
+            it.packageName.contains(query, ignoreCase = true)
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("选择媒体应用") },
+        text = {
+            Column {
+                Text(
+                    "只显示这些应用的媒体播放状态；不选择时不会上报媒体。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    placeholder = { Text("搜索应用或包名") },
+                    singleLine = true,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 8.dp),
+                )
+                LazyColumn(
+                    Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 360.dp)
+                        .padding(top = 6.dp),
+                ) {
+                    items(filtered, key = { it.packageName }) { option ->
+                        val checked = option.packageName in draft
+                        Row(
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable {
+                                    draft = if (checked) draft - option.packageName
+                                    else draft + option.packageName
+                                }
+                                .padding(vertical = 3.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Checkbox(
+                                checked = checked,
+                                onCheckedChange = {
+                                    draft = if (checked) draft - option.packageName
+                                    else draft + option.packageName
+                                },
+                            )
+                            Column(Modifier.weight(1f)) {
+                                Text(option.label, style = MaterialTheme.typography.bodyMedium)
+                                Text(
+                                    option.packageName,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(draft) }) { Text("确定") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("取消") }
+        },
+    )
+}
+
+private data class MediaAppOption(
+    val label: String,
+    val packageName: String,
+)
 
 @Composable
 private fun SettingsCard(

@@ -167,18 +167,26 @@ class PresenceService : Service() {
         val params = overlayParams ?: return
         view.text = "${state.roomName.ifBlank { "9mRoom" }} · ${state.onlineCount} 人"
         view.alpha = state.overlayOpacity
-        if (appliedSize != state.overlaySize || appliedMargin != state.overlayMargin) {
+        if (appliedSize != state.overlaySize) {
             appliedSize = state.overlaySize
-            appliedMargin = state.overlayMargin
             params.width = dp(state.overlaySize)
             params.height = dp(30)
-            params.x = resources.displayMetrics.widthPixels - dp(state.overlaySize) - dp(state.overlayMargin)
-            params.y = dp(state.overlayMargin + 96)
+            params.x = resources.displayMetrics.widthPixels - dp(state.overlaySize) - dp(12)
+            params.y = dp(108)
             try {
                 getSystemService(WindowManager::class.java).updateViewLayout(view, params)
             } catch (_: Exception) {
                 // 窗口可能已被移除
             }
+        }
+        if (appliedMargin != state.overlayMargin) {
+            appliedMargin = state.overlayMargin
+            view.setPadding(
+                dp(state.overlayMargin),
+                dp(6),
+                dp(state.overlayMargin),
+                dp(6),
+            )
         }
     }
 

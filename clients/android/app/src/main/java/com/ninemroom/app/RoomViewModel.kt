@@ -40,6 +40,11 @@ class RoomViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setShareMusic(enabled: Boolean) = controller.setShareMusic(enabled)
 
+    fun setMediaWhitelistEnabled(enabled: Boolean) = controller.setMediaWhitelistEnabled(enabled)
+
+    fun setMediaWhitelistPackages(packages: Set<String>) =
+        controller.setMediaWhitelistPackages(packages)
+
     fun setAutoStart(enabled: Boolean) = controller.setAutoStart(enabled)
 
     fun setAutoConnect(enabled: Boolean) = controller.setAutoConnect(enabled)

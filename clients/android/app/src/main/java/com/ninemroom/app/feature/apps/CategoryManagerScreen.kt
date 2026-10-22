@@ -2,6 +2,7 @@ package com.ninemroom.app.feature.apps
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -10,15 +11,17 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -36,19 +39,26 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ninemroom.app.NineRoomApplication
 import com.ninemroom.app.data.AppCategory
 import com.ninemroom.app.data.AppCategoryStore
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,6 +69,9 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
     val categories by categoryStore.categories.collectAsStateWithLifecycle()
     var selected by remember { mutableStateOf<AppCategory?>(null) }
     var showAdd by remember { mutableStateOf(false) }
+    var draggedIndex by remember { mutableIntStateOf(-1) }
+    var dragOffset by remember { mutableFloatStateOf(0f) }
+    val rowHeightPx = with(LocalDensity.current) { 76.dp.toPx() }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Column(Modifier.fillMaxSize()) {
@@ -74,7 +87,7 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
             Column(Modifier.weight(1f)) {
                 Text("分类管理", style = MaterialTheme.typography.headlineSmall)
                 Text(
-                    "分类模板会作为该分类下应用的默认状态规则。",
+                    "拖拽调整顺序；分类模板留空时使用全局模板。",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -90,8 +103,32 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
             contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(categories, key = { it.id }) { category ->
-                CategoryRow(category, onClick = { selected = category })
+            itemsIndexed(categories, key = { _, category -> category.id }) { index, category ->
+                val dragging = draggedIndex == index
+                CategoryRow(
+                    category = category,
+                    dragging = dragging,
+                    dragOffset = if (dragging) dragOffset else 0f,
+                    onClick = { selected = category },
+                    onDragStart = {
+                        draggedIndex = index
+                        dragOffset = 0f
+                    },
+                    onDrag = { amount ->
+                        dragOffset += amount
+                        val target = (draggedIndex + (dragOffset / rowHeightPx).roundToInt())
+                            .coerceIn(0, categories.lastIndex)
+                        if (target != draggedIndex) {
+                            categoryStore.move(draggedIndex, target)
+                            draggedIndex = target
+                            dragOffset = 0f
+                        }
+                    },
+                    onDragEnd = {
+                        draggedIndex = -1
+                        dragOffset = 0f
+                    },
+                )
             }
         }
     }
@@ -122,18 +159,52 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun CategoryRow(category: AppCategory, onClick: () -> Unit) {
+private fun CategoryRow(
+    category: AppCategory,
+    dragging: Boolean,
+    dragOffset: Float,
+    onClick: () -> Unit,
+    onDragStart: () -> Unit,
+    onDrag: (Float) -> Unit,
+    onDragEnd: () -> Unit,
+) {
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         shape = MaterialTheme.shapes.large,
         modifier = Modifier
             .fillMaxWidth()
+            .height(76.dp)
+            .zIndex(if (dragging) 1f else 0f)
+            .graphicsLayer {
+                translationY = if (dragging) dragOffset else 0f
+                shadowElevation = if (dragging) 12f else 0f
+            }
             .clickable(onClick = onClick),
     ) {
         Row(
-            Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            Modifier
+                .fillMaxSize()
+                .padding(horizontal = 10.dp, vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            Icon(
+                Icons.Outlined.DragHandle,
+                contentDescription = "拖拽排序",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .pointerInput(category.id) {
+                        detectDragGesturesAfterLongPress(
+                            onDragStart = { onDragStart() },
+                            onDragEnd = { onDragEnd() },
+                            onDragCancel = { onDragEnd() },
+                            onDrag = { change, amount ->
+                                change.consume()
+                                onDrag(amount.y)
+                            },
+                        )
+                    },
+            )
             Box(
                 Modifier
                     .size(42.dp)
@@ -159,7 +230,7 @@ private fun CategoryRow(category: AppCategory, onClick: () -> Unit) {
                     }
                 }
                 Text(
-                    category.template,
+                    category.template.ifBlank { "继承全局模板 📡 {app}" },
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -176,7 +247,7 @@ private fun AddCategoryDialog(
     onAdd: (name: String, template: String) -> Unit,
 ) {
     var name by remember { mutableStateOf("") }
-    var template by remember { mutableStateOf("📡 {app}") }
+    var template by remember { mutableStateOf("") }
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text("新建分类") },
@@ -191,9 +262,10 @@ private fun AddCategoryDialog(
                 OutlinedTextField(
                     value = template,
                     onValueChange = { template = it.take(80) },
-                    label = { Text("应用模板") },
+                    label = { Text("分类模板") },
                     singleLine = true,
-                    supportingText = { Text("占位符：{app}") },
+                    placeholder = { Text("留空使用全局模板") },
+                    supportingText = { Text("占位符：{app}；留空则继承全局模板") },
                     modifier = Modifier.padding(top = 8.dp),
                 )
             }
@@ -229,7 +301,7 @@ private fun CategoryDetail(
     ) {
         Text(category.name, style = MaterialTheme.typography.headlineSmall)
         Text(
-            if (category.builtIn) "内置分类" else "自定义分类",
+            if (category.builtIn) "默认分类" else "自定义分类",
             style = MaterialTheme.typography.labelMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -254,21 +326,20 @@ private fun CategoryDetail(
             },
             label = { Text("分类应用模板") },
             singleLine = true,
-            supportingText = { Text("应用未单独设置模板时使用；占位符 {app}") },
+            placeholder = { Text("留空使用全局模板") },
+            supportingText = { Text("应用未单独设置模板时使用；留空则继承全局模板") },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 8.dp),
         )
 
-        if (!category.builtIn) {
-            OutlinedButton(
-                onClick = { confirmDelete = true },
-                modifier = Modifier.padding(top = 14.dp),
-            ) {
-                Icon(Icons.Outlined.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
-                Spacer(Modifier.size(6.dp))
-                Text("删除分类")
-            }
+        OutlinedButton(
+            onClick = { confirmDelete = true },
+            modifier = Modifier.padding(top = 14.dp),
+        ) {
+            Icon(Icons.Outlined.Delete, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.size(6.dp))
+            Text("删除分类")
         }
         Button(
             onClick = onDeleted,
