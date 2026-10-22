@@ -25,6 +25,7 @@ public partial class OverlayWindow : Window
     private double _dockedTop;
     private double _themeWidth = 420;
     private Thickness _themePadding = new(14, 10, 14, 10);
+    private DateTimeOffset _ignoreDockUntil = DateTimeOffset.MinValue;
     private string _position = "bottomRight";
 
     public OverlayWindow(MainViewModel viewModel, AppSettings settings)
@@ -49,7 +50,7 @@ public partial class OverlayWindow : Window
         }
 
         SourceInitialized += (_, _) => ApplyExtendedStyles();
-        MouseLeftButtonDown += OnMouseLeftButtonDown;
+        PreviewMouseLeftButtonDown += OnMouseLeftButtonDown;
         Loaded += (_, _) => ClampToWorkArea();
         SizeChanged += (_, _) => ClampToWorkArea();
 
@@ -265,14 +266,71 @@ public partial class OverlayWindow : Window
 
     private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (_clickThrough)
+        if (_clickThrough || e.ChangedButton != MouseButton.Left)
+        {
+            return;
+        }
+
+        if (IsScrollBarSource(e.OriginalSource))
         {
             return;
         }
 
         if (_docked)
         {
-            ExpandFromDock();
+            if (e.ClickCount >= 2)
+            {
+                ExpandFromDock();
+                _ignoreDockUntil = DateTimeOffset.UtcNow.AddMilliseconds(500);
+                e.Handled = true;
+                return;
+            }
+
+            var oldLeft = Left;
+            var oldTop = Top;
+            try
+            {
+                DragMove();
+            }
+            catch
+            {
+                return;
+            }
+
+            if (Math.Abs(Left - oldLeft) < 4 && Math.Abs(Top - oldTop) < 4)
+            {
+                ExpandFromDock();
+                _ignoreDockUntil = DateTimeOffset.UtcNow.AddMilliseconds(500);
+            }
+            else
+            {
+                var area = MonitorWorkArea.Get(this);
+                if (Left <= area.Left + EdgeMargin)
+                {
+                    Left = area.Left;
+                }
+                else if (Left + ActualWidth >= area.Right - EdgeMargin)
+                {
+                    Left = area.Right - ActualWidth;
+                }
+
+                _dockLeft = Left + ActualWidth / 2 < area.Left + area.Width / 2;
+                _dockedTop = Top;
+                _userMoved = true;
+            }
+
+            e.Handled = true;
+            return;
+        }
+
+        if (e.ClickCount >= 2)
+        {
+            if (DateTimeOffset.UtcNow >= _ignoreDockUntil)
+            {
+                DockToNearestSide();
+            }
+
+            e.Handled = true;
             return;
         }
 
@@ -286,24 +344,47 @@ public partial class OverlayWindow : Window
             return;
         }
 
-        var area = MonitorWorkArea.Get(this);
+        var monitor = MonitorWorkArea.Get(this);
         var centerX = Left + ActualWidth / 2;
-        if (centerX <= area.Left + EdgeTrigger)
+        if (centerX <= monitor.Left + EdgeTrigger)
         {
             DockToSide(left: true);
-            return;
         }
-
-        if (centerX >= area.Right - EdgeTrigger)
+        else if (centerX >= monitor.Right - EdgeTrigger)
         {
             DockToSide(left: false);
-            return;
+        }
+        else
+        {
+            _settings.OverlayLeft = Left;
+            _settings.OverlayTop = Top;
+            _userMoved = true;
+            SettingsStore.Save(_settings);
         }
 
-        _settings.OverlayLeft = Left;
-        _settings.OverlayTop = Top;
-        _userMoved = true;
-        SettingsStore.Save(_settings);
+        e.Handled = true;
+    }
+
+    private void DockToNearestSide()
+    {
+        var area = MonitorWorkArea.Get(this);
+        DockToSide(left: Left + ActualWidth / 2 < area.Left + area.Width / 2);
+    }
+
+    private static bool IsScrollBarSource(object source)
+    {
+        var current = source as DependencyObject;
+        while (current is not null && current is not Window)
+        {
+            if (current is System.Windows.Controls.Primitives.ScrollBar)
+            {
+                return true;
+            }
+
+            current = Media.VisualTreeHelper.GetParent(current);
+        }
+
+        return false;
     }
 
     private static Media.Color ParseColor(string value, Media.Color fallback)
