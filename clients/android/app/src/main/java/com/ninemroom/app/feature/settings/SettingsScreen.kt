@@ -48,12 +48,17 @@ fun SettingsScreen(
     roomName: String,
     displayName: String,
     connection: ConnectionStatus,
+    keepOnline: Boolean,
+    overlayEnabled: Boolean,
+    notifyRoomEvents: Boolean,
+    onKeepOnlineChange: (Boolean) -> Unit,
+    onOverlayChange: (Boolean) -> Unit,
+    onNotifyRoomEventsChange: (Boolean) -> Unit,
+    onRequestNotifications: () -> Unit,
+    onRequestOverlay: () -> Unit,
     onDisconnect: () -> Unit,
 ) {
-    var keepOnline by rememberSaveable { mutableStateOf(true) }
-    var overlay by rememberSaveable { mutableStateOf(true) }
     var boot by rememberSaveable { mutableStateOf(true) }
-    var memberNotify by rememberSaveable { mutableStateOf(true) }
     var focusNotify by rememberSaveable { mutableStateOf(true) }
     var shareApp by rememberSaveable { mutableStateOf(true) }
     var shareMusic by rememberSaveable { mutableStateOf(true) }
@@ -96,7 +101,7 @@ fun SettingsScreen(
                     title = "保持在线",
                     description = "分享状态时显示常驻通知，退出界面后仍保持连接",
                     checked = keepOnline,
-                    onCheckedChange = { keepOnline = it },
+                    onCheckedChange = onKeepOnlineChange,
                 )
                 SettingSwitch(
                     title = "开机自启",
@@ -107,8 +112,13 @@ fun SettingsScreen(
                 SettingSwitch(
                     title = "悬浮窗",
                     description = "在其他应用上方显示迷你状态条，需要悬浮窗权限",
-                    checked = overlay,
-                    onCheckedChange = { overlay = it },
+                    checked = overlayEnabled,
+                    onCheckedChange = onOverlayChange,
+                )
+                SettingAction(
+                    title = "悬浮窗权限",
+                    description = "到系统设置允许 9mRoom 显示在其他应用上方",
+                    onClick = onRequestOverlay,
                 )
             }
         }
@@ -118,20 +128,25 @@ fun SettingsScreen(
                 SettingSwitch(
                     title = "成员进出通知",
                     description = "有人进入或离开房间时提醒",
-                    checked = memberNotify,
-                    onCheckedChange = { memberNotify = it },
+                    checked = notifyRoomEvents,
+                    onCheckedChange = onNotifyRoomEventsChange,
                 )
                 SettingSwitch(
                     title = "常驻通知",
                     description = "保持在线时显示当前房间和状态",
                     checked = keepOnline,
-                    onCheckedChange = { keepOnline = it },
+                    onCheckedChange = onKeepOnlineChange,
                 )
                 SettingSwitch(
                     title = "专注结束提醒",
                     description = "计时结束时通过通知提醒",
                     checked = focusNotify,
                     onCheckedChange = { focusNotify = it },
+                )
+                SettingAction(
+                    title = "通知权限",
+                    description = "Android 13+ 需要允许通知，否则系统不会显示提醒",
+                    onClick = onRequestNotifications,
                 )
             }
         }
@@ -252,11 +267,18 @@ private fun SettingAction(
     title: String,
     description: String,
     icon: ImageVector = Icons.Outlined.ChevronRight,
+    onClick: (() -> Unit)? = null,
 ) {
     Row(
         Modifier
             .fillMaxWidth()
-            .clickable { }
+            .then(
+                if (onClick != null) {
+                    Modifier.clickable(onClick = onClick)
+                } else {
+                    Modifier
+                },
+            )
             .padding(vertical = 9.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

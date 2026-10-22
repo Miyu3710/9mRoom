@@ -22,6 +22,18 @@ class AppSettings(context: Context) {
         get() = preferences.getString("display_name", "").orEmpty()
         set(value) = preferences.edit().putString("display_name", value.trim()).apply()
 
+    var keepOnline: Boolean
+        get() = preferences.getBoolean("keep_online", true)
+        set(value) = preferences.edit().putBoolean("keep_online", value).apply()
+
+    var overlayEnabled: Boolean
+        get() = preferences.getBoolean("overlay_enabled", true)
+        set(value) = preferences.edit().putBoolean("overlay_enabled", value).apply()
+
+    var notifyRoomEvents: Boolean
+        get() = preferences.getBoolean("notify_room_events", true)
+        set(value) = preferences.edit().putBoolean("notify_room_events", value).apply()
+
     val clientId: String
         get() {
             val existing = preferences.getString("client_id", "").orEmpty()

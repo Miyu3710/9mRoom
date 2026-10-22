@@ -16,15 +16,20 @@ Material You 界面 + 基础房间协议已跑通。
 - 成员详情、房间日志、实时聊天
 - 状态上报（当前为 Android 应用块）
 - 断线 3 秒后自动重连
-- 成员详情 BottomSheet、状态编辑 BottomSheet
+- 前台服务 + 常驻通知（`specialUse`）
+- 成员进入 / 离开通知
+- 可选悬浮状态条，需要系统悬浮窗权限
+- 通知权限、悬浮窗权限入口
 - 设置中的常驻通知、悬浮窗、共享当前应用、共享音乐开关
 
 还在用示例数据的部分：
 
 - 专注计时器目前是本地演示，还未上报计时块
 - 待办目前是本地内存列表，还未持久化
-- 使用情况访问、媒体会话、悬浮窗、前台服务尚未接入
+- 使用情况访问、媒体会话和蓝牙/音乐识别尚未接入
+- 开机自启还未接 `BOOT_COMPLETED`
 - 检查更新入口还未接 GitHub Releases
+- 悬浮窗目前的权限申请与显示已接，但点击悬浮条还没有跳转回房间
 
 ## 包名
 
@@ -62,6 +67,9 @@ app/src/main/java/com/ninemroom/app/
   ui/
     NineRoomApp.kt
     theme/
+  service/
+    NotificationCenter.kt
+    PresenceService.kt
   feature/
     connect/
     home/

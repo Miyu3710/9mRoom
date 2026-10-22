@@ -16,6 +16,7 @@
         tools:ignore="QueryAllPackagesPermission" />
 
     <application
+        android:name=".NineRoomApplication"
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -35,6 +36,15 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <service
+            android:name=".service.PresenceService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Room presence sync and optional floating status overlay" />
+        </service>
 
     </application>
 </manifest>
