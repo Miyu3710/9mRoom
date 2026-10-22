@@ -2257,6 +2257,52 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         try
         {
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(12) };
+            try
+            {
+                using var manifestResponse = await http.GetAsync(
+                    "https://raw.githubusercontent.com/Miyu3710/9mRoom/main/update.json");
+                if (manifestResponse.IsSuccessStatusCode)
+                {
+                    using var manifest = JsonDocument.Parse(
+                        await manifestResponse.Content.ReadAsStringAsync());
+                    var manifestRoot = manifest.RootElement;
+                    var manifestVersion = manifestRoot.TryGetProperty("version", out var versionElement)
+                        ? versionElement.GetString()
+                        : null;
+                    var manifestTag = manifestRoot.TryGetProperty("tag", out var tagElement)
+                        ? tagElement.GetString()
+                        : null;
+                    var manifestAsset = manifestRoot.TryGetProperty("windows", out var windowsElement) &&
+                                        windowsElement.TryGetProperty("asset", out var assetElement)
+                        ? assetElement.GetString()
+                        : null;
+
+                    if (TryParseVersion(manifestVersion ?? string.Empty, out var manifestLatest) &&
+                        TryParseVersion(VersionText, out var manifestCurrent) &&
+                        !string.IsNullOrWhiteSpace(manifestTag) &&
+                        !string.IsNullOrWhiteSpace(manifestAsset))
+                    {
+                        _updateDownloadUrl =
+                            $"https://github.com/Miyu3710/9mRoom/releases/download/{manifestTag}/{manifestAsset}";
+                        if (manifestLatest > manifestCurrent)
+                        {
+                            _isUpdateAvailable = true;
+                            _updateStatusText = $"发现新版本 9mRoom {manifestLatest}";
+                        }
+                        else
+                        {
+                            _updateStatusText = $"已是最新版本（{VersionText}）";
+                        }
+
+                        return;
+                    }
+                }
+            }
+            catch
+            {
+                // 稳定清单不可用时回退到 Releases Atom
+            }
+
             using var request = new HttpRequestMessage(
                 HttpMethod.Get,
                 "https://github.com/Miyu3710/9mRoom/releases.atom");
