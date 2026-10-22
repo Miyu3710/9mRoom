@@ -5,7 +5,8 @@ cd "$(dirname "$0")"
 export NINEMROOM_DB="${NINEMROOM_DB:-$PWD/data/9mroom.db}"
 export ASPNETCORE_URLS="${ASPNETCORE_URLS:-http://0.0.0.0:5080}"
 
-if [ -x ./NineMRoom.Server ]; then
+if [ -f ./NineMRoom.Server ]; then
+  chmod +x ./NineMRoom.Server 2>/dev/null || true
   exec ./NineMRoom.Server "$@"
 fi
 
