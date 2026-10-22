@@ -53,6 +53,15 @@ docker compose up -d --build
 
 首次启动且数据库没有管理员时，会用这两个环境变量创建管理员。
 未提供密码时会生成随机密码，并在启动日志中输出一次，请及时保存。
+这个管理员是**超级管理员**；之后在管理页创建的账号都是普通管理员。
+
+## 管理员角色
+
+- 首次用 `NINEMROOM_ADMIN_USER` / `NINEMROOM_ADMIN_PASSWORD` 创建的账号为超级管理员。
+- 旧数据库升级时，最早创建的管理员会自动补为超级管理员。
+- 超级管理员在 `/admin` 可以创建 / 删除普通管理员，并设置任意管理员的密码。
+- 普通管理员可以管理房间，但看不到管理员管理区，也不能创建 / 删除管理员或改密。
+- 超级管理员不能被删除；删除普通管理员会同时清除其管理页会话。
 
 - 调试台：<http://127.0.0.1:5080/debug>
 - 管理页：<http://127.0.0.1:5080/admin>
@@ -69,6 +78,9 @@ docker compose up -d --build
 | `POST /admin/logout` | 退出登录 |
 | `POST /admin/rooms/create` | 创建服务端房间（房间码 / 显示名） |
 | `POST /admin/rooms/delete` | 删除房间，并关闭该房间在线连接 |
+| `POST /admin/admins/create` | 超级管理员创建普通管理员 |
+| `POST /admin/admins/password` | 超级管理员设置管理员密码 |
+| `POST /admin/admins/delete` | 超级管理员删除普通管理员 |
 | `GET /debug/room/{id}` | 只读房间快照；仅 Development，或设置 `NINEMROOM_DEBUG=1` 时开放 |
 | `GET /debug` | 调试台静态页；`/` 不再提供控制台 |
 | `GET /` | 404（避免输入端口直接进入调试台） |

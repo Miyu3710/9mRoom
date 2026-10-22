@@ -24,6 +24,8 @@ public static class AdminPage
         .tag{display:inline-block;background:#292934;border-radius:6px;padding:2px 7px;font-size:12px;color:#c9c9d2}
         .error{color:#ff8b8b;margin:0 0 12px}
         .actions{display:flex;gap:8px;align-items:center}
+        .admin-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+        .admin-actions input{margin:0;width:150px}
         .login{max-width:380px;margin:120px auto}
         """;
 
@@ -45,13 +47,14 @@ public static class AdminPage
         AdminRecord admin,
         IReadOnlyList<RoomRecord> rooms,
         Func<string, int> onlineCount,
+        IReadOnlyList<AdminRecord> admins,
         string? error = null) => $"""
         <!doctype html><html lang="zh-CN"><head><meta charset="utf-8">
         <meta name="viewport" content="width=device-width,initial-scale=1">
         <title>9mRoom 房间管理</title><style>{Style}</style></head><body>
         <main>
         <div class="actions" style="justify-content:space-between;margin-bottom:24px">
-          <div><h1>房间管理</h1><p class="muted" style="margin:0">管理员：{WebUtility.HtmlEncode(admin.Username)}</p></div>
+          <div><h1>房间管理</h1><p class="muted" style="margin:0">管理员：{WebUtility.HtmlEncode(admin.Username)}（{(admin.IsSuper ? "超级管理员" : "普通管理员")}）</p></div>
           <form method="post" action="/admin/logout"><button class="ghost" type="submit">退出登录</button></form>
         </div>
         {(string.IsNullOrEmpty(error) ? string.Empty : $"<p class=\"error\">{WebUtility.HtmlEncode(error)}</p>")}
@@ -82,6 +85,39 @@ public static class AdminPage
         </tbody></table>
         {(rooms.Count == 0 ? "<p class=\"muted\">还没有房间。</p>" : string.Empty)}
         </div>
+        {(admin.IsSuper ? $"""
+        <div class="card"><h2>管理员账号</h2>
+          <form method="post" action="/admin/admins/create">
+            <div class="row">
+              <div><label>用户名</label><input name="username" maxlength="32" autocomplete="off" required></div>
+              <div><label>密码（至少 8 位）</label><input name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required></div>
+              <button type="submit">创建普通管理员</button>
+            </div>
+          </form>
+          <table><thead><tr><th>用户名</th><th>角色</th><th>操作</th></tr></thead><tbody>
+          {string.Join(Environment.NewLine, admins.Select(item => $"""
+            <tr>
+              <td><code>{WebUtility.HtmlEncode(item.Username)}</code></td>
+              <td><span class="tag">{(item.IsSuper ? "超级管理员" : "普通管理员")}</span></td>
+              <td><div class="admin-actions">
+                <form method="post" action="/admin/admins/password">
+                  <input type="hidden" name="id" value="{item.Id}">
+                  <input name="password" type="password" minlength="8" maxlength="128" placeholder="新密码" autocomplete="new-password" required>
+                  <button class="ghost" type="submit">改密</button>
+                </form>
+                {(item.IsSuper ? string.Empty : $"""
+                <form method="post" action="/admin/admins/delete" onsubmit="return confirm('确认删除管理员 {WebUtility.HtmlEncode(item.Username)}？');">
+                  <input type="hidden" name="id" value="{item.Id}">
+                  <button class="danger" type="submit">删除</button>
+                </form>
+                """)}
+              </div></td>
+            </tr>
+            """))}
+          </tbody></table>
+          <p class="muted" style="margin:12px 0 0">超级管理员由服务器首次启动时的环境变量创建，不能在管理页删除。</p>
+        </div>
+        """ : string.Empty)}
         </main></body></html>
         """;
 }

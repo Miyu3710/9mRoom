@@ -34,6 +34,8 @@ NINEMROOM_COOKIE_SECURE=0
 ```
 
 - `NINEMROOM_ADMIN_USER` / `NINEMROOM_ADMIN_PASSWORD` 只在**数据库还没有管理员时**使用；之后改环境变量不会改密码。
+- 首次创建的账号是**超级管理员**；旧数据库升级时，最早创建的管理员会自动补为超级管理员。
+- 超级管理员可在 `/admin` 创建 / 删除普通管理员、设置密码；普通管理员只能管理房间。
 - 密码至少使用 16 位随机字符，不要沿用示例值。
 - 如果通过 HTTPS 反向代理访问，把 `NINEMROOM_COOKIE_SECURE` 设为 `1`。
 

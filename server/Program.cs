@@ -40,7 +40,7 @@ if (!database.HasAdmins())
         password = Convert.ToHexString(RandomNumberGenerator.GetBytes(9)).ToLowerInvariant();
     }
 
-    database.CreateAdmin(username, password!);
+    database.CreateAdmin(username, password!, isSuper: true);
     if (generated)
     {
         app.Logger.LogWarning(
@@ -124,6 +124,7 @@ app.MapGet("/admin", (HttpContext context) =>
             admin,
             database.ListRooms(),
             registry.OnlineCount,
+            database.ListAdmins(),
             context.Request.Query["error"]),
         "text/html; charset=utf-8");
 });
@@ -200,6 +201,108 @@ app.MapPost("/admin/rooms/delete", async (HttpContext context) =>
     if (database.DeleteRoom(code))
     {
         await registry.DropRoomAsync(code);
+    }
+
+    return Results.Redirect("/admin");
+});
+
+app.MapPost("/admin/admins/create", async (HttpContext context) =>
+{
+    var current = CurrentAdmin(context);
+    if (current is null)
+    {
+        return Results.Redirect("/admin");
+    }
+
+    if (!current.IsSuper)
+    {
+        return Results.Redirect("/admin?error=" + Uri.EscapeDataString("只有超级管理员可以创建管理员"));
+    }
+
+    var form = await context.Request.ReadFormAsync();
+    var username = form["username"].ToString().Trim();
+    var password = form["password"].ToString();
+    if (username.Length is 0 or > 32 ||
+        username.Any(char.IsWhiteSpace) ||
+        password.Length is < 8 or > 128)
+    {
+        return Results.Redirect("/admin?error=" + Uri.EscapeDataString("用户名需为 1–32 位且不含空格，密码至少 8 位"));
+    }
+
+    if (database.CreateAdmin(username, password, isSuper: false) is null)
+    {
+        return Results.Redirect("/admin?error=" + Uri.EscapeDataString("用户名已存在"));
+    }
+
+    return Results.Redirect("/admin");
+});
+
+app.MapPost("/admin/admins/password", async (HttpContext context) =>
+{
+    var current = CurrentAdmin(context);
+    if (current is null)
+    {
+        return Results.Redirect("/admin");
+    }
+
+    if (!current.IsSuper)
+    {
+        return Results.Redirect("/admin?error=" + Uri.EscapeDataString("只有超级管理员可以修改管理员密码"));
+    }
+
+    var form = await context.Request.ReadFormAsync();
+    if (!long.TryParse(form["id"].ToString(), out var id))
+    {
+        return Results.Redirect("/admin?error=" + Uri.EscapeDataString("管理员不存在"));
+    }
+
+    var password = form["password"].ToString();
+    if (password.Length is < 8 or > 128)
+    {
+        return Results.Redirect("/admin?error=" + Uri.EscapeDataString("密码至少 8 位"));
+    }
+
+    if (database.AdminById(id) is null || !database.SetAdminPassword(id, password))
+    {
+        return Results.Redirect("/admin?error=" + Uri.EscapeDataString("管理员不存在"));
+    }
+
+    return Results.Redirect("/admin");
+});
+
+app.MapPost("/admin/admins/delete", async (HttpContext context) =>
+{
+    var current = CurrentAdmin(context);
+    if (current is null)
+    {
+        return Results.Redirect("/admin");
+    }
+
+    if (!current.IsSuper)
+    {
+        return Results.Redirect("/admin?error=" + Uri.EscapeDataString("只有超级管理员可以删除管理员"));
+    }
+
+    var form = await context.Request.ReadFormAsync();
+    if (!long.TryParse(form["id"].ToString(), out var id))
+    {
+        return Results.Redirect("/admin?error=" + Uri.EscapeDataString("管理员不存在"));
+    }
+
+    var target = database.AdminById(id);
+    if (target is null)
+    {
+        return Results.Redirect("/admin?error=" + Uri.EscapeDataString("管理员不存在"));
+    }
+
+    if (target.IsSuper)
+    {
+        return Results.Redirect("/admin?error=" + Uri.EscapeDataString("超级管理员不能被删除"));
+    }
+
+    if (!database.DeleteAdmin(id))
+    {
+        return Results.Redirect("/admin?error=" + Uri.EscapeDataString("删除管理员失败"));
     }
 
     return Results.Redirect("/admin");

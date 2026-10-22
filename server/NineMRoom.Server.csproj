@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <RootNamespace>NineMRoom.Server</RootNamespace>
     <AssemblyName>NineMRoom.Server</AssemblyName>
-    <Version>1.0.0</Version>
+    <Version>1.1.0</Version>
     <Company>朔月</Company>
     <Product>9mRoom Server</Product>
     <InvariantGlobalization>true</InvariantGlobalization>

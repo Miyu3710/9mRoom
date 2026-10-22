@@ -5,7 +5,7 @@ using Microsoft.Data.Sqlite;
 
 namespace NineMRoom.Server;
 
-public sealed record AdminRecord(long Id, string Username);
+public sealed record AdminRecord(long Id, string Username, bool IsSuper);
 
 public sealed record RoomRecord(
     string Code,
@@ -55,7 +55,8 @@ public sealed class ServerDatabase
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 username TEXT NOT NULL UNIQUE COLLATE NOCASE,
                 password_hash TEXT NOT NULL,
-                created_at TEXT NOT NULL
+                created_at TEXT NOT NULL,
+                is_super INTEGER NOT NULL DEFAULT 0
             );
 
             CREATE TABLE IF NOT EXISTS rooms (
@@ -79,6 +80,38 @@ public sealed class ServerDatabase
             VALUES ('demo', '演示房间', 'server', NULL, datetime('now'), datetime('now'));
             """;
         command.ExecuteNonQuery();
+
+        // 旧数据库没有 is_super：补列后把最早的管理员提升为超级管理员。
+        using var columnCommand = connection.CreateCommand();
+        columnCommand.CommandText = "PRAGMA table_info(admins)";
+        var hasSuper = false;
+        using (var reader = columnCommand.ExecuteReader())
+        {
+            while (reader.Read())
+            {
+                if (string.Equals(reader.GetString(1), "is_super", StringComparison.OrdinalIgnoreCase))
+                {
+                    hasSuper = true;
+                    break;
+                }
+            }
+        }
+
+        if (!hasSuper)
+        {
+            using var alter = connection.CreateCommand();
+            alter.CommandText = "ALTER TABLE admins ADD COLUMN is_super INTEGER NOT NULL DEFAULT 0";
+            alter.ExecuteNonQuery();
+        }
+
+        using var promote = connection.CreateCommand();
+        promote.CommandText = """
+            UPDATE admins
+            SET is_super = 1
+            WHERE id = (SELECT id FROM admins ORDER BY id LIMIT 1)
+              AND NOT EXISTS (SELECT 1 FROM admins WHERE is_super = 1)
+            """;
+        promote.ExecuteNonQuery();
     }
 
     public bool HasAdmins()
@@ -89,30 +122,38 @@ public sealed class ServerDatabase
         return Convert.ToInt64(command.ExecuteScalar(), CultureInfo.InvariantCulture) > 0;
     }
 
-    public AdminRecord CreateAdmin(string username, string password)
+    public AdminRecord? CreateAdmin(string username, string password, bool isSuper = false)
     {
         using var connection = Open();
         using var command = connection.CreateCommand();
         command.CommandText = """
-            INSERT INTO admins(username, password_hash, created_at)
-            VALUES ($username, $hash, $created)
+            INSERT INTO admins(username, password_hash, created_at, is_super)
+            VALUES ($username, $hash, $created, $super)
             """;
         command.Parameters.AddWithValue("$username", username.Trim());
         command.Parameters.AddWithValue("$hash", PasswordHasher.Hash(password));
         command.Parameters.AddWithValue("$created", Now());
-        command.ExecuteNonQuery();
+        command.Parameters.AddWithValue("$super", isSuper ? 1 : 0);
+        try
+        {
+            command.ExecuteNonQuery();
+        }
+        catch (SqliteException ex) when (ex.SqliteErrorCode == 19)
+        {
+            return null;
+        }
 
         using var idCommand = connection.CreateCommand();
         idCommand.CommandText = "SELECT last_insert_rowid()";
         var id = Convert.ToInt64(idCommand.ExecuteScalar(), CultureInfo.InvariantCulture);
-        return new AdminRecord(id, username.Trim());
+        return new AdminRecord(id, username.Trim(), isSuper);
     }
 
     public AdminRecord? Authenticate(string username, string password)
     {
         using var connection = Open();
         using var command = connection.CreateCommand();
-        command.CommandText = "SELECT id, username, password_hash FROM admins WHERE username = $username COLLATE NOCASE";
+        command.CommandText = "SELECT id, username, password_hash, is_super FROM admins WHERE username = $username COLLATE NOCASE";
         command.Parameters.AddWithValue("$username", username.Trim());
         using var reader = command.ExecuteReader();
         if (!reader.Read())
@@ -122,7 +163,7 @@ public sealed class ServerDatabase
 
         var hash = reader.GetString(2);
         return PasswordHasher.Verify(password, hash)
-            ? new AdminRecord(reader.GetInt64(0), reader.GetString(1))
+            ? new AdminRecord(reader.GetInt64(0), reader.GetString(1), reader.GetInt32(3) != 0)
             : null;
     }
 
@@ -130,10 +171,68 @@ public sealed class ServerDatabase
     {
         using var connection = Open();
         using var command = connection.CreateCommand();
-        command.CommandText = "SELECT id, username FROM admins WHERE id = $id";
+        command.CommandText = "SELECT id, username, is_super FROM admins WHERE id = $id";
         command.Parameters.AddWithValue("$id", id);
         using var reader = command.ExecuteReader();
-        return reader.Read() ? new AdminRecord(reader.GetInt64(0), reader.GetString(1)) : null;
+        return reader.Read()
+            ? new AdminRecord(reader.GetInt64(0), reader.GetString(1), reader.GetInt32(2) != 0)
+            : null;
+    }
+
+    public IReadOnlyList<AdminRecord> ListAdmins()
+    {
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "SELECT id, username, is_super FROM admins ORDER BY is_super DESC, id";
+        using var reader = command.ExecuteReader();
+        var admins = new List<AdminRecord>();
+        while (reader.Read())
+        {
+            admins.Add(new AdminRecord(reader.GetInt64(0), reader.GetString(1), reader.GetInt32(2) != 0));
+        }
+
+        return admins;
+    }
+
+    public bool SetAdminPassword(long id, string password)
+    {
+        using var connection = Open();
+        using var command = connection.CreateCommand();
+        command.CommandText = "UPDATE admins SET password_hash = $hash WHERE id = $id";
+        command.Parameters.AddWithValue("$hash", PasswordHasher.Hash(password));
+        command.Parameters.AddWithValue("$id", id);
+        return command.ExecuteNonQuery() > 0;
+    }
+
+    public bool DeleteAdmin(long id)
+    {
+        using var connection = Open();
+        using var transaction = connection.BeginTransaction();
+        try
+        {
+            using var command = connection.CreateCommand();
+            command.Transaction = transaction;
+            command.CommandText = "DELETE FROM admins WHERE id = $id AND is_super = 0";
+            command.Parameters.AddWithValue("$id", id);
+            if (command.ExecuteNonQuery() == 0)
+            {
+                transaction.Rollback();
+                return false;
+            }
+
+            using var sessions = connection.CreateCommand();
+            sessions.Transaction = transaction;
+            sessions.CommandText = "DELETE FROM sessions WHERE admin_id = $id";
+            sessions.Parameters.AddWithValue("$id", id);
+            sessions.ExecuteNonQuery();
+            transaction.Commit();
+            return true;
+        }
+        catch
+        {
+            transaction.Rollback();
+            throw;
+        }
     }
 
     public string CreateSession(long adminId)
@@ -163,7 +262,7 @@ public sealed class ServerDatabase
         using var connection = Open();
         using var command = connection.CreateCommand();
         command.CommandText = """
-            SELECT a.id, a.username, s.expires_at
+            SELECT a.id, a.username, a.is_super, s.expires_at
             FROM sessions s JOIN admins a ON a.id = s.admin_id
             WHERE s.token = $token
             """;
@@ -174,13 +273,13 @@ public sealed class ServerDatabase
             return null;
         }
 
-        if (!DateTimeOffset.TryParse(reader.GetString(2), CultureInfo.InvariantCulture,
+        if (!DateTimeOffset.TryParse(reader.GetString(3), CultureInfo.InvariantCulture,
                 DateTimeStyles.RoundtripKind, out var expires) || expires <= DateTimeOffset.UtcNow)
         {
             return null;
         }
 
-        return new AdminRecord(reader.GetInt64(0), reader.GetString(1));
+        return new AdminRecord(reader.GetInt64(0), reader.GetString(1), reader.GetInt32(2) != 0);
     }
 
     public void DeleteSession(string? token)
