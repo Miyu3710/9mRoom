@@ -119,8 +119,16 @@
                     <StackPanel>
                         <TextBlock Text="隐私" Style="{StaticResource SectionTitle}" />
                         <CheckBox Content="共享当前音乐状态" IsChecked="{Binding ShareMusic}" />
-                        <TextBlock Text="窗口标题、文件名、URL 与屏幕内容不会上传；原始进程名只留在本机。"
-                                   Style="{StaticResource Label}" Margin="0,8,0,0" />
+                        <TextBlock Text="只展示指定播放器的媒体；按播放器标识子串匹配，多个用英文逗号分隔，留空表示全部。"
+                                   Style="{StaticResource Label}" Margin="0,6,0,4" TextWrapping="Wrap" />
+                        <TextBox Text="{Binding MediaSourceFilter, UpdateSourceTrigger=LostFocus}"
+                                 Style="{StaticResource InputBox}" Margin="0,0,0,2"
+                                 ToolTip="例如：Spotify, QQMusic, 网易云" />
+                        <CheckBox Content="共享当前窗口标题" IsChecked="{Binding ShareWindowTitles}" Margin="0,4,0,0" />
+                        <TextBlock Text="例如：Spotify, QQMusic, 网易云"
+                                   Style="{StaticResource Label}" Margin="0,2,0,2" />
+                        <TextBlock Text="窗口标题只在这个开关开启后上传；关闭时只显示应用名。"
+                                   Style="{StaticResource Label}" Margin="0,0,0,0" />
                     </StackPanel>
                 </Border>
 

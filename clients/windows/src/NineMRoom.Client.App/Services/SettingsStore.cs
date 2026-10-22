@@ -16,6 +16,7 @@ public sealed class AppSettings
     public bool CloseToTrayHintShown { get; set; }
     public bool AutoConnect { get; set; } = true;
     public bool ShareMusic { get; set; } = true;
+    public string MediaSourceFilter { get; set; } = string.Empty;
     public bool ShareWindowTitles { get; set; }
     public string TitleWhitelistJson { get; set; } = string.Empty;
     public bool NotifyOnClose { get; set; } = true;

@@ -100,7 +100,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         _settings = settings;
         settings.CommandEnabled = false;
-        settings.ShareWindowTitles = false;
         if (string.IsNullOrWhiteSpace(settings.ClientId))
         {
             settings.ClientId = Guid.NewGuid().ToString("n");
@@ -451,6 +450,27 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             _settings.ShareMusic = value;
             SettingsStore.Save(_settings);
             OnPropertyChanged();
+            Refresh();
+            _ = _client?.SendNowAsync();
+        }
+    }
+
+    public string MediaSourceFilter
+    {
+        get => _settings.MediaSourceFilter;
+        set
+        {
+            var next = value ?? string.Empty;
+            if (string.Equals(_settings.MediaSourceFilter, next, StringComparison.Ordinal))
+            {
+                return;
+            }
+
+            _settings.MediaSourceFilter = next;
+            SettingsStore.Save(_settings);
+            OnPropertyChanged();
+            Refresh();
+            _ = _client?.SendNowAsync();
         }
     }
 
@@ -3089,7 +3109,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             _layoutDebounce?.Start();
         }
 
-        var media = _media?.Current;
+        var media = SharedMedia();
         var idle = SystemInfo.IdleTime();
         UpdateTimer(now);
         TrackStats(idle, now);
@@ -3256,7 +3276,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
             payload["status"] = StatusComposer.Compose(
                 match,
-                _settings.ShareMusic ? _media?.Current : null,
+                SharedMedia(),
                 idle,
                 _bootTime,
                 timer,
@@ -3277,6 +3297,27 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
 
         return payload;
+    }
+
+    private MediaInfo? SharedMedia()
+    {
+        var media = _media?.Current;
+        if (!_settings.ShareMusic || media is null)
+        {
+            return null;
+        }
+
+        var filters = (_settings.MediaSourceFilter ?? string.Empty)
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        if (filters.Length == 0)
+        {
+            return media;
+        }
+
+        return filters.Any(filter =>
+            media.SourceAppId.Contains(filter, StringComparison.OrdinalIgnoreCase))
+            ? media
+            : null;
     }
 
     private Uri BuildUri(string room, string name)
