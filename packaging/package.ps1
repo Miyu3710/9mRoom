@@ -123,11 +123,48 @@ else {
 $zip = Join-Path $dist "9mRoom-$Version-win-x64.zip"
 Compress-Archive -Path (Join-Path $publish '*') -DestinationPath $zip -CompressionLevel Optimal -Force
 
+$serverDir = Join-Path $dist 'server-linux-x64'
+& $dotnet publish (Join-Path $root 'server\NineMRoom.Server.csproj') `
+    -c Release `
+    -r linux-x64 `
+    --self-contained true `
+    -p:PublishSingleFile=false `
+    -p:DebugType=None `
+    -p:DebugSymbols=false `
+    -p:Version=$Version `
+    -o $serverDir
+if ($LASTEXITCODE -ne 0) { throw 'server Linux publish failed' }
+
+Copy-Item (Join-Path $PSScriptRoot 'run-server.sh') $serverDir -Force
+Copy-Item (Join-Path $PSScriptRoot 'update-server.sh') $serverDir -Force
+
+$serverArchive = Join-Path $dist "9mRoom-Server-$Version-linux-x64.tar.gz"
+& tar.exe -czf $serverArchive -C $serverDir .
+if ($LASTEXITCODE -ne 0) { throw 'server Linux archive failed' }
+
 $hashes = @()
-foreach ($file in @($zip, $msi)) {
+foreach ($file in @($zip, $msi, $serverArchive)) {
     $hash = (Get-FileHash $file -Algorithm SHA256).Hash
     $hashes += "$hash  $([System.IO.Path]::GetFileName($file))"
 }
+
+$manifest = Join-Path $dist 'update.json'
+[ordered]@{
+    version = $Version
+    tag = "v$Version"
+    release = "https://github.com/Miyu3710/9mRoom/releases/tag/v$Version"
+    windows = [ordered]@{
+        asset = [System.IO.Path]::GetFileName($msi)
+        sha256 = (Get-FileHash $msi -Algorithm SHA256).Hash
+    }
+    linux = [ordered]@{
+        asset = [System.IO.Path]::GetFileName($serverArchive)
+        sha256 = (Get-FileHash $serverArchive -Algorithm SHA256).Hash
+        entry = 'run-server.sh'
+    }
+} | ConvertTo-Json -Depth 5 | Set-Content $manifest -Encoding UTF8
+
+$hashes += "$(Get-FileHash $manifest -Algorithm SHA256).Hash  update.json"
 $hashes | Set-Content (Join-Path $dist 'SHA256SUMS.txt') -Encoding ASCII
 
 Get-ChildItem $dist | Select-Object Name, Length

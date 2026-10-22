@@ -29,6 +29,29 @@ $env:NINEMROOM_ADMIN_PASSWORD = '换成一个强密码'
 .\run.ps1
 ```
 
+### Linux 二进制包
+
+GitHub Release 中的 `9mRoom-Server-<version>-linux-x64.tar.gz` 是自包含包：
+
+```bash
+tar xzf 9mRoom-Server-1.0.0-linux-x64.tar.gz -C /opt/9mroom
+cd /opt/9mroom
+NINEMROOM_ADMIN_PASSWORD='...' NINEMROOM_DB=/var/lib/9mroom/9mroom.db bash run-server.sh
+```
+
+检查更新：
+
+```bash
+bash update-server.sh
+```
+
+Docker 部署更新：
+
+```bash
+git pull
+docker compose up -d --build
+```
+
 首次启动且数据库没有管理员时，会用这两个环境变量创建管理员。
 未提供密码时会生成随机密码，并在启动日志中输出一次，请及时保存。
 
@@ -91,6 +114,8 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\protocol-smoke.ps1
 ## 数据与限制
 
 - 房间与管理员持久化，服务端重启后仍存在
+- `/healthz` 返回当前服务端版本 `version`
+- Linux Release 资产包含服务端 tar.gz 与 `run-server.sh`；`update-server.sh` 可检查 GitHub 最新版本
 - 成员在线状态仍在内存，重启后需客户端重连
 - 客户端用持久化 `ClientId` 重连时，服务端会移除并关闭同 ClientId 的旧连接，避免房间里出现重复的自己
 - 聊天 / 日志不落库，只保留在客户端本次连接

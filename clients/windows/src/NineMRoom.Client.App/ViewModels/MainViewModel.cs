@@ -2231,8 +2231,30 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 .FirstOrDefault(link => string.Equals((string?)link.Attribute("rel"), "alternate", StringComparison.Ordinal))
                 ?.Attribute("href")?.Value ?? string.Empty;
             var tag = title.Split(' ', StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? title;
+            var releaseTag = releaseUrl.Split('/', StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? tag;
 
             _updateDownloadUrl = releaseUrl;
+            try
+            {
+                var manifestUrl =
+                    $"https://github.com/Miyu3710/9mRoom/releases/download/{releaseTag}/update.json";
+                using var manifest = JsonDocument.Parse(await http.GetStringAsync(manifestUrl));
+                if (manifest.RootElement.TryGetProperty("windows", out var windows) &&
+                    windows.TryGetProperty("asset", out var assetElement))
+                {
+                    var assetName = assetElement.GetString();
+                    if (!string.IsNullOrWhiteSpace(assetName))
+                    {
+                        _updateDownloadUrl =
+                            $"https://github.com/Miyu3710/9mRoom/releases/download/{releaseTag}/{assetName}";
+                    }
+                }
+            }
+            catch
+            {
+                // 没有清单时回退到 Release 页面
+            }
+
             if (!TryParseVersion(tag, out var latest) || !TryParseVersion(VersionText, out var current))
             {
                 _updateStatusText = "已获取发布信息，但版本号无法比较";

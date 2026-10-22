@@ -6,9 +6,11 @@
 
 | 文件 | 用途 |
 | --- | --- |
-| `dist/9mRoom-Setup-1.0.0.msi` | Windows Installer 安装包，发布主产物 |
-| `dist/9mRoom-1.0.0-win-x64.zip` | 便携版，解压后运行 `9mRoom.cmd` |
-| `dist/SHA256SUMS.txt` | 两个文件的 SHA256 |
+| `dist/9mRoom-Setup-1.0.0.msi` | Windows 安装包，发布主产物 |
+| `dist/9mRoom-1.0.0-win-x64.zip` | Windows 便携版，解压后运行 `9mRoom.cmd` |
+| `dist/9mRoom-Server-1.0.0-linux-x64.tar.gz` | Linux 服务端，自包含 .NET 运行时 |
+| `dist/update.json` | 多端更新清单（Windows / Linux 资产与 SHA256） |
+| `dist/SHA256SUMS.txt` | 全部产物的 SHA256 |
 
 **发布只使用 MSI**。不再生成 `setup.exe` 启动器。
 
@@ -68,6 +70,6 @@ powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.0.0 `
 
 ## 已知限制
 
-- 自动更新尚未接入：当前需要手动覆盖安装新版本
+- 自动更新尚未接入：Windows 通过 GitHub Releases 检查更新并手动下载；Linux 通过 `update-server.sh` 检查
 - 安装向导为 Windows Installer 标准界面；中文文案由 `WixUI_zh-CN.wxl` 提供
 - 首次安装前如果系统 Windows Installer 服务异常，需要重启一次再安装

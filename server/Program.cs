@@ -1,8 +1,10 @@
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Security.Cryptography;
 using NineMRoom.Server;
 
 const string AdminCookie = "nm_admin";
+var serverVersion = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "1.0.0";
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Logging.ClearProviders();
@@ -62,6 +64,7 @@ app.UseStaticFiles();
 app.MapGet("/healthz", () => Results.Ok(new
 {
     ok = true,
+    version = serverVersion,
     serverTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
     rooms = database.ListRooms().Count,
     members = registry.MemberCount
