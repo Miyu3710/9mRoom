@@ -50,7 +50,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ninemroom.app.data.RoomMember
+import com.ninemroom.app.feature.room.MemberDetail
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     roomName: String,
@@ -65,6 +67,8 @@ fun HomeScreen(
 ) {
     val self = members.firstOrNull { it.id == selfId }
     val onlineCount = members.count { it.online }
+    var selectedMember by remember { mutableStateOf<RoomMember?>(null) }
+    val memberSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
@@ -82,7 +86,7 @@ fun HomeScreen(
             SectionLabel("房间成员", trailing = "${onlineCount} 人")
         }
         item {
-            MemberRow(members)
+            MemberRow(members) { selectedMember = it }
         }
         item {
             MyStatusCard(
@@ -98,6 +102,15 @@ fun HomeScreen(
         }
         item {
             Spacer(Modifier.height(72.dp))
+        }
+    }
+
+    selectedMember?.let { member ->
+        ModalBottomSheet(
+            onDismissRequest = { selectedMember = null },
+            sheetState = memberSheetState,
+        ) {
+            MemberDetail(member, member.id == selfId)
         }
     }
 }
@@ -164,7 +177,10 @@ private fun RoomHeaderCard(
 }
 
 @Composable
-private fun MemberRow(members: List<RoomMember>) {
+private fun MemberRow(
+    members: List<RoomMember>,
+    onMemberClick: (RoomMember) -> Unit,
+) {
     if (members.isEmpty()) {
         Text(
             "正在等待成员同步…",
@@ -179,7 +195,9 @@ private fun MemberRow(members: List<RoomMember>) {
         items(members, key = { it.id }) { member ->
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.width(64.dp),
+                modifier = Modifier
+                    .width(64.dp)
+                    .clickable { onMemberClick(member) },
             ) {
                 Box(
                     modifier = Modifier

@@ -328,7 +328,7 @@ private fun ChatComposer(
 }
 
 @Composable
-private fun MemberDetail(member: RoomMember, isSelf: Boolean) {
+internal fun MemberDetail(member: RoomMember, isSelf: Boolean) {
     Column(Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Surface(
