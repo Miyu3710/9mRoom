@@ -5,13 +5,14 @@ import androidx.core.content.ContextCompat
 import com.ninemroom.app.data.AppSettings
 import com.ninemroom.app.data.ChatLine
 import com.ninemroom.app.data.ConnectionStatus
+import com.ninemroom.app.data.ForegroundAppReader
 import com.ninemroom.app.data.LogLine
+import com.ninemroom.app.data.MediaReader
 import com.ninemroom.app.data.PresenceSocket
 import com.ninemroom.app.data.RoomApi
 import com.ninemroom.app.data.RoomInfo
 import com.ninemroom.app.data.RoomMember
 import com.ninemroom.app.data.ServerAddress
-import com.ninemroom.app.data.androidStatusBlocks
 import com.ninemroom.app.data.nowTime
 import com.ninemroom.app.data.parseMember
 import com.ninemroom.app.data.parseMembers
@@ -28,6 +29,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import org.json.JSONArray
 import org.json.JSONObject
 
 data class RoomUiState(
@@ -46,6 +48,8 @@ data class RoomUiState(
     val keepOnline: Boolean = true,
     val overlayEnabled: Boolean = true,
     val notifyRoomEvents: Boolean = true,
+    val shareApp: Boolean = true,
+    val shareMusic: Boolean = true,
 ) {
     val self: RoomMember?
         get() = members.firstOrNull { it.id == selfId }
@@ -58,6 +62,8 @@ class RoomController(context: Context) {
     private val appContext = context.applicationContext
     private val settings = AppSettings(appContext)
     private val api = RoomApi()
+    private val foregroundAppReader = ForegroundAppReader(appContext)
+    private val mediaReader = MediaReader(appContext)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val _state = MutableStateFlow(
         RoomUiState(
@@ -68,6 +74,8 @@ class RoomController(context: Context) {
             keepOnline = settings.keepOnline,
             overlayEnabled = settings.overlayEnabled,
             notifyRoomEvents = settings.notifyRoomEvents,
+            shareApp = settings.shareApp,
+            shareMusic = settings.shareMusic,
         ),
     )
     val state: StateFlow<RoomUiState> = _state.asStateFlow()
@@ -232,13 +240,87 @@ class RoomController(context: Context) {
         heartbeatJob = scope.launch {
             while (isActive) {
                 sendPresence()
-                delay(20_000)
+                delay(10_000)
             }
         }
     }
 
     private fun sendPresence() {
-        socket?.sendPresence(_state.value.selfMode, androidStatusBlocks())
+        socket?.sendPresence(_state.value.selfMode, buildStatusBlocks())
+    }
+
+    private fun buildStatusBlocks(): JSONArray {
+        val blocks = JSONArray()
+        val current = _state.value
+
+        if (current.shareApp) {
+            val app = foregroundAppReader.current()
+            val appId = app?.id ?: "android"
+            val category = app?.category ?: "other"
+            blocks.put(
+                JSONObject()
+                    .put("id", "app")
+                    .put("type", "app")
+                    .put("template", "📡 {app}")
+                    .put(
+                        "data",
+                        JSONObject()
+                            .put("appId", appId)
+                            .put("category", category),
+                    ),
+            )
+        }
+
+        if (current.shareMusic) {
+            val media = mediaReader.current()
+            if (media != null) {
+                val progress = if (media.durationMs > 0) {
+                    "${formatDuration(media.positionMs)}/${formatDuration(media.durationMs)}"
+                } else {
+                    ""
+                }
+                blocks.put(
+                    JSONObject()
+                        .put("id", "media")
+                        .put("type", "media")
+                        .put("template", "🎶 {title} - {artist} {progress}")
+                        .put(
+                            "data",
+                            JSONObject()
+                                .put("title", media.title)
+                                .put("artist", media.artist)
+                                .put("isPlaying", media.isPlaying)
+                                .put("positionMs", media.positionMs)
+                                .put("durationMs", media.durationMs)
+                                .put("sampledAt", System.currentTimeMillis())
+                                .put("progress", progress),
+                        ),
+                )
+            }
+        }
+
+        return blocks
+    }
+
+    private fun formatDuration(milliseconds: Long): String {
+        val totalSeconds = (milliseconds / 1000).coerceAtLeast(0)
+        return "%d:%02d".format(totalSeconds / 60, totalSeconds % 60)
+    }
+
+    fun setShareApp(enabled: Boolean) {
+        settings.shareApp = enabled
+        _state.update { it.copy(shareApp = enabled) }
+        sendPresence()
+    }
+
+    fun setShareMusic(enabled: Boolean) {
+        settings.shareMusic = enabled
+        _state.update { it.copy(shareMusic = enabled) }
+        sendPresence()
+    }
+
+    fun refreshPresence() {
+        sendPresence()
     }
 
     fun setMode(mode: String) {

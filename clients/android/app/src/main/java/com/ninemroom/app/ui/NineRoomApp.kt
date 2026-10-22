@@ -97,6 +97,12 @@ fun NineRoomApp(
     val overlayLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { roomViewModel.refreshOverlay() }
+    val usageAccessLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) { roomViewModel.refreshPresence() }
+    val mediaAccessLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult(),
+    ) { roomViewModel.refreshPresence() }
     var askedNotifications by rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(state.showMain) {
@@ -249,6 +255,8 @@ fun NineRoomApp(
                             keepOnline = state.keepOnline,
                             overlayEnabled = state.overlayEnabled,
                             notifyRoomEvents = state.notifyRoomEvents,
+                            shareApp = state.shareApp,
+                            shareMusic = state.shareMusic,
                             onKeepOnlineChange = roomViewModel::setKeepOnline,
                             onOverlayChange = { enabled ->
                                 roomViewModel.setOverlayEnabled(enabled)
@@ -265,6 +273,8 @@ fun NineRoomApp(
                                 }
                             },
                             onNotifyRoomEventsChange = roomViewModel::setNotifyRoomEvents,
+                            onShareAppChange = roomViewModel::setShareApp,
+                            onShareMusicChange = roomViewModel::setShareMusic,
                             onRequestNotifications = {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                                     ContextCompat.checkSelfPermission(
@@ -281,6 +291,14 @@ fun NineRoomApp(
                                         Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
                                         Uri.parse("package:${context.packageName}"),
                                     ),
+                                )
+                            },
+                            onRequestUsageAccess = {
+                                usageAccessLauncher.launch(Intent(Settings.ACTION_USAGE_ACCESS_SETTINGS))
+                            },
+                            onRequestNotificationAccess = {
+                                mediaAccessLauncher.launch(
+                                    Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"),
                                 )
                             },
                             onDisconnect = roomViewModel::disconnect,

@@ -28,5 +28,11 @@ class RoomViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setNotifyRoomEvents(enabled: Boolean) = controller.setNotifyRoomEvents(enabled)
 
+    fun setShareApp(enabled: Boolean) = controller.setShareApp(enabled)
+
+    fun setShareMusic(enabled: Boolean) = controller.setShareMusic(enabled)
+
+    fun refreshPresence() = controller.refreshPresence()
+
     fun refreshOverlay() = controller.refreshOverlay()
 }

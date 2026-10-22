@@ -161,6 +161,7 @@ private fun appName(appId: String): String = when (appId.lowercase()) {
     "vscode", "visual studio code" -> "VS Code"
     "chrome" -> "Chrome"
     "android" -> "Android"
+    "9mroom" -> "9mRoom"
     "explorer" -> "文件管理器"
     else -> appId
 }

@@ -34,6 +34,14 @@ class AppSettings(context: Context) {
         get() = preferences.getBoolean("notify_room_events", true)
         set(value) = preferences.edit().putBoolean("notify_room_events", value).apply()
 
+    var shareApp: Boolean
+        get() = preferences.getBoolean("share_app", true)
+        set(value) = preferences.edit().putBoolean("share_app", value).apply()
+
+    var shareMusic: Boolean
+        get() = preferences.getBoolean("share_music", true)
+        set(value) = preferences.edit().putBoolean("share_music", value).apply()
+
     val clientId: String
         get() {
             val existing = preferences.getString("client_id", "").orEmpty()

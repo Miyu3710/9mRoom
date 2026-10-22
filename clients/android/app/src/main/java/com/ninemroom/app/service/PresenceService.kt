@@ -122,7 +122,7 @@ class PresenceService : Service() {
             ).apply {
                 gravity = Gravity.TOP or Gravity.END
                 x = 24
-                y = 120
+                y = 300
             }
             try {
                 getSystemService(WindowManager::class.java).addView(view, params)

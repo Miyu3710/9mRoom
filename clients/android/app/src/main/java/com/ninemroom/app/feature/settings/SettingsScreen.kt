@@ -51,17 +51,21 @@ fun SettingsScreen(
     keepOnline: Boolean,
     overlayEnabled: Boolean,
     notifyRoomEvents: Boolean,
+    shareApp: Boolean,
+    shareMusic: Boolean,
     onKeepOnlineChange: (Boolean) -> Unit,
     onOverlayChange: (Boolean) -> Unit,
     onNotifyRoomEventsChange: (Boolean) -> Unit,
+    onShareAppChange: (Boolean) -> Unit,
+    onShareMusicChange: (Boolean) -> Unit,
     onRequestNotifications: () -> Unit,
     onRequestOverlay: () -> Unit,
+    onRequestUsageAccess: () -> Unit,
+    onRequestNotificationAccess: () -> Unit,
     onDisconnect: () -> Unit,
 ) {
     var boot by rememberSaveable { mutableStateOf(true) }
     var focusNotify by rememberSaveable { mutableStateOf(true) }
-    var shareApp by rememberSaveable { mutableStateOf(true) }
-    var shareMusic by rememberSaveable { mutableStateOf(true) }
 
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
@@ -157,17 +161,23 @@ fun SettingsScreen(
                     title = "共享当前应用",
                     description = "只上传归一化 appId 和分类，不上传包名列表",
                     checked = shareApp,
-                    onCheckedChange = { shareApp = it },
+                    onCheckedChange = onShareAppChange,
                 )
                 SettingSwitch(
                     title = "共享音乐",
                     description = "读取当前媒体会话的标题与歌手",
                     checked = shareMusic,
-                    onCheckedChange = { shareMusic = it },
+                    onCheckedChange = onShareMusicChange,
                 )
                 SettingAction(
-                    title = "权限管理",
-                    description = "使用情况访问、通知使用权和悬浮窗权限",
+                    title = "使用情况访问权限",
+                    description = "允许 9mRoom 识别当前前台应用",
+                    onClick = onRequestUsageAccess,
+                )
+                SettingAction(
+                    title = "通知使用权",
+                    description = "允许 9mRoom 读取当前媒体会话",
+                    onClick = onRequestNotificationAccess,
                 )
             }
         }

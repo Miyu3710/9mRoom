@@ -19,17 +19,19 @@ Material You 界面 + 基础房间协议已跑通。
 - 前台服务 + 常驻通知（`specialUse`）
 - 成员进入 / 离开通知
 - 可选悬浮状态条，需要系统悬浮窗权限
-- 通知权限、悬浮窗权限入口
+- 使用情况访问识别前台应用，归一化为 `appId` / 分类后上报
+- 通知使用权读取当前媒体会话，生成音乐状态块
+- 通知权限、悬浮窗权限、使用情况访问、通知使用权入口
 - 设置中的常驻通知、悬浮窗、共享当前应用、共享音乐开关
 
 还在用示例数据的部分：
 
 - 专注计时器目前是本地演示，还未上报计时块
 - 待办目前是本地内存列表，还未持久化
-- 使用情况访问、媒体会话和蓝牙/音乐识别尚未接入
 - 开机自启还未接 `BOOT_COMPLETED`
 - 检查更新入口还未接 GitHub Releases
 - 悬浮窗目前的权限申请与显示已接，但点击悬浮条还没有跳转回房间
+- 应用识别只映射内置的常见包名，未知应用统一归为“其他应用”，不会上传原包名
 
 ## 包名
 
@@ -61,6 +63,8 @@ app/src/main/java/com/ninemroom/app/
   RoomViewModel.kt
   data/
     AppSettings.kt
+    ForegroundAppReader.kt
+    MediaReader.kt
     PresenceSocket.kt
     RoomApi.kt
     RoomModels.kt
