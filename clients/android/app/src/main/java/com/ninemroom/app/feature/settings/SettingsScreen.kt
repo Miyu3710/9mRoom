@@ -105,6 +105,8 @@ fun SettingsScreen(
     onRequestOverlay: () -> Unit,
     onRequestUsageAccess: () -> Unit,
     onRequestNotificationAccess: () -> Unit,
+    onRequestBatteryOptimization: () -> Unit,
+    onOpenBackgroundSettings: () -> Unit,
     onDisconnect: () -> Unit,
 ) {
     var checkingUpdate by remember { mutableStateOf(false) }
@@ -323,6 +325,16 @@ fun SettingsScreen(
                     title = "通知使用权",
                     description = "允许 9mRoom 读取当前媒体会话",
                     onClick = onRequestNotificationAccess,
+                )
+                SettingAction(
+                    title = "后台运行权限",
+                    description = "允许应用在后台持续保持连接，按厂商设置自启动和后台运行",
+                    onClick = onOpenBackgroundSettings,
+                )
+                SettingAction(
+                    title = "后台耗电无限制",
+                    description = "关闭电池优化，避免系统在后台断开连接",
+                    onClick = onRequestBatteryOptimization,
                 )
             }
         }

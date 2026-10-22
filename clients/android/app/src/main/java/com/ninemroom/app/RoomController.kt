@@ -1,6 +1,8 @@
 package com.ninemroom.app
 
+import android.app.KeyguardManager
 import android.content.Context
+import android.os.PowerManager
 import androidx.core.content.ContextCompat
 import com.ninemroom.app.data.AppSettings
 import com.ninemroom.app.data.AppCategoryStore
@@ -343,6 +345,12 @@ class RoomController(
         )
     }
 
+    private fun isScreenLocked(): Boolean {
+        val keyguard = appContext.getSystemService(KeyguardManager::class.java)
+        val power = appContext.getSystemService(PowerManager::class.java)
+        return keyguard?.isKeyguardLocked == true || power?.isInteractive == false
+    }
+
     private fun buildStatusBlocks(): JSONArray {
         val blocks = JSONArray()
         val current = _state.value
@@ -356,7 +364,21 @@ class RoomController(
         statusLayout.rules.value.filter { it.enabled }.forEach { rule ->
             when (rule.type) {
                 "app" -> {
-                    if (current.shareApp && app != null && appRule?.hidden != true) {
+                    if (isScreenLocked()) {
+                        blocks.put(
+                            JSONObject()
+                                .put("id", rule.id)
+                                .put("type", "app")
+                                .put("template", "🔒 锁定中")
+                                .put(
+                                    "data",
+                                    JSONObject()
+                                        .put("appId", "locked")
+                                        .put("category", "other")
+                                        .put("name", "锁定中"),
+                                ),
+                        )
+                    } else if (current.shareApp && app != null && appRule?.hidden != true) {
                         val categoryId = appRule?.category ?: app.category ?: "other"
                         val categoryTemplate = appCategories.find(categoryId)?.template
                             ?.takeIf { it.isNotBlank() }

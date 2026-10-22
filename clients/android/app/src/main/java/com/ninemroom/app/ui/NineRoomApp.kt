@@ -1,6 +1,8 @@
 package com.ninemroom.app.ui
 
 import android.Manifest
+import android.content.ComponentName
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -94,6 +96,49 @@ private val navDestinations = Destination.entries.filter {
     it != Destination.Apps &&
         it != Destination.Categories &&
         it != Destination.SyncList
+}
+
+private fun openBackgroundSettings(context: Context) {
+    val candidates = listOf(
+        ComponentName(
+            "com.coloros.safecenter",
+            "com.coloros.safecenter.permission.startup.StartupAppListActivity",
+        ),
+        ComponentName(
+            "com.oplus.safecenter",
+            "com.oplus.safecenter.permission.startup.StartupAppListActivity",
+        ),
+        ComponentName(
+            "com.miui.securitycenter",
+            "com.miui.permcenter.autostart.AutoStartManagementActivity",
+        ),
+        ComponentName(
+            "com.huawei.systemmanager",
+            "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity",
+        ),
+        ComponentName(
+            "com.vivo.permissionmanager",
+            "com.vivo.permissionmanager.activity.BgStartUpManagerActivity",
+        ),
+        ComponentName(
+            "com.samsung.android.lool",
+            "com.samsung.android.sm.ui.battery.BatteryActivity",
+        ),
+    )
+    for (component in candidates) {
+        val intent = Intent().setComponent(component)
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        if (context.packageManager.resolveActivity(intent, 0) == null) continue
+        if (runCatching { context.startActivity(intent) }.isSuccess) return
+    }
+    runCatching {
+        context.startActivity(
+            Intent(
+                Settings.ACTION_APPLICATION_DETAILS_SETTINGS,
+                Uri.parse("package:${context.packageName}"),
+            ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+        )
+    }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -344,6 +389,25 @@ fun NineRoomApp(
                                 mediaAccessLauncher.launch(
                                     Intent("android.settings.ACTION_NOTIFICATION_LISTENER_SETTINGS"),
                                 )
+                            },
+                            onRequestBatteryOptimization = {
+                                runCatching {
+                                    context.startActivity(
+                                        Intent(
+                                            Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
+                                            Uri.parse("package:${context.packageName}"),
+                                        ),
+                                    )
+                                }.onFailure {
+                                    runCatching {
+                                        context.startActivity(
+                                            Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
+                                        )
+                                    }
+                                }
+                            },
+                            onOpenBackgroundSettings = {
+                                openBackgroundSettings(context)
                             },
                             onDisconnect = roomViewModel::disconnect,
                         )
