@@ -11,7 +11,10 @@
         WindowStyle="None"
         Background="#01000000"
         FontFamily="{StaticResource FontUi}"
-        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
         WindowStartupLocation="CenterScreen"
         KeyDown="Window_KeyDown"
         StateChanged="Window_StateChanged">
@@ -158,20 +161,21 @@
         <Style x:Key="NavItem" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
+            <Setter Property="Height" Value="38" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-            <Setter Property="Margin" Value="0,0,0,3" />
+            <Setter Property="Margin" Value="0,0,0,2" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
                         <Border x:Name="Bg" Background="Transparent"
-                                CornerRadius="{StaticResource RadiusMd}" Padding="10,9">
+                                CornerRadius="{StaticResource RadiusMd}" Padding="8,0">
                             <Grid>
-                                <Border x:Name="Indicator" Width="3" Height="18"
+                                <Border x:Name="Indicator" Width="3" Height="16"
                                         HorizontalAlignment="Left" VerticalAlignment="Center"
                                         Background="{StaticResource BrushAccent}"
                                         CornerRadius="2" Visibility="Collapsed" />
-                                <ContentPresenter Margin="10,0,0,0"
+                                <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"
                                                   TextElement.Foreground="{TemplateBinding Foreground}" />
                             </Grid>
                         </Border>
@@ -183,7 +187,6 @@
                                 <Setter TargetName="Bg" Property="Background" Value="{StaticResource BrushAccentSoft}" />
                                 <Setter TargetName="Indicator" Property="Visibility" Value="Visible" />
                                 <Setter Property="Foreground" Value="{StaticResource BrushText}" />
-                                <Setter Property="FontWeight" Value="SemiBold" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -195,12 +198,15 @@
             <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-            <Setter Property="Margin" Value="0,0,4,0" />
+            <Setter Property="Margin" Value="0,0,2,0" />
+            <Setter Property="MinWidth" Value="64" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
                         <Border x:Name="TabBg" Background="Transparent"
-                                CornerRadius="{StaticResource RadiusPill}" Padding="14,7">
+                                BorderBrush="Transparent" BorderThickness="1,1,1,0"
+                                CornerRadius="10,10,0,0" Padding="16,7">
                             <ContentPresenter TextElement.Foreground="{TemplateBinding Foreground}" />
                         </Border>
                         <ControlTemplate.Triggers>
@@ -209,9 +215,11 @@
                                 <Setter Property="Foreground" Value="{StaticResource BrushText}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="TabBg" Property="Background" Value="{StaticResource BrushAccentSoft}" />
-                                <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
+                                <Setter TargetName="TabBg" Property="Background" Value="{StaticResource BrushGlassSurface}" />
+                                <Setter TargetName="TabBg" Property="BorderBrush" Value="{StaticResource BrushGlassBorder}" />
+                                <Setter Property="Foreground" Value="{StaticResource BrushText}" />
                                 <Setter Property="FontWeight" Value="SemiBold" />
+                                <Setter Property="Panel.ZIndex" Value="1" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -222,12 +230,13 @@
 
     <Border x:Name="ShellBorder"
             BorderBrush="{StaticResource BrushGlassBorder}"
-            BorderThickness="1">
+            BorderThickness="1"
+            ClipToBounds="True">
         <Border.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#C42E2E36" Offset="0" />
-                <GradientStop Color="#B818181D" Offset="0.55" />
-                <GradientStop Color="#C4212128" Offset="1" />
+                <GradientStop Color="#A61D1B25" Offset="0" />
+                <GradientStop Color="#8A121218" Offset="0.55" />
+                <GradientStop Color="#A6201A28" Offset="1" />
             </LinearGradientBrush>
         </Border.Background>
         <Grid>
@@ -235,6 +244,33 @@
                 <RowDefinition Height="46" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
+
+            <Grid Grid.RowSpan="2" IsHitTestVisible="False" ClipToBounds="True">
+                <Ellipse Width="620" Height="620" HorizontalAlignment="Left" VerticalAlignment="Top"
+                         Margin="-220,-250,0,0" Opacity="0.5">
+                    <Ellipse.Fill>
+                        <RadialGradientBrush>
+                            <GradientStop Color="#557C9CFF" Offset="0" />
+                            <GradientStop Color="#007C9CFF" Offset="1" />
+                        </RadialGradientBrush>
+                    </Ellipse.Fill>
+                    <Ellipse.Effect>
+                        <BlurEffect Radius="90" />
+                    </Ellipse.Effect>
+                </Ellipse>
+                <Ellipse Width="760" Height="760" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                         Margin="0,0,-260,-320" Opacity="0.42">
+                    <Ellipse.Fill>
+                        <RadialGradientBrush>
+                            <GradientStop Color="#55C39CFF" Offset="0" />
+                            <GradientStop Color="#00C39CFF" Offset="1" />
+                        </RadialGradientBrush>
+                    </Ellipse.Fill>
+                    <Ellipse.Effect>
+                        <BlurEffect Radius="110" />
+                    </Ellipse.Effect>
+                </Ellipse>
+            </Grid>
 
             <!-- 自定义标题栏 -->
             <Grid Grid.Row="0" x:Name="TitleBar" Background="Transparent"
@@ -256,7 +292,7 @@
 
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="208" />
+                    <ColumnDefinition Width="184" />
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
@@ -265,7 +301,7 @@
                 Background="#3D1B1B21"
                 BorderBrush="{StaticResource BrushGlassBorder}"
                 BorderThickness="0,0,1,0">
-            <Grid Margin="18,18,18,20">
+            <Grid Margin="12,14,12,16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
                     <RowDefinition Height="Auto" />
@@ -355,7 +391,7 @@
         </Border>
 
         <!-- 内容区 -->
-        <Grid Grid.Column="1" Margin="28,26,0,24">
+        <Grid Grid.Column="1" Margin="22,22,0,22">
             <Grid x:Name="RoomPage">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto" />
@@ -385,20 +421,30 @@
                     </StackPanel>
                 </DockPanel>
 
-                <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,24,10">
-                    <RadioButton x:Name="StateTabButton" Content="状态" GroupName="RoomTabs"
-                                 Style="{StaticResource RoomTab}" IsChecked="True" Checked="StateTab_Checked" />
-                    <RadioButton x:Name="RoomTabButton" Content="房间" GroupName="RoomTabs"
-                                 Style="{StaticResource RoomTab}" Checked="RoomTab_Checked" />
-                    <RadioButton x:Name="LogTabButton" Content="日志" GroupName="RoomTabs"
-                                 Style="{StaticResource RoomTab}" Checked="LogTab_Checked" />
-                    <RadioButton x:Name="ChatTabButton" Content="聊天" GroupName="RoomTabs"
-                                 Style="{StaticResource RoomTab}" Checked="ChatTab_Checked" />
-                </StackPanel>
+                <Border Grid.Row="1" Grid.RowSpan="2" Margin="0,0,28,0"
+                        Background="{StaticResource BrushGlassSurface}"
+                        BorderBrush="{StaticResource BrushGlassBorder}"
+                        BorderThickness="1"
+                        CornerRadius="{StaticResource RadiusLg}" />
+
+                <Grid Grid.Row="1" Margin="12,8,40,0">
+                    <Border Height="1" VerticalAlignment="Bottom"
+                            Background="{StaticResource BrushGlassBorder}" />
+                    <StackPanel Orientation="Horizontal">
+                        <RadioButton x:Name="StateTabButton" Content="状态" GroupName="RoomTabs"
+                                     Style="{StaticResource RoomTab}" IsChecked="True" Checked="StateTab_Checked" />
+                        <RadioButton x:Name="RoomTabButton" Content="房间" GroupName="RoomTabs"
+                                     Style="{StaticResource RoomTab}" Checked="RoomTab_Checked" />
+                        <RadioButton x:Name="LogTabButton" Content="日志" GroupName="RoomTabs"
+                                     Style="{StaticResource RoomTab}" Checked="LogTab_Checked" />
+                        <RadioButton x:Name="ChatTabButton" Content="聊天" GroupName="RoomTabs"
+                                     Style="{StaticResource RoomTab}" Checked="ChatTab_Checked" />
+                    </StackPanel>
+                </Grid>
 
                 <ScrollViewer Grid.Row="2" x:Name="StateTabContent"
                               VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Margin="0,0,24,0">
+                    <StackPanel Margin="14,6,42,16">
                         <Border Style="{StaticResource Card}" Padding="14" Margin="0,0,0,16">
                             <StackPanel>
                                 <Grid>
@@ -514,7 +560,7 @@
                                 </Style.Triggers>
                             </Style>
                         </ScrollViewer.Style>
-                    <StackPanel Margin="0,0,24,0">
+                    <StackPanel Margin="14,6,42,16">
                     <Border Style="{StaticResource Card}" Margin="0,0,0,0">
                         <DockPanel>
                             <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
@@ -571,7 +617,8 @@
 
                                                     <StackPanel Grid.Column="1" VerticalAlignment="Center">
                                                         <StackPanel Orientation="Horizontal">
-                                                            <TextBlock Text="{Binding Name}" FontSize="{StaticResource FontSizeLg}" FontWeight="SemiBold" />
+                                                            <TextBlock Text="{Binding Name}" Foreground="#FFFFFF"
+                                                                       FontSize="{StaticResource FontSizeLg}" FontWeight="SemiBold" />
                                                             <Border Background="{StaticResource BrushSurface}" CornerRadius="{StaticResource RadiusSm}"
                                                                     Padding="5,1" Margin="8,0,0,0" VerticalAlignment="Center">
                                                                 <TextBlock Text="{Binding DeviceLabel}" Style="{StaticResource Label}" FontSize="{StaticResource FontSizeXs}" />
@@ -612,7 +659,7 @@
                 </Grid>
 
                 <Grid Grid.Row="2" x:Name="LogTabContent" Visibility="Collapsed">
-                    <Border Style="{StaticResource Card}" Padding="14" Margin="0,0,24,0">
+                    <Border Style="{StaticResource Card}" Padding="14" Margin="14,6,42,16">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <ItemsControl ItemsSource="{Binding RoomLogs}">
                                 <ItemsControl.ItemTemplate>
@@ -635,7 +682,7 @@
                 </Grid>
 
                 <Grid Grid.Row="2" x:Name="ChatTabContent" Visibility="Collapsed">
-                    <local:ChatPanel Margin="0,0,24,0" />
+                    <local:ChatPanel Margin="14,6,42,16" />
                 </Grid>
             </Grid>
 
@@ -682,7 +729,8 @@
                                        HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
-                            <TextBlock Text="{Binding Name}" FontSize="{StaticResource FontSizeLg}" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding Name}" Foreground="#FFFFFF"
+                                       FontSize="{StaticResource FontSizeLg}" FontWeight="SemiBold" />
                             <TextBlock Text="{Binding DeviceLabel}" Style="{StaticResource Label}" />
                         </StackPanel>
                         <Button Grid.Column="2" Content="戳一下" Click="PokeMember_Click"

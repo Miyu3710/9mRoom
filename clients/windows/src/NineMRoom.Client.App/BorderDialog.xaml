@@ -8,7 +8,11 @@
         ResizeMode="NoResize" ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
         Foreground="{StaticResource BrushText}"
-        FontFamily="{StaticResource FontUi}">
+        FontFamily="{StaticResource FontUi}"
+        TextOptions.TextFormattingMode="Ideal"
+        TextOptions.TextRenderingMode="ClearType"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True">
     <Window.Resources>
         <Style x:Key="Label" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />

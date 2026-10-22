@@ -53,13 +53,14 @@ public sealed class TrayIcon : IDisposable
         _menu = new ContextMenuStrip
         {
             Renderer = new DarkMenuRenderer(),
-            BackColor = Color.FromArgb(28, 28, 32),
-            ForeColor = Color.FromArgb(238, 238, 242),
-            Font = new Font("Microsoft YaHei UI", 9.25f, FontStyle.Regular, GraphicsUnit.Point),
+            BackColor = Color.FromArgb(29, 29, 35),
+            ForeColor = Color.FromArgb(243, 243, 246),
+            Font = new Font("Noto Sans SC", 9.5f, FontStyle.Regular, GraphicsUnit.Point),
             ShowImageMargin = false,
             ShowCheckMargin = true,
-            Padding = new Padding(5, 5, 5, 5),
-            ImageScalingSize = new Size(16, 16)
+            Padding = new Padding(7, 7, 7, 7),
+            ImageScalingSize = new Size(16, 16),
+            MinimumSize = new Size(220, 0)
         };
         _menu.Opened += (_, _) => ApplyRoundedRegion();
 
@@ -110,7 +111,7 @@ public sealed class TrayIcon : IDisposable
                      showItem, _pauseItem, _invisibleItem, _overlayItem, _clickThroughItem, exitItem
                  })
         {
-            item.Padding = new Padding(2, 5, 8, 5);
+            item.Padding = new Padding(10, 7, 12, 7);
         }
 
         _menu.Items.Add(showItem);
@@ -154,7 +155,7 @@ public sealed class TrayIcon : IDisposable
     private static ToolStripSeparator CreateSeparator() => new()
     {
         AutoSize = false,
-        Height = 7,
+        Height = 9,
         Margin = new Padding(0, 2, 0, 2)
     };
 

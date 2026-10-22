@@ -13,7 +13,7 @@
         ResizeMode="NoResize"
         Width="420"
         SizeToContent="Height"
-        FontFamily="{StaticResource FontUi}"
+        FontFamily="Microsoft YaHei UI"
         Cursor="SizeAll">
 
     <Window.Resources>

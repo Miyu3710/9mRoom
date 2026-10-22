@@ -6,9 +6,9 @@ namespace NineMRoom.Client.App;
 
 internal sealed class DarkMenuColorTable : ProfessionalColorTable
 {
-    private static readonly Color Background = Color.FromArgb(28, 28, 32);
-    private static readonly Color Selection = Color.FromArgb(51, 53, 66);
-    private static readonly Color Border = Color.FromArgb(74, 76, 90);
+    private static readonly Color Background = Color.FromArgb(29, 29, 35);
+    private static readonly Color Selection = Color.FromArgb(51, 55, 71);
+    private static readonly Color Border = Color.FromArgb(75, 78, 96);
 
     public override Color ToolStripDropDownBackground => Background;
     public override Color MenuItemSelected => Selection;
@@ -25,12 +25,12 @@ internal sealed class DarkMenuColorTable : ProfessionalColorTable
 
 internal sealed class DarkMenuRenderer : ToolStripProfessionalRenderer
 {
-    private static readonly Color Background = Color.FromArgb(28, 28, 32);
-    private static readonly Color Border = Color.FromArgb(74, 76, 90);
-    private static readonly Color Text = Color.FromArgb(238, 238, 242);
+    private static readonly Color Background = Color.FromArgb(29, 29, 35);
+    private static readonly Color Border = Color.FromArgb(75, 78, 96);
+    private static readonly Color Text = Color.FromArgb(243, 243, 246);
     private static readonly Color TextDisabled = Color.FromArgb(132, 132, 146);
-    private static readonly Color Selection = Color.FromArgb(51, 53, 66);
-    private static readonly Color Check = Color.FromArgb(198, 198, 208);
+    private static readonly Color Selection = Color.FromArgb(51, 55, 71);
+    private static readonly Color Check = Color.FromArgb(124, 156, 255);
 
     public DarkMenuRenderer() : base(new DarkMenuColorTable())
     {
@@ -40,7 +40,7 @@ internal sealed class DarkMenuRenderer : ToolStripProfessionalRenderer
     protected override void OnRenderToolStripBackground(ToolStripRenderEventArgs e)
     {
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        using var path = Rounded(e.AffectedBounds, 10);
+        using var path = Rounded(e.AffectedBounds, 12);
         using var brush = new SolidBrush(Background);
         e.Graphics.FillPath(brush, path);
     }
@@ -48,7 +48,7 @@ internal sealed class DarkMenuRenderer : ToolStripProfessionalRenderer
     protected override void OnRenderToolStripBorder(ToolStripRenderEventArgs e)
     {
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        using var path = Rounded(new Rectangle(0, 0, e.ToolStrip.Width - 1, e.ToolStrip.Height - 1), 10);
+        using var path = Rounded(new Rectangle(0, 0, e.ToolStrip.Width - 1, e.ToolStrip.Height - 1), 12);
         using var pen = new Pen(Border);
         e.Graphics.DrawPath(pen, path);
     }
@@ -61,8 +61,8 @@ internal sealed class DarkMenuRenderer : ToolStripProfessionalRenderer
         }
 
         e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
-        var bounds = new Rectangle(3, 1, Math.Max(1, e.Item.Width - 6), Math.Max(1, e.Item.Height - 2));
-        using var path = Rounded(bounds, 6);
+        var bounds = new Rectangle(5, 1, Math.Max(1, e.Item.Width - 10), Math.Max(1, e.Item.Height - 2));
+        using var path = Rounded(bounds, 8);
         using var brush = new SolidBrush(Selection);
         e.Graphics.FillPath(brush, path);
     }
@@ -77,7 +77,7 @@ internal sealed class DarkMenuRenderer : ToolStripProfessionalRenderer
     {
         using var font = new Font("Segoe UI Symbol", 9.5f, FontStyle.Regular, GraphicsUnit.Point);
         var size = TextRenderer.MeasureText("✓", font, new Size(int.MaxValue, int.MaxValue), TextFormatFlags.NoPadding);
-        var x = 7;
+        var x = 9;
         var y = Math.Max(1, (e.Item.Height - size.Height) / 2);
         TextRenderer.DrawText(
             e.Graphics,
@@ -92,7 +92,7 @@ internal sealed class DarkMenuRenderer : ToolStripProfessionalRenderer
     {
         var y = Math.Max(1, e.Item.Height / 2);
         using var pen = new Pen(Border);
-        e.Graphics.DrawLine(pen, 12, y, Math.Max(13, e.Item.Width - 12), y);
+        e.Graphics.DrawLine(pen, 14, y, Math.Max(15, e.Item.Width - 14), y);
     }
 
     private static GraphicsPath Rounded(Rectangle bounds, int radius)
