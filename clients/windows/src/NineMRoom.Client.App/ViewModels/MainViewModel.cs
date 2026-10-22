@@ -8,6 +8,7 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Threading;
+using System.Xml.Linq;
 using NineMRoom.Client.Core;
 using WpfApplication = System.Windows.Application;
 
@@ -2200,9 +2201,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(12) };
             using var request = new HttpRequestMessage(
                 HttpMethod.Get,
-                "https://api.github.com/repos/Miyu3710/9mRoom/releases/latest");
+                "https://github.com/Miyu3710/9mRoom/releases.atom");
             request.Headers.UserAgent.ParseAdd("9mRoom/" + VersionText);
-            request.Headers.Accept.ParseAdd("application/vnd.github+json");
 
             using var response = await http.SendAsync(request);
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
@@ -2217,39 +2217,22 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 return;
             }
 
-            using var document = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
-            var root = document.RootElement;
-            var tag = root.TryGetProperty("tag_name", out var tagElement)
-                ? tagElement.GetString() ?? string.Empty
-                : string.Empty;
-            var releaseUrl = root.TryGetProperty("html_url", out var urlElement)
-                ? urlElement.GetString() ?? string.Empty
-                : string.Empty;
-
-            var assetUrl = string.Empty;
-            if (root.TryGetProperty("assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
+            XNamespace ns = "http://www.w3.org/2005/Atom";
+            var document = XDocument.Parse(await response.Content.ReadAsStringAsync());
+            var entry = document.Root?.Elements(ns + "entry").FirstOrDefault();
+            if (entry is null)
             {
-                foreach (var asset in assets.EnumerateArray())
-                {
-                    var name = asset.TryGetProperty("name", out var nameElement)
-                        ? nameElement.GetString() ?? string.Empty
-                        : string.Empty;
-                    if (!name.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))
-                    {
-                        continue;
-                    }
-
-                    assetUrl = asset.TryGetProperty("browser_download_url", out var downloadElement)
-                        ? downloadElement.GetString() ?? string.Empty
-                        : string.Empty;
-                    if (!string.IsNullOrWhiteSpace(assetUrl))
-                    {
-                        break;
-                    }
-                }
+                _updateStatusText = "GitHub 上还没有发布版本";
+                return;
             }
 
-            _updateDownloadUrl = string.IsNullOrWhiteSpace(assetUrl) ? releaseUrl : assetUrl;
+            var title = entry.Element(ns + "title")?.Value.Trim() ?? string.Empty;
+            var releaseUrl = entry.Elements(ns + "link")
+                .FirstOrDefault(link => string.Equals((string?)link.Attribute("rel"), "alternate", StringComparison.Ordinal))
+                ?.Attribute("href")?.Value ?? string.Empty;
+            var tag = title.Split(' ', StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? title;
+
+            _updateDownloadUrl = releaseUrl;
             if (!TryParseVersion(tag, out var latest) || !TryParseVersion(VersionText, out var current))
             {
                 _updateStatusText = "已获取发布信息，但版本号无法比较";
@@ -2259,7 +2242,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             if (latest > current)
             {
                 _isUpdateAvailable = true;
-                _updateStatusText = $"发现新版本 {tag}";
+                _updateStatusText = $"发现新版本 {title}";
             }
             else
             {
