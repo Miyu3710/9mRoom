@@ -47,10 +47,10 @@ class PresenceSocket(
         })
     }
 
-    fun sendPresence(mode: String, blocks: JSONArray) {
+    fun sendPresence(mode: String, blocks: JSONArray, focusSecondsToday: Long = 0) {
         val payload = JSONObject()
             .put("mode", mode)
-            .put("focusSecondsToday", 0)
+            .put("focusSecondsToday", focusSecondsToday)
             .put(
                 "status",
                 JSONObject()

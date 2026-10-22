@@ -221,6 +221,7 @@ fun NineRoomApp(
                             members = state.members,
                             selfId = state.selfId,
                             selfMode = state.selfMode,
+                            currentTodo = state.currentTodo,
                             onCopyRoomCode = {
                                 if (state.roomCode.isNotBlank()) {
                                     clipboard.setText(AnnotatedString(state.roomCode))
@@ -232,7 +233,9 @@ fun NineRoomApp(
                             onModeChange = roomViewModel::setMode,
                         )
                     }
-                    composable(Destination.Focus.route) { FocusScreen() }
+                    composable(Destination.Focus.route) {
+                        FocusScreen(onTimerChanged = roomViewModel::refreshPresence)
+                    }
                     composable(Destination.Todo.route) { TodoScreen() }
                     composable(Destination.Room.route) {
                         RoomScreen(

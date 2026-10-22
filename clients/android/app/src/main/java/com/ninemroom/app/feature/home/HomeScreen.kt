@@ -59,6 +59,7 @@ fun HomeScreen(
     members: List<RoomMember>,
     selfId: String?,
     selfMode: String,
+    currentTodo: String,
     onCopyRoomCode: () -> Unit,
     onModeChange: (String) -> Unit,
 ) {
@@ -89,6 +90,7 @@ fun HomeScreen(
             MyStatusCard(
                 self = self,
                 selfMode = selfMode,
+                currentTodo = currentTodo,
                 onModeChange = onModeChange,
                 onEdit = { showStatusEditor = true },
             )
@@ -225,6 +227,7 @@ private fun MemberRow(members: List<RoomMember>) {
 private fun MyStatusCard(
     self: RoomMember?,
     selfMode: String,
+    currentTodo: String,
     onModeChange: (String) -> Unit,
     onEdit: () -> Unit,
 ) {
@@ -273,7 +276,7 @@ private fun MyStatusCard(
             Spacer(Modifier.height(12.dp))
 
             Row {
-                StatusMetric("当前待办", "完善 Android 首页", Modifier.weight(1f))
+                StatusMetric("当前待办", currentTodo.ifBlank { "暂无待办" }, Modifier.weight(1f))
                 StatusMetric(
                     "今日专注",
                     formatFocus(self?.focusSecondsToday ?: 0),

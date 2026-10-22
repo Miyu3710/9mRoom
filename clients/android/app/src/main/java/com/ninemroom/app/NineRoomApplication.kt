@@ -1,13 +1,21 @@
 package com.ninemroom.app
 
 import android.app.Application
+import com.ninemroom.app.data.FocusTimerController
+import com.ninemroom.app.data.TodoStore
 
 class NineRoomApplication : Application() {
     lateinit var roomController: RoomController
         private set
+    lateinit var todoStore: TodoStore
+        private set
+    lateinit var focusTimer: FocusTimerController
+        private set
 
     override fun onCreate() {
         super.onCreate()
-        roomController = RoomController(this)
+        todoStore = TodoStore(this)
+        focusTimer = FocusTimerController(this)
+        roomController = RoomController(this, todoStore, focusTimer)
     }
 }

@@ -5,6 +5,7 @@ import androidx.core.content.ContextCompat
 import com.ninemroom.app.data.AppSettings
 import com.ninemroom.app.data.ChatLine
 import com.ninemroom.app.data.ConnectionStatus
+import com.ninemroom.app.data.FocusTimerController
 import com.ninemroom.app.data.ForegroundAppReader
 import com.ninemroom.app.data.LogLine
 import com.ninemroom.app.data.MediaReader
@@ -13,6 +14,7 @@ import com.ninemroom.app.data.RoomApi
 import com.ninemroom.app.data.RoomInfo
 import com.ninemroom.app.data.RoomMember
 import com.ninemroom.app.data.ServerAddress
+import com.ninemroom.app.data.TodoStore
 import com.ninemroom.app.data.nowTime
 import com.ninemroom.app.data.parseMember
 import com.ninemroom.app.data.parseMembers
@@ -26,6 +28,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -50,6 +53,7 @@ data class RoomUiState(
     val notifyRoomEvents: Boolean = true,
     val shareApp: Boolean = true,
     val shareMusic: Boolean = true,
+    val currentTodo: String = "",
 ) {
     val self: RoomMember?
         get() = members.firstOrNull { it.id == selfId }
@@ -58,7 +62,11 @@ data class RoomUiState(
         get() = members.count { it.online }
 }
 
-class RoomController(context: Context) {
+class RoomController(
+    context: Context,
+    private val todoStore: TodoStore,
+    private val focusTimer: FocusTimerController,
+) {
     private val appContext = context.applicationContext
     private val settings = AppSettings(appContext)
     private val api = RoomApi()
@@ -76,6 +84,7 @@ class RoomController(context: Context) {
             notifyRoomEvents = settings.notifyRoomEvents,
             shareApp = settings.shareApp,
             shareMusic = settings.shareMusic,
+            currentTodo = todoStore.current()?.title.orEmpty(),
         ),
     )
     val state: StateFlow<RoomUiState> = _state.asStateFlow()
@@ -88,6 +97,16 @@ class RoomController(context: Context) {
     private var opened = false
 
     init {
+        scope.launch {
+            todoStore.items.collectLatest { items ->
+                val current = todoStore.current()?.title.orEmpty()
+                _state.update { it.copy(currentTodo = current) }
+                if (_state.value.status == ConnectionStatus.Connected) {
+                    sendPresence()
+                }
+            }
+        }
+
         if (settings.serverUrl.isNotBlank() &&
             settings.roomCode.isNotBlank() &&
             settings.displayName.isNotBlank()
@@ -246,7 +265,11 @@ class RoomController(context: Context) {
     }
 
     private fun sendPresence() {
-        socket?.sendPresence(_state.value.selfMode, buildStatusBlocks())
+        socket?.sendPresence(
+            mode = _state.value.selfMode,
+            blocks = buildStatusBlocks(),
+            focusSecondsToday = focusTimer.focusSecondsToday(),
+        )
     }
 
     private fun buildStatusBlocks(): JSONArray {
@@ -297,6 +320,39 @@ class RoomController(context: Context) {
                         ),
                 )
             }
+        }
+
+        val todo = todoStore.current()?.title.orEmpty()
+        if (todo.isNotBlank()) {
+            blocks.put(
+                JSONObject()
+                    .put("id", "todo")
+                    .put("type", "todo")
+                    .put("template", "📚 {todo}")
+                    .put(
+                        "data",
+                        JSONObject().put("text", todo),
+                    ),
+            )
+        }
+
+        val focus = focusTimer.state.value
+        if (focus.running || focus.remainingSeconds < focus.durationSeconds) {
+            val elapsedSeconds = (focus.durationSeconds - focus.remainingSeconds).coerceAtLeast(0)
+            val startedAt = System.currentTimeMillis() - elapsedSeconds * 1000L
+            blocks.put(
+                JSONObject()
+                    .put("id", "timer")
+                    .put("type", "timer")
+                    .put("template", "⏱ {remaining}")
+                    .put(
+                        "data",
+                        JSONObject()
+                            .put("mode", "focus")
+                            .put("startedAt", startedAt)
+                            .put("durationMinutes", focus.durationSeconds / 60),
+                    ),
+            )
         }
 
         return blocks

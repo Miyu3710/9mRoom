@@ -17,6 +17,7 @@ import com.ninemroom.app.data.modeLabel
 object NotificationCenter {
     const val CHANNEL_PRESENCE = "presence"
     const val CHANNEL_ROOM_EVENTS = "room_events"
+    const val CHANNEL_FOCUS = "focus"
     const val PRESENCE_ID = 1001
 
     fun ensureChannels(context: Context) {
@@ -39,6 +40,15 @@ object NotificationCenter {
                 NotificationManager.IMPORTANCE_DEFAULT,
             ).apply {
                 description = "成员进入或离开房间"
+            },
+        )
+        manager.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_FOCUS,
+                "专注提醒",
+                NotificationManager.IMPORTANCE_DEFAULT,
+            ).apply {
+                description = "专注计时结束"
             },
         )
     }
@@ -90,5 +100,26 @@ object NotificationCenter {
             .build()
         NotificationManagerCompat.from(context)
             .notify(text.hashCode(), notification)
+    }
+
+    fun focusDone(context: Context) {
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
+        ensureChannels(context)
+        val openIntent = PendingIntent.getActivity(
+            context,
+            2,
+            Intent(context, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notification = NotificationCompat.Builder(context, CHANNEL_FOCUS)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle("专注结束")
+            .setContentText("这一轮完成了，起来活动一下。")
+            .setContentIntent(openIntent)
+            .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .build()
+        NotificationManagerCompat.from(context)
+            .notify(2001, notification)
     }
 }

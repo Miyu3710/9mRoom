@@ -14,6 +14,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.PushPin
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
@@ -28,34 +29,25 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
-
-data class TodoItem(
-    val id: Long,
-    val title: String,
-    val subtasks: List<String> = emptyList(),
-    val completed: Boolean = false,
-    val pinned: Boolean = false,
-)
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ninemroom.app.NineRoomApplication
+import com.ninemroom.app.data.TodoItem
+import com.ninemroom.app.data.TodoStore
 
 @Composable
 fun TodoScreen() {
-    val todos = remember {
-        mutableStateListOf(
-            TodoItem(1, "完善 Android 首页", listOf("房间卡片", "成员横条"), pinned = true),
-            TodoItem(2, "整理同步列表模板"),
-            TodoItem(3, "阅读 Material You 指南"),
-        )
-    }
+    val context = LocalContext.current
+    val store = (context.applicationContext as NineRoomApplication).todoStore
+    val todos by store.items.collectAsStateWithLifecycle()
     var showAdd by rememberSaveable { mutableStateOf(false) }
     var draft by rememberSaveable { mutableStateOf("") }
 
@@ -76,18 +68,24 @@ fun TodoScreen() {
                 }
             }
 
-            items(todos, key = { it.id }) { todo ->
-                TodoCard(
-                    todo = todo,
-                    onToggle = {
-                        val index = todos.indexOfFirst { it.id == todo.id }
-                        if (index >= 0) todos[index] = todos[index].copy(completed = !todos[index].completed)
-                    },
-                    onPin = {
-                        val index = todos.indexOfFirst { it.id == todo.id }
-                        if (index >= 0) todos[index] = todos[index].copy(pinned = !todos[index].pinned)
-                    },
-                )
+            if (todos.isEmpty()) {
+                item {
+                    Text(
+                        "还没有待办，点右下角添加一条。",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(vertical = 24.dp),
+                    )
+                }
+            } else {
+                items(todos, key = { it.id }) { todo ->
+                    TodoCard(
+                        todo = todo,
+                        onToggle = { store.toggle(todo.id) },
+                        onPin = { store.togglePin(todo.id) },
+                        onDelete = { store.delete(todo.id) },
+                    )
+                }
             }
         }
 
@@ -116,9 +114,7 @@ fun TodoScreen() {
             confirmButton = {
                 TextButton(
                     onClick = {
-                        if (draft.isNotBlank()) {
-                            todos.add(0, TodoItem(System.currentTimeMillis(), draft.trim()))
-                        }
+                        store.add(draft)
                         draft = ""
                         showAdd = false
                     },
@@ -136,6 +132,7 @@ private fun TodoCard(
     todo: TodoItem,
     onToggle: () -> Unit,
     onPin: () -> Unit,
+    onDelete: () -> Unit,
 ) {
     Card(
         colors = CardDefaults.cardColors(
@@ -149,7 +146,7 @@ private fun TodoCard(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
-            modifier = Modifier.padding(start = 8.dp, end = 8.dp, top = 10.dp, bottom = 10.dp),
+            modifier = Modifier.padding(start = 8.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
             verticalAlignment = Alignment.Top,
         ) {
             Checkbox(checked = todo.completed, onCheckedChange = { onToggle() })
@@ -192,7 +189,14 @@ private fun TodoCard(
                     modifier = Modifier.size(19.dp),
                 )
             }
+            IconButton(onClick = onDelete) {
+                Icon(
+                    Icons.Outlined.Delete,
+                    contentDescription = "删除",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(19.dp),
+                )
+            }
         }
     }
 }
-
