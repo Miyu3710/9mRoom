@@ -1,5 +1,7 @@
 package com.ninemroom.app.feature.settings
 
+import android.content.Intent
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,6 +23,7 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -28,17 +31,23 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.ninemroom.app.data.ConnectionStatus
+import com.ninemroom.app.data.UpdateChecker
+import com.ninemroom.app.data.UpdateInfo
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
@@ -66,6 +75,16 @@ fun SettingsScreen(
 ) {
     var boot by rememberSaveable { mutableStateOf(true) }
     var focusNotify by rememberSaveable { mutableStateOf(true) }
+    var checkingUpdate by remember { mutableStateOf(false) }
+    var updateStatus by remember { mutableStateOf("") }
+    var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val currentVersion = remember {
+        runCatching {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+        }.getOrNull().orEmpty().ifBlank { "1.0.0" }
+    }
 
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
@@ -201,13 +220,41 @@ fun SettingsScreen(
             SettingsCard("关于", Icons.Outlined.Info) {
                 SettingAction(
                     title = "版本",
-                    description = "1.0.0",
+                    description = currentVersion,
                 )
                 SettingAction(
                     title = "检查更新",
-                    description = "从 GitHub Releases 获取最新 APK",
+                    description = if (checkingUpdate) "正在检查…" else "从 GitHub Releases 获取最新 APK",
                     icon = Icons.AutoMirrored.Outlined.OpenInNew,
+                    onClick = {
+                        if (checkingUpdate) return@SettingAction
+                        checkingUpdate = true
+                        updateStatus = "正在检查更新…"
+                        scope.launch {
+                            try {
+                                val info = UpdateChecker.check(currentVersion)
+                                if (info == null) {
+                                    updateStatus = "已是最新版本（$currentVersion）"
+                                } else {
+                                    updateInfo = info
+                                    updateStatus = "发现新版本 ${info.latestVersion}"
+                                }
+                            } catch (error: Exception) {
+                                updateStatus = "检查失败：${error.message ?: "网络错误"}"
+                            } finally {
+                                checkingUpdate = false
+                            }
+                        }
+                    },
                 )
+                if (updateStatus.isNotBlank()) {
+                    Text(
+                        updateStatus,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(top = 4.dp, bottom = 4.dp),
+                    )
+                }
                 SettingAction(
                     title = "开源许可",
                     description = "查看使用的开源组件",
@@ -216,6 +263,29 @@ fun SettingsScreen(
         }
 
         item { Spacer(Modifier.height(72.dp)) }
+    }
+
+    updateInfo?.let { info ->
+        AlertDialog(
+            onDismissRequest = { updateInfo = null },
+            title = { Text("发现新版本") },
+            text = { Text("最新版本 ${info.latestVersion}\n\n是否前往 GitHub Releases 下载 APK？") },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        updateInfo = null
+                        runCatching {
+                            context.startActivity(
+                                Intent(Intent.ACTION_VIEW, Uri.parse(info.releaseUrl)),
+                            )
+                        }
+                    },
+                ) { Text("前往下载") }
+            },
+            dismissButton = {
+                TextButton(onClick = { updateInfo = null }) { Text("稍后") }
+            },
+        )
     }
 }
 

@@ -23,6 +23,7 @@ Material You 界面 + 基础房间协议已跑通。
 - 通知使用权读取当前媒体会话，生成音乐状态块
 - 待办本地持久化（SharedPreferences）
 - 专注计时器持久化，计时块上报，完成通知
+- GitHub Releases 检查更新，发现新版本打开 Release 页面
 - 通知权限、悬浮窗权限、使用情况访问、通知使用权入口
 - 设置中的常驻通知、悬浮窗、共享当前应用、共享音乐开关
 
@@ -31,9 +32,9 @@ Material You 界面 + 基础房间协议已跑通。
 - 应用分类管理页还未实现
 - 待办子任务编辑、起止时间还未实现
 - 开机自启还未接 `BOOT_COMPLETED`
-- 检查更新入口还未接 GitHub Releases
-- 悬浮窗目前的权限申请与显示已接，但点击悬浮条还没有跳转回房间
+- 悬浮条已支持点击回到房间
 - 应用识别只映射内置的常见包名，未知应用统一归为“其他应用”，不会上传原包名
+- 更新下载目前跳转 GitHub Release 页面，未做应用内 APK 下载与安装
 
 ## 包名
 
@@ -72,6 +73,7 @@ app/src/main/java/com/ninemroom/app/
     RoomApi.kt
     RoomModels.kt
     TodoStore.kt
+    UpdateChecker.kt
   ui/
     NineRoomApp.kt
     theme/

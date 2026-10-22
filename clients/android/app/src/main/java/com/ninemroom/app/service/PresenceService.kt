@@ -110,6 +110,15 @@ class PresenceService : Service() {
                 }
                 elevation = 8f
                 isClickable = true
+                setOnClickListener {
+                    startActivity(
+                        android.content.Intent(this@PresenceService, com.ninemroom.app.MainActivity::class.java)
+                            .addFlags(
+                                android.content.Intent.FLAG_ACTIVITY_NEW_TASK or
+                                    android.content.Intent.FLAG_ACTIVITY_SINGLE_TOP,
+                            ),
+                    )
+                }
                 setOnTouchListener(DragTouchListener())
             }
             val params = WindowManager.LayoutParams(
