@@ -10,7 +10,7 @@
             <Setter Property="Background" Value="{StaticResource BrushGlassSurface}" />
             <Setter Property="BorderBrush" Value="{StaticResource BrushGlassBorder}" />
             <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
+            <Setter Property="CornerRadius" Value="{StaticResource RadiusLg}" />
             <Setter Property="Padding" Value="18" />
             <Setter Property="Margin" Value="0,0,0,14" />
         </Style>
@@ -51,13 +51,16 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}"
-                                CornerRadius="{StaticResource RadiusSm}"
+                                CornerRadius="8"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.88" />
+                                <Setter Property="Opacity" Value="0.9" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Opacity" Value="0.78" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -87,10 +90,10 @@
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <TextBlock Grid.Row="0" Text="设置" FontSize="{StaticResource FontSizeTitle}" FontWeight="SemiBold" Margin="0,0,24,16" />
+        <TextBlock Grid.Row="0" Text="设置" FontSize="{StaticResource FontSizeTitle}" FontWeight="SemiBold" Margin="0,0,28,18" />
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Margin="0,0,24,0">
+            <StackPanel Margin="0,0,28,0">
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
                         <TextBlock Text="启动与常驻" Style="{StaticResource SectionTitle}" />
