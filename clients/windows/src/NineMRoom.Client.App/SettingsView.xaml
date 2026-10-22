@@ -200,7 +200,7 @@
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
                             <Button Content="检查更新" Click="CheckUpdate_Click"
                                     Style="{StaticResource ModernButton}" Margin="0,0,8,0" />
-                            <Button Content="前往下载" Click="DownloadUpdate_Click"
+                            <Button Content="下载更新" Click="DownloadUpdate_Click"
                                     Style="{StaticResource ModernPrimaryButton}"
                                     Visibility="{Binding IsUpdateAvailable, Converter={StaticResource BoolToVisibility}}" />
                         </StackPanel>

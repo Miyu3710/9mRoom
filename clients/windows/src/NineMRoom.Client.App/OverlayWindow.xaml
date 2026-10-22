@@ -143,11 +143,17 @@
                     </Ellipse.Style>
                 </Ellipse>
             </Grid>
-            <ScrollViewer MaxHeight="360" VerticalScrollBarVisibility="Auto">
+            <ScrollViewer x:Name="MembersScroll" MaxHeight="360" VerticalScrollBarVisibility="Auto">
                 <ItemsControl x:Name="MembersList"
                               ItemsSource="{Binding Members}"
                               ItemTemplate="{StaticResource TwoLineTemplate}" />
             </ScrollViewer>
+            <TextBlock x:Name="CompactInfo"
+                       Text="{Binding MemberCountText}"
+                       Foreground="{DynamicResource OverlayMutedBrush}"
+                       FontFamily="{DynamicResource OverlayFontFamily}"
+                       FontSize="{StaticResource FontSizeXs}"
+                       Visibility="Collapsed" />
         </StackPanel>
     </Border>
 </Window>

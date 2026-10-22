@@ -515,6 +515,41 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         set => SetProperty(ref _selectedMember, value);
     }
 
+    private string _pokeStatusText = string.Empty;
+    private DateTimeOffset _lastPokeAt = DateTimeOffset.MinValue;
+
+    public string PokeStatusText
+    {
+        get => _pokeStatusText;
+        private set => SetProperty(ref _pokeStatusText, value);
+    }
+
+    public async Task PokeSelectedAsync()
+    {
+        var member = SelectedMember;
+        if (member is null || !member.CanPoke)
+        {
+            return;
+        }
+
+        if (_client is not { IsConnected: true })
+        {
+            PokeStatusText = "当前未连接，无法戳一下。";
+            return;
+        }
+
+        var now = DateTimeOffset.UtcNow;
+        if (now - _lastPokeAt < TimeSpan.FromSeconds(2))
+        {
+            PokeStatusText = "戳得太快了，2 秒后再试。";
+            return;
+        }
+
+        _lastPokeAt = now;
+        PokeStatusText = $"已戳 {member.Name} 一下。";
+        await _client.SendPokeAsync(member.Id);
+    }
+
     public bool IsMemberDrawerOpen
     {
         get => _memberDrawerOpen;
@@ -524,6 +559,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public void OpenMemberDrawer(MemberItem member)
     {
         SelectedMember = member;
+        PokeStatusText = string.Empty;
         IsMemberDrawerOpen = true;
     }
 
@@ -2323,6 +2359,83 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
     }
 
+    public async Task CheckForUpdatesOnStartupAsync()
+    {
+        await Task.Delay(TimeSpan.FromSeconds(3));
+        await CheckForUpdatesAsync();
+        if (!_isUpdateAvailable)
+        {
+            return;
+        }
+
+        var result = System.Windows.MessageBox.Show(
+            $"检测到新版本：{_updateStatusText}\n\n是否现在下载更新？",
+            "9mRoom 更新",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Information);
+        if (result == MessageBoxResult.Yes)
+        {
+            await DownloadAndInstallUpdateAsync();
+        }
+    }
+
+    public async Task DownloadAndInstallUpdateAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_updateDownloadUrl) ||
+            !_updateDownloadUrl.EndsWith(".msi", StringComparison.OrdinalIgnoreCase))
+        {
+            OpenUpdateDownload();
+            return;
+        }
+
+        var fileName = Path.GetFileName(new Uri(_updateDownloadUrl).LocalPath);
+        if (string.IsNullOrWhiteSpace(fileName))
+        {
+            fileName = $"9mRoom-Setup-{VersionText}.msi";
+        }
+
+        var target = Path.Combine(Path.GetTempPath(), fileName);
+        _updateStatusText = "正在下载更新…";
+        NotifyUpdateState();
+
+        try
+        {
+            using var http = new HttpClient { Timeout = TimeSpan.FromMinutes(5) };
+            using var response = await http.GetAsync(_updateDownloadUrl, HttpCompletionOption.ResponseHeadersRead);
+            response.EnsureSuccessStatusCode();
+
+            await using (var source = await response.Content.ReadAsStreamAsync())
+            await using (var destination = File.Create(target))
+            {
+                await source.CopyToAsync(destination);
+            }
+
+            _updateStatusText = "更新下载完成，等待安装确认";
+            NotifyUpdateState();
+
+            var result = System.Windows.MessageBox.Show(
+                $"更新已下载完成：\n{target}\n\n是否现在更新？安装程序会关闭 9mRoom。",
+                "9mRoom 更新",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Question);
+            if (result != MessageBoxResult.Yes)
+            {
+                return;
+            }
+
+            Process.Start(new ProcessStartInfo("msiexec.exe", $"/i \"{target}\"")
+            {
+                UseShellExecute = true
+            });
+            WpfApplication.Current.Shutdown();
+        }
+        catch (Exception ex)
+        {
+            _updateStatusText = "更新下载失败：" + ex.Message;
+            NotifyUpdateState();
+        }
+    }
+
     private void NotifyUpdateState()
     {
         OnPropertyChanged(nameof(IsCheckingUpdate));
@@ -2966,6 +3079,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             }
         });
         client.Message += message => _dispatcher.Invoke(() => MyStatusText = message);
+        client.PokeReceived += poke => _dispatcher.Invoke(() =>
+        {
+            var name = string.IsNullOrWhiteSpace(poke.From.Name) ? "有人" : poke.From.Name;
+            PokeStatusText = $"{name} 戳了你一下！";
+            NotifySystem("9mRoom", $"{name} 戳了你一下！");
+        });
 
         try
         {
@@ -3257,6 +3376,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             item.DeviceLabel = member.Device == "android" ? "Android" : "Windows";
             item.Initial = string.IsNullOrEmpty(member.Name) ? "?" : member.Name[..1];
             item.IsOnline = member.Online;
+            item.CanPoke = !string.Equals(member.Id, _client?.SelfId, StringComparison.Ordinal);
             item.WindowTitle = member.WindowTitle;
             item.ModeText = member.Mode switch
             {

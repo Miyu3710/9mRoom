@@ -11,6 +11,7 @@ public sealed class MemberItem : ObservableObject
     private string _modeText = string.Empty;
     private string _todayFocusText = string.Empty;
     private bool _isOnline = true;
+    private bool _canPoke;
 
     public string Id { get; init; } = string.Empty;
 
@@ -69,6 +70,12 @@ public sealed class MemberItem : ObservableObject
     }
 
     public bool HasWindowTitle => !string.IsNullOrWhiteSpace(_windowTitle);
+
+    public bool CanPoke
+    {
+        get => _canPoke;
+        set => SetProperty(ref _canPoke, value);
+    }
 
     public bool IsOnline
     {

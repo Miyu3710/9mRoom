@@ -589,6 +589,15 @@
                                 Style="{StaticResource SecondaryButton}" Padding="8,3" />
                     </Grid>
 
+                    <StackPanel Margin="0,0,0,14"
+                                Visibility="{Binding CanPoke, Converter={StaticResource BoolToVisibility}}">
+                        <Button Content="戳一下" Click="PokeMember_Click"
+                                Style="{StaticResource PrimaryButton}" HorizontalAlignment="Left" Padding="16,7" />
+                        <TextBlock Text="{Binding DataContext.PokeStatusText, RelativeSource={RelativeSource AncestorType=Window}}"
+                                   Foreground="{StaticResource BrushAccent}" FontSize="{StaticResource FontSizeSm}"
+                                   TextWrapping="Wrap" Margin="0,6,0,0" />
+                    </StackPanel>
+
                     <StackPanel Orientation="Horizontal" Margin="0,0,0,18">
                         <Border Width="48" Height="48" CornerRadius="{StaticResource RadiusMd}"
                                 Background="{StaticResource BrushAccent}" Margin="0,0,12,0">

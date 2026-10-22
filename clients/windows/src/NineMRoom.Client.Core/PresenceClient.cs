@@ -25,6 +25,17 @@ public sealed record ChatMessage(
     string Text,
     long At);
 
+public sealed record PokeFrom(
+    string Id,
+    string Name,
+    string Device,
+    string Mode);
+
+public sealed record PokeReceived(
+    PokeFrom From,
+    string TargetId,
+    long At);
+
 public sealed class PresenceClient : IAsyncDisposable
 {
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
@@ -70,6 +81,8 @@ public sealed class PresenceClient : IAsyncDisposable
     public event Action<string>? Message;
 
     public event Action<ChatMessage>? ChatReceived;
+
+    public event Action<PokeReceived>? PokeReceived;
 
     public async Task ConnectAsync(CancellationToken cancellationToken)
     {
@@ -141,6 +154,23 @@ public sealed class PresenceClient : IAsyncDisposable
             type = "chat.send",
             ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
             payload = new { text = message }
+        });
+    }
+
+    public async Task SendPokeAsync(string targetId)
+    {
+        var id = (targetId ?? string.Empty).Trim();
+        if (id.Length == 0)
+        {
+            return;
+        }
+
+        await SendMessageAsync(new
+        {
+            v = 1,
+            type = "poke.send",
+            ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            payload = new { targetId = id }
         });
     }
 
@@ -342,6 +372,30 @@ public sealed class PresenceClient : IAsyncDisposable
                                 chatBody,
                                 at));
                         }
+                    }
+
+                    break;
+
+                case "poke.received":
+                    if (root.TryGetProperty("payload", out var poke) &&
+                        poke.ValueKind == JsonValueKind.Object &&
+                        poke.TryGetProperty("from", out var from) &&
+                        from.ValueKind == JsonValueKind.Object)
+                    {
+                        var at = poke.TryGetProperty("at", out var pokeAt) &&
+                                 pokeAt.ValueKind == JsonValueKind.Number &&
+                                 pokeAt.TryGetInt64(out var pokeValue)
+                            ? pokeValue
+                            : DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+                        PokeReceived?.Invoke(new PokeReceived(
+                            new PokeFrom(
+                                Str(from, "id"),
+                                Str(from, "name"),
+                                Str(from, "device"),
+                                Str(from, "mode")),
+                            Str(poke, "targetId"),
+                            at));
                     }
 
                     break;

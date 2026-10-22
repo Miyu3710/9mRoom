@@ -112,10 +112,15 @@ public partial class MainWindow : Window
         if (startMinimized)
         {
             _ = _viewModel.InitializeAsync();
+            _ = _viewModel.CheckForUpdatesOnStartupAsync();
         }
         else
         {
-            Loaded += async (_, _) => await _viewModel.InitializeAsync();
+            Loaded += async (_, _) =>
+            {
+                await _viewModel.InitializeAsync();
+                await _viewModel.CheckForUpdatesOnStartupAsync();
+            };
         }
 
         if (_settings.OverlayEnabled)
@@ -391,6 +396,11 @@ public partial class MainWindow : Window
     }
 
     private void CloseDrawer_Click(object sender, RoutedEventArgs e) => _viewModel.CloseMemberDrawer();
+
+    private async void PokeMember_Click(object sender, RoutedEventArgs e)
+    {
+        await _viewModel.PokeSelectedAsync();
+    }
 
     private void MemberDrawerOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {

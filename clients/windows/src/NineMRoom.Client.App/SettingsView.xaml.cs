@@ -477,5 +477,11 @@ public partial class SettingsView : UserControl
         }
     }
 
-    private void DownloadUpdate_Click(object sender, RoutedEventArgs e) => ViewModel?.OpenUpdateDownload();
+    private async void DownloadUpdate_Click(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel is not null)
+        {
+            await ViewModel.DownloadAndInstallUpdateAsync();
+        }
+    }
 }

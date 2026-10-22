@@ -13,10 +13,13 @@ public partial class OverlayWindow : Window
     private const int WsExTransparent = 0x00000020;
     private const int WsExToolWindow = 0x00000080;
     private const int WsExNoActivate = 0x08000000;
+    private const double SnapThreshold = 26;
+    private const double SnapMargin = 12;
 
     private readonly AppSettings _settings;
     private bool _clickThrough;
     private bool _userMoved;
+    private bool _snapped;
     private string _position = "bottomRight";
 
     public OverlayWindow(MainViewModel viewModel, AppSettings settings)
@@ -71,6 +74,7 @@ public partial class OverlayWindow : Window
         HeaderText.Visibility = theme.ShowHeader ? Visibility.Visible : Visibility.Collapsed;
         MembersList.ItemTemplate = (DataTemplate)FindResource(
             theme.Layout == "oneLine" ? "OneLineTemplate" : "TwoLineTemplate");
+        SetSnapped(false);
         Width = theme.Width;
 
         _position = theme.Position == "bottomCenter" ? "bottomCenter" : "bottomRight";
@@ -116,8 +120,66 @@ public partial class OverlayWindow : Window
     public void ResetPosition()
     {
         _userMoved = false;
+        SetSnapped(false);
         PositionByTheme();
         SavePosition();
+    }
+
+    private void SetSnapped(bool snapped)
+    {
+        if (_snapped == snapped)
+        {
+            return;
+        }
+
+        _snapped = snapped;
+        MembersScroll.Visibility = snapped ? Visibility.Collapsed : Visibility.Visible;
+        CompactInfo.Visibility = snapped ? Visibility.Visible : Visibility.Collapsed;
+
+        if (snapped)
+        {
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (_snapped)
+                {
+                    SnapToEdges();
+                }
+            }), DispatcherPriority.Loaded);
+        }
+    }
+
+    private void SnapToEdges()
+    {
+        var area = MonitorWorkArea.Get(this);
+        var snapped = false;
+
+        var leftGap = Left - area.Left;
+        var rightGap = area.Right - (Left + ActualWidth);
+        if (leftGap <= SnapThreshold)
+        {
+            Left = area.Left + SnapMargin;
+            snapped = true;
+        }
+        else if (rightGap <= SnapThreshold)
+        {
+            Left = area.Right - ActualWidth - SnapMargin;
+            snapped = true;
+        }
+
+        var topGap = Top - area.Top;
+        var bottomGap = area.Bottom - (Top + ActualHeight);
+        if (topGap <= SnapThreshold)
+        {
+            Top = area.Top + SnapMargin;
+            snapped = true;
+        }
+        else if (bottomGap <= SnapThreshold)
+        {
+            Top = area.Bottom - ActualHeight - SnapMargin;
+            snapped = true;
+        }
+
+        SetSnapped(snapped);
     }
 
     private void ClampToWorkArea()
@@ -196,6 +258,8 @@ public partial class OverlayWindow : Window
             return;
         }
 
+        SetSnapped(false);
+
         try
         {
             DragMove();
@@ -203,8 +267,10 @@ public partial class OverlayWindow : Window
         catch
         {
             // 窗口句柄异常时忽略拖动
+            return;
         }
 
+        SnapToEdges();
         _settings.OverlayLeft = Left;
         _settings.OverlayTop = Top;
         _userMoved = true;
