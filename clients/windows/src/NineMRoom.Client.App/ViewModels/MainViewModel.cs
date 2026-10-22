@@ -4,7 +4,9 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Threading;
@@ -2286,8 +2288,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             var releaseUrl = entry.Elements(ns + "link")
                 .FirstOrDefault(link => string.Equals((string?)link.Attribute("rel"), "alternate", StringComparison.Ordinal))
                 ?.Attribute("href")?.Value ?? string.Empty;
-            var tag = title.Split(' ', StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? title;
-            var releaseTag = releaseUrl.Split('/', StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? tag;
+            var releaseTag = releaseUrl.Split('/', StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? string.Empty;
+            var tag = string.IsNullOrWhiteSpace(releaseTag) ? title : releaseTag;
 
             _updateDownloadUrl = releaseUrl;
             try
@@ -2445,14 +2447,14 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private static bool TryParseVersion(string text, out Version version)
     {
-        var value = (text ?? string.Empty).Trim().TrimStart('v', 'V');
-        var cut = value.IndexOfAny(new[] { '-', '+' });
-        if (cut >= 0)
+        var match = Regex.Match(text ?? string.Empty, @"\d+(?:\.\d+){1,3}");
+        if (!match.Success)
         {
-            value = value[..cut];
+            version = null!;
+            return false;
         }
 
-        return Version.TryParse(value, out version!);
+        return Version.TryParse(match.Value, out version!);
     }
 
     public string SettingsPathText => string.IsNullOrEmpty(SettingsStore.CurrentPath)
