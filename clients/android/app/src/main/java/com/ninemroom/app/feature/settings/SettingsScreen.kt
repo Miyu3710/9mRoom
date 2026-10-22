@@ -18,11 +18,13 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.outlined.Wifi
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -36,11 +38,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
+import com.ninemroom.app.data.ConnectionStatus
 
 @Composable
 fun SettingsScreen(
     dynamicColor: Boolean,
     onDynamicColorChange: (Boolean) -> Unit,
+    serverUrl: String,
+    roomName: String,
+    displayName: String,
+    connection: ConnectionStatus,
+    onDisconnect: () -> Unit,
 ) {
     var keepOnline by rememberSaveable { mutableStateOf(true) }
     var overlay by rememberSaveable { mutableStateOf(true) }
@@ -63,6 +71,22 @@ fun SettingsScreen(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp),
                 )
+            }
+        }
+
+        item {
+            SettingsCard("当前连接", Icons.Outlined.Wifi) {
+                SettingAction(title = "服务器", description = serverUrl.ifBlank { "未设置" })
+                SettingAction(title = "房间", description = roomName.ifBlank { "未进入房间" })
+                SettingAction(title = "昵称", description = displayName.ifBlank { "未设置" })
+                if (connection != ConnectionStatus.Idle) {
+                    OutlinedButton(
+                        onClick = onDisconnect,
+                        modifier = Modifier.padding(top = 6.dp),
+                    ) {
+                        Text("断开连接")
+                    }
+                }
             }
         }
 

@@ -44,7 +44,7 @@ appsettings.Development.json
 *.log
 tmp/
 artifacts/
-data/
+/data/
 server/data/
 
 # 工作区本地工具链（dotnet SDK 等）

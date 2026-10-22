@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -44,46 +45,51 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-private data class SampleMember(
-    val name: String,
-    val device: String,
-    val mode: String,
-    val initial: String,
-)
-
-private val sampleMembers = listOf(
-    SampleMember("朔月", "Windows", "专注中", "朔"),
-    SampleMember("小满", "Android", "自习中", "M"),
-    SampleMember("阿蓝", "Android", "休息中", "N"),
-)
+import com.ninemroom.app.data.RoomMember
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(onCopyRoomCode: () -> Unit) {
+fun HomeScreen(
+    roomName: String,
+    roomCode: String,
+    members: List<RoomMember>,
+    selfId: String?,
+    selfMode: String,
+    onCopyRoomCode: () -> Unit,
+    onModeChange: (String) -> Unit,
+) {
     var showStatusEditor by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val self = members.firstOrNull { it.id == selfId }
+    val onlineCount = members.count { it.online }
 
     LazyColumn(
         contentPadding = PaddingValues(horizontal = 20.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(14.dp),
     ) {
         item {
-            RoomHeaderCard(onCopyRoomCode = onCopyRoomCode)
+            RoomHeaderCard(
+                roomName = roomName.ifBlank { "未命名房间" },
+                roomCode = roomCode.ifBlank { "—" },
+                onlineCount = onlineCount,
+                onCopyRoomCode = onCopyRoomCode,
+            )
         }
         item {
-            SectionLabel("房间成员", trailing = "3 人")
+            SectionLabel("房间成员", trailing = "${onlineCount} 人")
         }
         item {
-            MemberRow()
+            MemberRow(members)
         }
         item {
             MyStatusCard(
+                self = self,
+                selfMode = selfMode,
+                onModeChange = onModeChange,
                 onEdit = { showStatusEditor = true },
             )
         }
@@ -106,7 +112,12 @@ fun HomeScreen(onCopyRoomCode: () -> Unit) {
 }
 
 @Composable
-private fun RoomHeaderCard(onCopyRoomCode: () -> Unit) {
+private fun RoomHeaderCard(
+    roomName: String,
+    roomCode: String,
+    onlineCount: Int,
+    onCopyRoomCode: () -> Unit,
+) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -118,7 +129,7 @@ private fun RoomHeaderCard(onCopyRoomCode: () -> Unit) {
             Row(verticalAlignment = Alignment.Top) {
                 Column(Modifier.weight(1f)) {
                     Text(
-                        "鱼高自习室",
+                        roomName,
                         style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.clickable(onClick = onCopyRoomCode),
@@ -132,7 +143,7 @@ private fun RoomHeaderCard(onCopyRoomCode: () -> Unit) {
                 }
                 AssistChip(
                     onClick = onCopyRoomCode,
-                    label = { Text("ygez9m") },
+                    label = { Text(roomCode) },
                     leadingIcon = {
                         Icon(
                             Icons.Outlined.ContentCopy,
@@ -152,7 +163,7 @@ private fun RoomHeaderCard(onCopyRoomCode: () -> Unit) {
                 ) {}
                 Spacer(Modifier.width(7.dp))
                 Text(
-                    "3 人在线 · 同步正常",
+                    if (onlineCount == 0) "等待成员同步" else "$onlineCount 人在线 · 同步正常",
                     style = MaterialTheme.typography.labelLarge,
                     color = MaterialTheme.colorScheme.onPrimaryContainer,
                 )
@@ -162,12 +173,19 @@ private fun RoomHeaderCard(onCopyRoomCode: () -> Unit) {
 }
 
 @Composable
-private fun MemberRow() {
-    Row(
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        sampleMembers.forEach { member ->
+private fun MemberRow(members: List<RoomMember>) {
+    if (members.isEmpty()) {
+        Text(
+            "正在等待成员同步…",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(vertical = 12.dp),
+        )
+        return
+    }
+
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+        items(members, key = { it.id }) { member ->
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier.width(64.dp),
@@ -176,7 +194,13 @@ private fun MemberRow() {
                     modifier = Modifier
                         .size(48.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.secondaryContainer),
+                        .background(
+                            if (member.online) {
+                                MaterialTheme.colorScheme.secondaryContainer
+                            } else {
+                                MaterialTheme.colorScheme.surfaceContainerHigh
+                            },
+                        ),
                     contentAlignment = Alignment.Center,
                 ) {
                     Text(
@@ -198,7 +222,15 @@ private fun MemberRow() {
 }
 
 @Composable
-private fun MyStatusCard(onEdit: () -> Unit) {
+private fun MyStatusCard(
+    self: RoomMember?,
+    selfMode: String,
+    onModeChange: (String) -> Unit,
+    onEdit: () -> Unit,
+) {
+    val statusLine = self?.statusText?.takeIf { it.isNotBlank() }
+        ?: "已进入房间，等待状态同步…"
+
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -222,16 +254,15 @@ private fun MyStatusCard(onEdit: () -> Unit) {
 
             Spacer(Modifier.height(14.dp))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                ModeChip("自动", selected = true)
-                ModeChip("专注")
-                ModeChip("休息")
-                ModeChip("离开")
-                ModeChip("隐身")
+                ModeChip("专注", selected = selfMode == "focusing") { onModeChange("focusing") }
+                ModeChip("休息", selected = selfMode == "resting") { onModeChange("resting") }
+                ModeChip("离开", selected = selfMode == "away") { onModeChange("away") }
+                ModeChip("隐身", selected = selfMode == "invisible") { onModeChange("invisible") }
             }
 
             Spacer(Modifier.height(16.dp))
             Text(
-                "正在被 Android Studio 拷打  |  🎧 晴天 - 周杰伦 [1:42/4:29]",
+                statusLine,
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 lineHeight = 22.sp,
@@ -243,10 +274,20 @@ private fun MyStatusCard(onEdit: () -> Unit) {
 
             Row {
                 StatusMetric("当前待办", "完善 Android 首页", Modifier.weight(1f))
-                StatusMetric("今日专注", "1 小时 24 分", Modifier.weight(1f))
+                StatusMetric(
+                    "今日专注",
+                    formatFocus(self?.focusSecondsToday ?: 0),
+                    Modifier.weight(1f),
+                )
             }
         }
     }
+}
+
+private fun formatFocus(seconds: Long): String {
+    if (seconds <= 0) return "0 分钟"
+    val minutes = seconds / 60
+    return if (minutes < 60) "$minutes 分钟" else "${minutes / 60} 小时 ${minutes % 60} 分"
 }
 
 @Composable
@@ -258,11 +299,16 @@ private fun StatusMetric(label: String, value: String, modifier: Modifier = Modi
 }
 
 @Composable
-private fun ModeChip(label: String, selected: Boolean = false) {
+private fun ModeChip(
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
     Surface(
         shape = MaterialTheme.shapes.small,
         color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHigh,
         contentColor = if (selected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.clickable(onClick = onClick),
     ) {
         Text(
             label,
@@ -371,4 +417,3 @@ private fun StatusEditorSheet(onDismiss: () -> Unit) {
         Spacer(Modifier.height(12.dp))
     }
 }
-

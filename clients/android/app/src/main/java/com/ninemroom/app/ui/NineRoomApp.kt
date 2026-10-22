@@ -1,6 +1,5 @@
 package com.ninemroom.app.ui
 
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -31,11 +30,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -44,11 +40,15 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.ninemroom.app.RoomViewModel
+import com.ninemroom.app.data.ConnectionStatus
+import com.ninemroom.app.feature.connect.ConnectScreen
 import com.ninemroom.app.feature.focus.FocusScreen
 import com.ninemroom.app.feature.home.HomeScreen
 import com.ninemroom.app.feature.room.RoomScreen
@@ -73,7 +73,17 @@ enum class Destination(
 fun NineRoomApp(
     dynamicColor: Boolean,
     onDynamicColorChange: (Boolean) -> Unit,
+    roomViewModel: RoomViewModel = viewModel(),
 ) {
+    val state by roomViewModel.state.collectAsStateWithLifecycle()
+    if (!state.showMain) {
+        ConnectScreen(
+            state = state,
+            onConnect = roomViewModel::connect,
+        )
+        return
+    }
+
     val navController = rememberNavController()
     val backStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = backStackEntry?.destination?.route
@@ -111,7 +121,7 @@ fun NineRoomApp(
                         }
                     },
                     actions = {
-                        ConnectionPill()
+                        ConnectionPill(state.status, state.onlineCount)
                     },
                     colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                         containerColor = MaterialTheme.colorScheme.background,
@@ -163,19 +173,43 @@ fun NineRoomApp(
                 ) {
                     composable(Destination.Home.route) {
                         HomeScreen(
+                            roomName = state.roomName,
+                            roomCode = state.roomCode,
+                            members = state.members,
+                            selfId = state.selfId,
+                            selfMode = state.selfMode,
                             onCopyRoomCode = {
-                                clipboard.setText(AnnotatedString("ygez9m"))
-                                scope.launch { snackbar.showSnackbar("房间码已复制：ygez9m") }
+                                if (state.roomCode.isNotBlank()) {
+                                    clipboard.setText(AnnotatedString(state.roomCode))
+                                    scope.launch {
+                                        snackbar.showSnackbar("房间码已复制：${state.roomCode}")
+                                    }
+                                }
                             },
+                            onModeChange = roomViewModel::setMode,
                         )
                     }
                     composable(Destination.Focus.route) { FocusScreen() }
                     composable(Destination.Todo.route) { TodoScreen() }
-                    composable(Destination.Room.route) { RoomScreen() }
+                    composable(Destination.Room.route) {
+                        RoomScreen(
+                            roomName = state.roomName,
+                            members = state.members,
+                            selfId = state.selfId,
+                            chat = state.chat,
+                            logs = state.logs,
+                            onSendChat = roomViewModel::sendChat,
+                        )
+                    }
                     composable(Destination.Settings.route) {
                         SettingsScreen(
                             dynamicColor = dynamicColor,
                             onDynamicColorChange = onDynamicColorChange,
+                            serverUrl = state.serverUrl,
+                            roomName = state.roomName,
+                            displayName = state.displayName,
+                            connection = state.status,
+                            onDisconnect = roomViewModel::disconnect,
                         )
                     }
                 }
@@ -185,11 +219,32 @@ fun NineRoomApp(
 }
 
 @Composable
-private fun ConnectionPill() {
+private fun ConnectionPill(status: ConnectionStatus, onlineCount: Int) {
+    val connected = status == ConnectionStatus.Connected
+    val container = when (status) {
+        ConnectionStatus.Connected -> MaterialTheme.colorScheme.primaryContainer
+        ConnectionStatus.Error -> MaterialTheme.colorScheme.errorContainer
+        ConnectionStatus.Connecting, ConnectionStatus.Reconnecting -> MaterialTheme.colorScheme.tertiaryContainer
+        ConnectionStatus.Idle -> MaterialTheme.colorScheme.surfaceContainerHigh
+    }
+    val content = when (status) {
+        ConnectionStatus.Connected -> MaterialTheme.colorScheme.onPrimaryContainer
+        ConnectionStatus.Error -> MaterialTheme.colorScheme.onErrorContainer
+        ConnectionStatus.Connecting, ConnectionStatus.Reconnecting -> MaterialTheme.colorScheme.onTertiaryContainer
+        ConnectionStatus.Idle -> MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    val label = when (status) {
+        ConnectionStatus.Connected -> if (onlineCount > 0) "已连接 · $onlineCount 人" else "已连接"
+        ConnectionStatus.Connecting -> "连接中"
+        ConnectionStatus.Reconnecting -> "重连中"
+        ConnectionStatus.Error -> "未连接"
+        ConnectionStatus.Idle -> "未连接"
+    }
+
     Surface(
         shape = MaterialTheme.shapes.extraLarge,
-        color = MaterialTheme.colorScheme.primaryContainer,
-        contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
+        color = container,
+        contentColor = content,
         modifier = Modifier.padding(end = 12.dp),
     ) {
         Row(
@@ -198,13 +253,12 @@ private fun ConnectionPill() {
         ) {
             Surface(
                 shape = MaterialTheme.shapes.extraLarge,
-                color = MaterialTheme.colorScheme.primary,
+                color = if (connected) MaterialTheme.colorScheme.primary else content,
                 modifier = Modifier
                     .padding(end = 6.dp)
                     .size(7.dp),
             ) {}
-            Text("已连接", style = MaterialTheme.typography.labelMedium)
+            Text(label, style = MaterialTheme.typography.labelMedium)
         }
     }
 }
-
