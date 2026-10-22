@@ -360,7 +360,7 @@ internal fun MemberDetail(member: RoomMember, isSelf: Boolean) {
         Spacer(Modifier.size(22.dp))
         DetailRow("最近同步", member.agoText)
         DetailRow("今日专注", formatFocus(member.focusSecondsToday))
-        DetailRow("状态", member.statusText.ifBlank { "未共享状态" })
+        DetailRow("状态", member.statusText.ifBlank { "未共享状态" }, stacked = true)
         Spacer(Modifier.size(18.dp))
         Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
             Text("打个招呼")
@@ -376,7 +376,26 @@ private fun formatFocus(seconds: Long): String {
 }
 
 @Composable
-private fun DetailRow(label: String, value: String) {
+private fun DetailRow(label: String, value: String, stacked: Boolean = false) {
+    if (stacked) {
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .padding(vertical = 7.dp),
+        ) {
+            Text(
+                label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                value,
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(top = 3.dp),
+            )
+        }
+        return
+    }
     Row(
         Modifier
             .fillMaxWidth()
