@@ -15,6 +15,7 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.View.MeasureSpec
 import android.view.WindowManager
 import android.widget.LinearLayout
 import android.widget.ScrollView
@@ -32,7 +33,16 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
-import kotlin.math.min
+
+private class MaxHeightScrollView(
+    context: Context,
+    private val maxHeightPx: Int,
+) : ScrollView(context) {
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        val cappedHeight = MeasureSpec.makeMeasureSpec(maxHeightPx, MeasureSpec.AT_MOST)
+        super.onMeasure(widthMeasureSpec, cappedHeight)
+    }
+}
 
 class PresenceService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
@@ -230,7 +240,6 @@ class PresenceService : Service() {
         val chipParams = overlayParams ?: return
         val panel = panelView ?: createPanelView(state).also { created ->
             val width = dp(250)
-            val height = panelHeight(state)
             val screenWidth = resources.displayMetrics.widthPixels
             val x = chipParams.x
                 .coerceAtMost(screenWidth - width - dp(4))
@@ -238,7 +247,7 @@ class PresenceService : Service() {
             val y = chipParams.y + chip.height
             val params = WindowManager.LayoutParams(
                 width,
-                height,
+                WindowManager.LayoutParams.WRAP_CONTENT,
                 WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
                 WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
                     WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
@@ -265,7 +274,7 @@ class PresenceService : Service() {
         fillMemberList(list, state)
         val panelParams = panelParams ?: return
         panelParams.width = dp(250)
-        panelParams.height = panelHeight(state)
+        panelParams.height = WindowManager.LayoutParams.WRAP_CONTENT
         panelParams.x = chipParams.x
             .coerceAtMost(resources.displayMetrics.widthPixels - panelParams.width - dp(4))
             .coerceAtLeast(0)
@@ -327,7 +336,9 @@ class PresenceService : Service() {
             }
             elevation = dp(8).toFloat()
         }
-        val scroll = ScrollView(this).apply { isFillViewport = false }
+        val scroll = MaxHeightScrollView(this, maxHeightPx = dp(300)).apply {
+            isFillViewport = false
+        }
         val list = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             tag = "member-list"
@@ -342,22 +353,8 @@ class PresenceService : Service() {
         val panel = panelView ?: return
         val list = panelList ?: return
         fillMemberList(list, state)
-        val params = panelParams ?: return
-        val height = panelHeight(state)
-        if (params.height != height) {
-            params.height = height
-            try {
-                getSystemService(WindowManager::class.java).updateViewLayout(panel, params)
-            } catch (_: Exception) {
-                removePanelView()
-            }
-        }
+        panel.requestLayout()
         panel.alpha = state.overlayOpacity
-    }
-
-    private fun panelHeight(state: RoomUiState): Int {
-        val rows = min(maxOf(state.members.size, 1), 4)
-        return dp(min(280, 18 + rows * 66))
     }
 
     private fun fillMemberList(list: LinearLayout, state: RoomUiState) {
