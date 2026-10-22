@@ -42,6 +42,7 @@ class PresenceService : Service() {
     private var overlayList: LinearLayout? = null
     private var overlayScroll: ScrollView? = null
     private var overlayParams: WindowManager.LayoutParams? = null
+    private var appliedMargin = Int.MIN_VALUE
     private var panelExpanded = false
     private var lastState: RoomUiState? = null
     private var waitForConnection = false
@@ -126,14 +127,14 @@ class PresenceService : Service() {
         val status = TextView(this).apply {
             setTextColor(Color.WHITE)
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
-            setPadding(dp(12), dp(7), dp(12), dp(7))
+            gravity = Gravity.CENTER
+            setPadding(dp(8), dp(6), dp(8), dp(6))
             background = GradientDrawable().apply {
-                cornerRadius = dp(14).toFloat()
+                cornerRadius = dp(8).toFloat()
                 setColor(Color.parseColor("#E6231917"))
                 setStroke(1, Color.parseColor("#44FFFFFF"))
             }
             elevation = dp(6).toFloat()
-            maxWidth = dp(150)
             maxLines = 1
             ellipsize = TextUtils.TruncateAt.END
             isClickable = true
@@ -145,25 +146,21 @@ class PresenceService : Service() {
             orientation = LinearLayout.VERTICAL
             setPadding(dp(8), dp(6), dp(8), dp(6))
             background = GradientDrawable().apply {
-                cornerRadius = dp(14).toFloat()
+                cornerRadius = dp(12).toFloat()
                 setColor(Color.parseColor("#F2231917"))
                 setStroke(1, Color.parseColor("#44FFFFFF"))
             }
-            elevation = dp(6).toFloat()
+            elevation = dp(8).toFloat()
             visibility = View.GONE
         }
-        val scroll = ScrollView(this).apply {
-            isFillViewport = false
-        }
-        val list = LinearLayout(this).apply {
-            orientation = LinearLayout.VERTICAL
-        }
+        val scroll = ScrollView(this).apply { isFillViewport = false }
+        val list = LinearLayout(this).apply { orientation = LinearLayout.VERTICAL }
         scroll.addView(list)
         panel.addView(scroll)
         root.addView(status)
         root.addView(
             panel,
-            LinearLayout.LayoutParams(dp(190), LinearLayout.LayoutParams.WRAP_CONTENT).apply {
+            LinearLayout.LayoutParams(dp(250), LinearLayout.LayoutParams.WRAP_CONTENT).apply {
                 topMargin = dp(4)
             },
         )
@@ -178,7 +175,7 @@ class PresenceService : Service() {
         ).apply {
             gravity = Gravity.TOP or Gravity.END
             x = dp(12)
-            y = dp(96)
+            y = dp(12)
         }
 
         return try {
@@ -197,41 +194,89 @@ class PresenceService : Service() {
     }
 
     private fun renderOverlay(state: RoomUiState) {
-        overlayStatus?.text = state.roomName.ifBlank { "9mRoom" }
-        overlayPanel?.visibility = if (panelExpanded) View.VISIBLE else View.GONE
-        if (!panelExpanded) return
-        val list = overlayList ?: return
-        val scroll = overlayScroll ?: return
-        fillMemberList(list, state)
-        val rows = min(maxOf(state.members.size, 1), 4)
-        scroll.layoutParams = scroll.layoutParams.apply {
-            height = dp(rows * 30 + 4)
+        val status = overlayStatus ?: return
+        val root = overlayRoot ?: return
+        val panel = overlayPanel ?: return
+
+        val size = dp(state.overlaySize)
+        status.layoutParams = status.layoutParams.apply {
+            width = size
+            height = dp(30)
+        }
+        status.text = "${state.roomName.ifBlank { "9mRoom" }} · ${state.onlineCount} 人"
+        root.alpha = state.overlayOpacity
+        if (appliedMargin != state.overlayMargin) {
+            appliedMargin = state.overlayMargin
+            overlayParams?.let { params ->
+                params.x = dp(state.overlayMargin)
+                params.y = dp(state.overlayMargin + 96)
+                try {
+                    getSystemService(WindowManager::class.java).updateViewLayout(root, params)
+                } catch (_: Exception) {
+                    // 窗口可能已被移除
+                }
+            }
+        }
+
+        if (panelExpanded) {
+            panel.visibility = View.VISIBLE
+            panel.alpha = 1f
+            panel.translationY = 0f
+            fillMemberList(state)
+        } else if (panel.visibility == View.VISIBLE && panel.alpha == 1f) {
+            panel.visibility = View.GONE
         }
     }
 
     private fun togglePanel() {
         val state = lastState ?: return
+        val panel = overlayPanel ?: return
         panelExpanded = !panelExpanded
         if (panelExpanded) {
-            renderOverlay(state)
+            fillMemberList(state)
+            panel.visibility = View.VISIBLE
+            panel.alpha = 0f
+            panel.translationY = -dp(6).toFloat()
+            panel.animate()
+                .alpha(1f)
+                .translationY(0f)
+                .setDuration(180)
+                .start()
         } else {
-            overlayPanel?.visibility = View.GONE
+            panel.animate()
+                .alpha(0f)
+                .translationY(-dp(6).toFloat())
+                .setDuration(150)
+                .withEndAction {
+                    if (!panelExpanded) panel.visibility = View.GONE
+                }
+                .start()
         }
     }
 
-    private fun fillMemberList(list: LinearLayout, state: RoomUiState) {
+    private fun fillMemberList(state: RoomUiState) {
+        val list = overlayList ?: return
+        val scroll = overlayScroll ?: return
         list.removeAllViews()
         if (state.members.isEmpty()) {
             list.addView(memberText("等待成员同步…"))
-            return
+        } else {
+            state.members.take(20).forEach { member ->
+                list.addView(memberRow(member, member.id == state.selfId))
+            }
         }
-        state.members.take(20).forEach { member ->
-            list.addView(memberRow(member, member.id == state.selfId))
+        val rows = min(maxOf(state.members.size, 1), 4)
+        scroll.layoutParams = scroll.layoutParams.apply {
+            height = dp(rows * 49 + 4)
         }
     }
 
     private fun memberRow(member: RoomMember, isSelf: Boolean): View {
-        val row = TextView(this).apply {
+        val row = LinearLayout(this).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(dp(6), dp(5), dp(6), dp(5))
+        }
+        val header = TextView(this).apply {
             text = buildString {
                 append(if (isSelf) "${member.name}（我）" else member.name)
                 append("    ")
@@ -239,17 +284,25 @@ class PresenceService : Service() {
             }
             setTextColor(if (member.online) Color.WHITE else Color.parseColor("#99FFFFFF"))
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
-            setPadding(dp(6), dp(6), dp(6), dp(6))
             maxLines = 1
             ellipsize = TextUtils.TruncateAt.END
         }
+        val detail = TextView(this).apply {
+            text = member.statusText.ifBlank { "未共享状态" }
+            setTextColor(Color.parseColor("#B3FFFFFF"))
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
+            maxLines = 1
+            ellipsize = TextUtils.TruncateAt.END
+        }
+        row.addView(header)
+        row.addView(detail)
         return row
     }
 
     private fun memberText(text: String): TextView = TextView(this).apply {
         this.text = text
         setTextColor(Color.parseColor("#CCFFFFFF"))
-        setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
+        setTextSize(TypedValue.COMPLEX_UNIT_SP, 10f)
         setPadding(dp(6), dp(6), dp(6), dp(6))
     }
 
@@ -266,6 +319,7 @@ class PresenceService : Service() {
         overlayList = null
         overlayScroll = null
         overlayParams = null
+        appliedMargin = Int.MIN_VALUE
     }
 
     private inner class DragTouchListener : View.OnTouchListener {
@@ -292,6 +346,8 @@ class PresenceService : Service() {
                     val dy = event.rawY - downRawY
                     if (kotlin.math.abs(dx) > dp(4) || kotlin.math.abs(dy) > dp(4)) {
                         moved = true
+                        overlayPanel?.visibility = View.GONE
+                        panelExpanded = false
                     }
                     params.x = (startX - dx.toInt()).coerceAtLeast(0)
                     params.y = (startY + dy.toInt()).coerceAtLeast(0)

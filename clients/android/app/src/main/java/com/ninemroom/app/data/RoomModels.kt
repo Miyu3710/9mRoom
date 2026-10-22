@@ -130,9 +130,11 @@ fun renderStatus(status: JSONObject?): String {
 private fun renderBlock(block: JSONObject): String {
     val type = block.optString("type")
     val data = block.optJSONObject("data") ?: JSONObject()
-    val template = block.optString("template")
+    val template = block.optString("template").takeUnless { it == "null" }.orEmpty()
     val appId = data.optString("appId")
-    val customAppName = data.optString("name").ifBlank { appName(appId) }
+    val customAppName = data.optString("name")
+        .takeUnless { it == "null" || it.isBlank() }
+        ?: appName(appId)
     val title = data.optString("title")
     val artist = data.optString("artist")
     val progress = mediaProgress(data)

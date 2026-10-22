@@ -276,6 +276,7 @@ fun NineRoomApp(
                             keepOnline = state.keepOnline,
                             overlayEnabled = state.overlayEnabled,
                             notifyRoomEvents = state.notifyRoomEvents,
+                            notifyFocusDone = state.notifyFocusDone,
                             shareApp = state.shareApp,
                             shareMusic = state.shareMusic,
                             autoStart = state.autoStart,
@@ -283,6 +284,9 @@ fun NineRoomApp(
                             homeRoomCode = state.homeRoomCode,
                             homeRoomName = state.homeRoomName,
                             isServerRoom = state.isServerRoom,
+                            overlayOpacity = state.overlayOpacity,
+                            overlaySize = state.overlaySize,
+                            overlayMargin = state.overlayMargin,
                             onKeepOnlineChange = roomViewModel::setKeepOnline,
                             onOverlayChange = { enabled ->
                                 roomViewModel.setOverlayEnabled(enabled)
@@ -299,12 +303,16 @@ fun NineRoomApp(
                                 }
                             },
                             onNotifyRoomEventsChange = roomViewModel::setNotifyRoomEvents,
+                            onNotifyFocusDoneChange = roomViewModel::setNotifyFocusDone,
                             onShareAppChange = roomViewModel::setShareApp,
                             onShareMusicChange = roomViewModel::setShareMusic,
                             onAutoStartChange = roomViewModel::setAutoStart,
                             onAutoConnectChange = roomViewModel::setAutoConnect,
                             onSetHomeRoom = roomViewModel::setHomeToCurrentRoom,
                             onClearHomeRoom = roomViewModel::clearHomeRoom,
+                            onOverlayOpacityChange = roomViewModel::setOverlayOpacity,
+                            onOverlaySizeChange = roomViewModel::setOverlaySize,
+                            onOverlayMarginChange = roomViewModel::setOverlayMargin,
                             onRequestNotifications = {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                                     ContextCompat.checkSelfPermission(

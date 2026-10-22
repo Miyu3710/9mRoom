@@ -64,14 +64,12 @@ class AppRuleStore(context: Context) {
     private fun persist() {
         val root = JSONObject()
         _rules.value.forEach { (packageName, rule) ->
-            root.put(
-                packageName,
-                JSONObject()
-                    .put("category", rule.category ?: JSONObject.NULL)
-                    .put("hidden", rule.hidden)
-                    .put("displayName", rule.displayName ?: JSONObject.NULL)
-                    .put("template", rule.template ?: JSONObject.NULL),
-            )
+            val json = JSONObject()
+                .put("hidden", rule.hidden)
+            rule.category?.let { json.put("category", it) }
+            rule.displayName?.let { json.put("displayName", it) }
+            rule.template?.let { json.put("template", it) }
+            root.put(packageName, json)
         }
         preferences.edit().putString("rules", root.toString()).apply()
     }
@@ -88,10 +86,16 @@ class AppRuleStore(context: Context) {
                         packageName,
                         AppRule(
                             packageName = packageName,
-                            category = json.optString("category").takeIf { it.isNotBlank() },
+                            category = json.optString("category").takeIf {
+                                it.isNotBlank() && it != "null"
+                            },
                             hidden = json.optBoolean("hidden"),
-                            displayName = json.optString("displayName").takeIf { it.isNotBlank() },
-                            template = json.optString("template").takeIf { it.isNotBlank() },
+                            displayName = json.optString("displayName").takeIf {
+                                it.isNotBlank() && it != "null"
+                            },
+                            template = json.optString("template").takeIf {
+                                it.isNotBlank() && it != "null"
+                            },
                         ),
                     )
                 }

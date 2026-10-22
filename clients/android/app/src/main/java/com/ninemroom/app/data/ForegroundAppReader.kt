@@ -4,6 +4,7 @@ import android.app.AppOpsManager
 import android.app.usage.UsageEvents
 import android.app.usage.UsageStatsManager
 import android.content.Context
+import android.content.Intent
 import android.os.Process
 
 data class ForegroundApp(
@@ -45,6 +46,19 @@ private val androidApps = mapOf(
 )
 
 class ForegroundAppReader(private val context: Context) {
+    private val launcherPackage: String? by lazy {
+        val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
+        context.packageManager.resolveActivity(intent, 0)?.activityInfo?.packageName
+    }
+
+    private fun isLauncher(packageName: String): Boolean {
+        if (packageName == launcherPackage) return true
+        val lower = packageName.lowercase()
+        return lower.contains("launcher") ||
+            lower == "com.android.launcher3" ||
+            lower == "com.oplus.launcher" ||
+            lower == "com.miui.home"
+    }
     fun hasPermission(): Boolean {
         val appOps = context.getSystemService(AppOpsManager::class.java)
         val mode = appOps.checkOpNoThrow(
@@ -70,16 +84,29 @@ class ForegroundAppReader(private val context: Context) {
         }
 
         val name = packageName ?: return null
-        val mapped = androidApps[name]
-        return if (mapped != null) {
-            mapped.copy(packageName = name)
-        } else {
-            ForegroundApp(
+        if (isLauncher(name)) {
+            return ForegroundApp(
                 packageName = name,
-                id = "other",
-                name = "其他应用",
+                id = "desktop",
+                name = "桌面",
                 category = "other",
             )
         }
+        val mapped = androidApps[name]
+        if (mapped != null) {
+            return mapped.copy(packageName = name)
+        }
+
+        val label = runCatching {
+            val info = context.packageManager.getApplicationInfo(name, 0)
+            context.packageManager.getApplicationLabel(info).toString()
+        }.getOrDefault("其他应用")
+
+        return ForegroundApp(
+            packageName = name,
+            id = "other",
+            name = label,
+            category = "other",
+        )
     }
 }

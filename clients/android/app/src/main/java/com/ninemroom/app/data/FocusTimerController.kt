@@ -31,6 +31,7 @@ data class FocusState(
 class FocusTimerController(private val context: Context) {
     private val preferences = context.applicationContext
         .getSharedPreferences("nine_room_focus", Context.MODE_PRIVATE)
+    private val settings = AppSettings(context)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val _state = MutableStateFlow(load())
     val state: StateFlow<FocusState> = _state.asStateFlow()
@@ -113,7 +114,9 @@ class FocusTimerController(private val context: Context) {
                         completedTodaySeconds = _state.value.completedTodaySeconds + duration,
                     )
                     persist()
-                    NotificationCenter.focusDone(context)
+                    if (settings.notifyFocusDone) {
+                        NotificationCenter.focusDone(context)
+                    }
                     break
                 }
                 _state.value = _state.value.copy(remainingSeconds = remaining)

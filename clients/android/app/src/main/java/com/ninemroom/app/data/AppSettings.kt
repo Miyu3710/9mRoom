@@ -34,6 +34,14 @@ class AppSettings(context: Context) {
         get() = preferences.getBoolean("notify_room_events", true)
         set(value) = preferences.edit().putBoolean("notify_room_events", value).apply()
 
+    var notifyFocusDone: Boolean
+        get() = preferences.getBoolean("notify_focus_done", true)
+        set(value) = preferences.edit().putBoolean("notify_focus_done", value).apply()
+
+    var dynamicColor: Boolean
+        get() = preferences.getBoolean("dynamic_color", true)
+        set(value) = preferences.edit().putBoolean("dynamic_color", value).apply()
+
     var shareApp: Boolean
         get() = preferences.getBoolean("share_app", true)
         set(value) = preferences.edit().putBoolean("share_app", value).apply()
@@ -57,6 +65,18 @@ class AppSettings(context: Context) {
     var homeRoomName: String
         get() = preferences.getString("home_room_name", "").orEmpty()
         set(value) = preferences.edit().putString("home_room_name", value.trim()).apply()
+
+    var overlayOpacity: Float
+        get() = preferences.getFloat("overlay_opacity", 0.9f).coerceIn(0.3f, 1f)
+        set(value) = preferences.edit().putFloat("overlay_opacity", value.coerceIn(0.3f, 1f)).apply()
+
+    var overlaySize: Int
+        get() = preferences.getInt("overlay_size", 120).coerceIn(80, 180)
+        set(value) = preferences.edit().putInt("overlay_size", value.coerceIn(80, 180)).apply()
+
+    var overlayMargin: Int
+        get() = preferences.getInt("overlay_margin", 12).coerceIn(4, 48)
+        set(value) = preferences.edit().putInt("overlay_margin", value.coerceIn(4, 48)).apply()
 
     val clientId: String
         get() {

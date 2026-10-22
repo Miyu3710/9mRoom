@@ -30,6 +30,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -63,6 +64,7 @@ fun SettingsScreen(
     keepOnline: Boolean,
     overlayEnabled: Boolean,
     notifyRoomEvents: Boolean,
+    notifyFocusDone: Boolean,
     shareApp: Boolean,
     shareMusic: Boolean,
     autoStart: Boolean,
@@ -70,22 +72,28 @@ fun SettingsScreen(
     homeRoomCode: String,
     homeRoomName: String,
     isServerRoom: Boolean,
+    overlayOpacity: Float,
+    overlaySize: Int,
+    overlayMargin: Int,
     onKeepOnlineChange: (Boolean) -> Unit,
     onOverlayChange: (Boolean) -> Unit,
     onNotifyRoomEventsChange: (Boolean) -> Unit,
+    onNotifyFocusDoneChange: (Boolean) -> Unit,
     onShareAppChange: (Boolean) -> Unit,
     onShareMusicChange: (Boolean) -> Unit,
     onAutoStartChange: (Boolean) -> Unit,
     onAutoConnectChange: (Boolean) -> Unit,
     onSetHomeRoom: () -> Unit,
     onClearHomeRoom: () -> Unit,
+    onOverlayOpacityChange: (Float) -> Unit,
+    onOverlaySizeChange: (Int) -> Unit,
+    onOverlayMarginChange: (Int) -> Unit,
     onRequestNotifications: () -> Unit,
     onRequestOverlay: () -> Unit,
     onRequestUsageAccess: () -> Unit,
     onRequestNotificationAccess: () -> Unit,
     onDisconnect: () -> Unit,
 ) {
-    var focusNotify by rememberSaveable { mutableStateOf(true) }
     var checkingUpdate by remember { mutableStateOf(false) }
     var updateStatus by remember { mutableStateOf("") }
     var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
@@ -204,6 +212,32 @@ fun SettingsScreen(
         }
 
         item {
+            SettingsCard("悬浮窗外观", Icons.Outlined.Wifi) {
+                SettingSlider(
+                    title = "透明度",
+                    valueText = "${(overlayOpacity * 100).toInt()}%",
+                    value = overlayOpacity,
+                    valueRange = 0.3f..1f,
+                    onValueChange = onOverlayOpacityChange,
+                )
+                SettingSlider(
+                    title = "大小（宽度）",
+                    valueText = "$overlaySize dp",
+                    value = overlaySize.toFloat(),
+                    valueRange = 80f..180f,
+                    onValueChange = { onOverlaySizeChange(it.toInt()) },
+                )
+                SettingSlider(
+                    title = "边距",
+                    valueText = "$overlayMargin dp",
+                    value = overlayMargin.toFloat(),
+                    valueRange = 4f..48f,
+                    onValueChange = { onOverlayMarginChange(it.toInt()) },
+                )
+            }
+        }
+
+        item {
             SettingsCard("通知", Icons.Outlined.Notifications) {
                 SettingSwitch(
                     title = "成员进出通知",
@@ -220,8 +254,8 @@ fun SettingsScreen(
                 SettingSwitch(
                     title = "专注结束提醒",
                     description = "计时结束时通过通知提醒",
-                    checked = focusNotify,
-                    onCheckedChange = { focusNotify = it },
+                    checked = notifyFocusDone,
+                    onCheckedChange = onNotifyFocusDoneChange,
                 )
                 SettingAction(
                     title = "通知权限",
@@ -396,6 +430,35 @@ private fun SettingSwitch(
         }
         Spacer(Modifier.padding(start = 8.dp))
         Switch(checked = checked, onCheckedChange = onCheckedChange)
+    }
+}
+
+@Composable
+private fun SettingSlider(
+    title: String,
+    valueText: String,
+    value: Float,
+    valueRange: ClosedFloatingPointRange<Float>,
+    onValueChange: (Float) -> Unit,
+) {
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(title, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+            Text(
+                valueText,
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Slider(
+            value = value,
+            onValueChange = onValueChange,
+            valueRange = valueRange,
+        )
     }
 }
 

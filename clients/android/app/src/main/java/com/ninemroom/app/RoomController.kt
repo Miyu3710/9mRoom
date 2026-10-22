@@ -56,6 +56,7 @@ data class RoomUiState(
     val keepOnline: Boolean = true,
     val overlayEnabled: Boolean = true,
     val notifyRoomEvents: Boolean = true,
+    val notifyFocusDone: Boolean = true,
     val shareApp: Boolean = true,
     val shareMusic: Boolean = true,
     val autoStart: Boolean = true,
@@ -64,6 +65,9 @@ data class RoomUiState(
     val homeRoomName: String = "",
     val roomKind: String = "",
     val currentTodo: String = "",
+    val overlayOpacity: Float = 0.9f,
+    val overlaySize: Int = 120,
+    val overlayMargin: Int = 12,
 ) {
     val isServerRoom: Boolean
         get() = roomKind == "server"
@@ -107,6 +111,7 @@ class RoomController(
             keepOnline = settings.keepOnline,
             overlayEnabled = settings.overlayEnabled,
             notifyRoomEvents = settings.notifyRoomEvents,
+            notifyFocusDone = settings.notifyFocusDone,
             shareApp = settings.shareApp,
             shareMusic = settings.shareMusic,
             autoStart = settings.autoStart,
@@ -114,6 +119,9 @@ class RoomController(
             homeRoomCode = settings.homeRoomCode,
             homeRoomName = settings.homeRoomName,
             currentTodo = todoStore.current()?.title.orEmpty(),
+            overlayOpacity = settings.overlayOpacity,
+            overlaySize = settings.overlaySize,
+            overlayMargin = settings.overlayMargin,
         ),
     )
     val state: StateFlow<RoomUiState> = _state.asStateFlow()
@@ -344,9 +352,9 @@ class RoomController(
         statusLayout.rules.value.filter { it.enabled }.forEach { rule ->
             when (rule.type) {
                 "app" -> {
-                    if (current.shareApp && appRule?.hidden != true) {
-                        val categoryId = appRule?.category ?: app?.category ?: "other"
-                        val appTemplate = appRule?.template
+                    if (current.shareApp && app != null && appRule?.hidden != true) {
+                        val categoryId = appRule?.category ?: app.category ?: "other"
+                        val appTemplate = appRule?.template?.takeUnless { it == "null" }
                             ?: appCategories.find(categoryId)?.template
                             ?: defaultStatusTemplate("app")
                         blocks.put(
@@ -357,9 +365,13 @@ class RoomController(
                                 .put(
                                     "data",
                                     JSONObject()
-                                        .put("appId", app?.id ?: "android")
+                                        .put("appId", app.id)
                                         .put("category", categoryId)
-                                        .put("name", appRule?.displayName ?: ""),
+                                        .put(
+                                            "name",
+                                            appRule?.displayName?.takeUnless { it == "null" }
+                                                ?: app.name,
+                                        ),
                                 ),
                         )
                     }
@@ -523,9 +535,32 @@ class RoomController(
         refreshServiceState()
     }
 
+    fun setOverlayOpacity(value: Float) {
+        val opacity = value.coerceIn(0.3f, 1f)
+        settings.overlayOpacity = opacity
+        _state.update { it.copy(overlayOpacity = opacity) }
+    }
+
+    fun setOverlaySize(value: Int) {
+        val size = value.coerceIn(80, 180)
+        settings.overlaySize = size
+        _state.update { it.copy(overlaySize = size) }
+    }
+
+    fun setOverlayMargin(value: Int) {
+        val margin = value.coerceIn(4, 48)
+        settings.overlayMargin = margin
+        _state.update { it.copy(overlayMargin = margin) }
+    }
+
     fun setNotifyRoomEvents(enabled: Boolean) {
         settings.notifyRoomEvents = enabled
         _state.update { it.copy(notifyRoomEvents = enabled) }
+    }
+
+    fun setNotifyFocusDone(enabled: Boolean) {
+        settings.notifyFocusDone = enabled
+        _state.update { it.copy(notifyFocusDone = enabled) }
     }
 
     fun refreshOverlay() {

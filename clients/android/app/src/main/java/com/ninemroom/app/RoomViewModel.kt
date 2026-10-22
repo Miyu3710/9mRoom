@@ -26,7 +26,15 @@ class RoomViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setOverlayEnabled(enabled: Boolean) = controller.setOverlayEnabled(enabled)
 
+    fun setOverlayOpacity(value: Float) = controller.setOverlayOpacity(value)
+
+    fun setOverlaySize(value: Int) = controller.setOverlaySize(value)
+
+    fun setOverlayMargin(value: Int) = controller.setOverlayMargin(value)
+
     fun setNotifyRoomEvents(enabled: Boolean) = controller.setNotifyRoomEvents(enabled)
+
+    fun setNotifyFocusDone(enabled: Boolean) = controller.setNotifyFocusDone(enabled)
 
     fun setShareApp(enabled: Boolean) = controller.setShareApp(enabled)
 

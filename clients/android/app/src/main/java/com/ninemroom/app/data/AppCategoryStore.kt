@@ -104,7 +104,8 @@ class AppCategoryStore(context: Context) {
                         AppCategory(
                             id = json.optString("id"),
                             name = json.optString("name"),
-                            template = json.optString("template"),
+                            template = json.optString("template").takeUnless { it == "null" }
+                                ?: "📡 {app}",
                             builtIn = json.optBoolean("builtIn"),
                         ),
                     )
