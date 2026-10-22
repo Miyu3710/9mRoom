@@ -51,7 +51,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ninemroom.app.data.RoomMember
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     roomName: String,
@@ -62,9 +61,8 @@ fun HomeScreen(
     currentTodo: String,
     onCopyRoomCode: () -> Unit,
     onModeChange: (String) -> Unit,
+    onEditStatus: () -> Unit,
 ) {
-    var showStatusEditor by remember { mutableStateOf(false) }
-    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val self = members.firstOrNull { it.id == selfId }
     val onlineCount = members.count { it.online }
 
@@ -92,7 +90,7 @@ fun HomeScreen(
                 selfMode = selfMode,
                 currentTodo = currentTodo,
                 onModeChange = onModeChange,
-                onEdit = { showStatusEditor = true },
+                onEdit = onEditStatus,
             )
         }
         item {
@@ -100,15 +98,6 @@ fun HomeScreen(
         }
         item {
             Spacer(Modifier.height(72.dp))
-        }
-    }
-
-    if (showStatusEditor) {
-        ModalBottomSheet(
-            onDismissRequest = { showStatusEditor = false },
-            sheetState = sheetState,
-        ) {
-            StatusEditorSheet(onDismiss = { showStatusEditor = false })
         }
     }
 }
@@ -369,54 +358,3 @@ private fun SectionLabel(title: String, trailing: String? = null) {
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun StatusEditorSheet(onDismiss: () -> Unit) {
-    Column(
-        Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 20.dp, vertical = 12.dp),
-    ) {
-        Text("同步列表", style = MaterialTheme.typography.headlineSmall)
-        Text(
-            "选择要在房间里展示的状态块。排序和模板只保存在本机。",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(top = 4.dp, bottom = 18.dp),
-        )
-
-        listOf("应用", "音乐", "待办", "计时").forEach { block ->
-            Surface(
-                shape = MaterialTheme.shapes.medium,
-                color = MaterialTheme.colorScheme.surfaceContainer,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(bottom = 8.dp),
-            ) {
-                Row(
-                    Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("≡", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Spacer(Modifier.width(12.dp))
-                    Text(block, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-                    Text(
-                        "已启用",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.primary,
-                    )
-                }
-            }
-        }
-
-        Button(
-            onClick = onDismiss,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp),
-        ) {
-            Text("完成")
-        }
-        Spacer(Modifier.height(12.dp))
-    }
-}

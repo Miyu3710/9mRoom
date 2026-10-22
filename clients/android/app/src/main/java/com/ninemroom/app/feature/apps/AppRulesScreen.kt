@@ -2,10 +2,13 @@ package com.ninemroom.app.feature.apps
 
 import android.content.Intent
 import android.content.pm.PackageManager
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -16,22 +19,24 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,9 +44,14 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.ImageBitmap
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ninemroom.app.NineRoomApplication
 import com.ninemroom.app.data.AppRuleStore
@@ -50,6 +60,7 @@ import com.ninemroom.app.data.appCategoryLabels
 private data class InstalledApp(
     val packageName: String,
     val label: String,
+    val icon: ImageBitmap?,
 )
 
 private fun loadInstalledApps(context: android.content.Context): List<InstalledApp> {
@@ -58,15 +69,20 @@ private fun loadInstalledApps(context: android.content.Context): List<InstalledA
     return manager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
         .mapNotNull { info ->
             val application = info.activityInfo?.applicationInfo ?: return@mapNotNull null
+            val icon = runCatching {
+                application.loadIcon(manager).toBitmap(96, 96).asImageBitmap()
+            }.getOrNull()
             InstalledApp(
                 packageName = application.packageName,
                 label = application.loadLabel(manager).toString(),
+                icon = icon,
             )
         }
         .distinctBy { it.packageName }
         .sortedBy { it.label.lowercase() }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppRulesScreen(onBack: () -> Unit) {
     val context = LocalContext.current
@@ -74,6 +90,8 @@ fun AppRulesScreen(onBack: () -> Unit) {
     val rules by store.rules.collectAsStateWithLifecycle()
     val apps = remember { loadInstalledApps(context) }
     var query by remember { mutableStateOf("") }
+    var selected by remember { mutableStateOf<InstalledApp?>(null) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val filtered = remember(query, apps) {
         if (query.isBlank()) apps else apps.filter {
             it.label.contains(query, ignoreCase = true) ||
@@ -94,7 +112,7 @@ fun AppRulesScreen(onBack: () -> Unit) {
             Column {
                 Text("应用与分类", style = MaterialTheme.typography.headlineSmall)
                 Text(
-                    "规则只保存在本机；未知应用不会上传包名。",
+                    "点开应用可改分类、显示名称和共享开关；规则只保存在本机。",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -117,95 +135,198 @@ fun AppRulesScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
             items(filtered, key = { it.packageName }) { app ->
-                AppRuleRow(
+                val rule = rules[app.packageName]
+                AppRow(
                     app = app,
-                    store = store,
-                    category = rules[app.packageName]?.category,
-                    hidden = rules[app.packageName]?.hidden == true,
+                    displayName = rule?.displayName ?: app.label,
+                    category = rule?.category ?: "other",
+                    hidden = rule?.hidden == true,
+                    onClick = { selected = app },
                 )
             }
+        }
+    }
+
+    selected?.let { app ->
+        ModalBottomSheet(
+            onDismissRequest = { selected = null },
+            sheetState = sheetState,
+        ) {
+            AppDetail(
+                app = app,
+                store = store,
+                onDismiss = { selected = null },
+            )
         }
     }
 }
 
 @Composable
-private fun AppRuleRow(
+private fun AppRow(
     app: InstalledApp,
-    store: AppRuleStore,
-    category: String?,
+    displayName: String,
+    category: String,
     hidden: Boolean,
+    onClick: () -> Unit,
 ) {
-    var menuOpen by remember { mutableStateOf(false) }
-
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         shape = MaterialTheme.shapes.large,
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
     ) {
         Row(
             Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                modifier = Modifier.size(40.dp),
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Text(
-                        app.label.trim().take(1).ifBlank { "?" },
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                }
-            }
+            AppIcon(app)
             Column(
                 Modifier
                     .weight(1f)
                     .padding(start = 12.dp, end = 8.dp),
             ) {
                 Text(
-                    app.label,
+                    displayName,
                     style = MaterialTheme.typography.bodyLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    app.packageName,
+                    "${appCategoryLabels[category] ?: "其他"} · ${app.packageName}",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
             }
+            Text(
+                if (hidden) "已隐藏" else "共享中",
+                style = MaterialTheme.typography.labelMedium,
+                color = if (hidden) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+            )
+        }
+    }
+}
 
-            Box {
-                OutlinedButton(
-                    onClick = { menuOpen = true },
-                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 2.dp),
-                ) {
-                    Text(
-                        appCategoryLabels[category ?: "other"] ?: "其他",
-                        style = MaterialTheme.typography.labelMedium,
-                    )
-                }
-                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
-                    appCategoryLabels.forEach { (id, label) ->
-                        DropdownMenuItem(
-                            text = { Text(label) },
-                            onClick = {
-                                store.setCategory(app.packageName, id)
-                                menuOpen = false
-                            },
-                        )
-                    }
-                }
+@Composable
+private fun AppIcon(app: InstalledApp) {
+    if (app.icon != null) {
+        Image(
+            bitmap = app.icon,
+            contentDescription = null,
+            contentScale = ContentScale.Fit,
+            modifier = Modifier
+                .size(44.dp)
+                .clip(RoundedCornerShape(12.dp)),
+        )
+    } else {
+        Surface(
+            shape = RoundedCornerShape(12.dp),
+            color = MaterialTheme.colorScheme.secondaryContainer,
+            modifier = Modifier.size(44.dp),
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Text(app.label.take(1), style = MaterialTheme.typography.titleMedium)
             }
+        }
+    }
+}
 
-            Spacer(Modifier.width(4.dp))
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun AppDetail(
+    app: InstalledApp,
+    store: AppRuleStore,
+    onDismiss: () -> Unit,
+) {
+    val rules by store.rules.collectAsStateWithLifecycle()
+    val rule = rules[app.packageName]
+    var name by remember(app.packageName) {
+        mutableStateOf(rule?.displayName ?: "")
+    }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 24.dp, vertical = 8.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            AppIcon(app)
+            Column(Modifier.padding(start = 14.dp)) {
+                Text(
+                    rule?.displayName ?: app.label,
+                    style = MaterialTheme.typography.headlineSmall,
+                )
+                Text(
+                    app.packageName,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        Spacer(Modifier.size(22.dp))
+        Text("显示名称", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "会随状态块发送；接收端支持时显示这个名称，本机列表始终使用它。",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp, bottom = 6.dp),
+        )
+        OutlinedTextField(
+            value = name,
+            onValueChange = {
+                name = it.take(24)
+                store.setDisplayName(app.packageName, name)
+            },
+            placeholder = { Text(app.label) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+        )
+
+        Spacer(Modifier.size(18.dp))
+        Text("分类", style = MaterialTheme.typography.titleMedium)
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.padding(top = 6.dp),
+        ) {
+            appCategoryLabels.forEach { (id, label) ->
+                FilterChip(
+                    selected = (rule?.category ?: "other") == id,
+                    onClick = { store.setCategory(app.packageName, id) },
+                    label = { Text(label) },
+                )
+            }
+        }
+
+        Spacer(Modifier.size(16.dp))
+        Row(
+            Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text("共享此应用", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "关闭后，当前应用不会出现在房间状态里",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             Switch(
-                checked = !hidden,
+                checked = rule?.hidden != true,
                 onCheckedChange = { store.setHidden(app.packageName, !it) },
             )
         }
+
+        Button(
+            onClick = onDismiss,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 20.dp),
+        ) {
+            Text("完成")
+        }
+        Spacer(Modifier.size(20.dp))
     }
 }

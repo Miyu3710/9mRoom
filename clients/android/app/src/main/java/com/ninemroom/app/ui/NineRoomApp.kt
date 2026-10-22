@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.People
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Timer
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -69,6 +70,7 @@ import com.ninemroom.app.feature.focus.FocusScreen
 import com.ninemroom.app.feature.home.HomeScreen
 import com.ninemroom.app.feature.room.RoomScreen
 import com.ninemroom.app.feature.settings.SettingsScreen
+import com.ninemroom.app.feature.sync.SyncListScreen
 import com.ninemroom.app.feature.todo.TodoScreen
 import kotlinx.coroutines.launch
 
@@ -83,9 +85,12 @@ enum class Destination(
     Room("room", "房间", Icons.Outlined.People),
     Settings("settings", "设置", Icons.Outlined.Settings),
     Apps("apps", "应用", Icons.Outlined.Apps),
+    SyncList("sync-list", "同步列表", Icons.Outlined.Tune),
 }
 
-private val navDestinations = Destination.entries.filter { it != Destination.Apps }
+private val navDestinations = Destination.entries.filter {
+    it != Destination.Apps && it != Destination.SyncList
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -236,6 +241,9 @@ fun NineRoomApp(
                                 }
                             },
                             onModeChange = roomViewModel::setMode,
+                            onEditStatus = {
+                                navController.navigate(Destination.SyncList.route)
+                            },
                         )
                     }
                     composable(Destination.Focus.route) {
@@ -317,6 +325,9 @@ fun NineRoomApp(
                     }
                     composable(Destination.Apps.route) {
                         AppRulesScreen(onBack = { navController.popBackStack() })
+                    }
+                    composable(Destination.SyncList.route) {
+                        SyncListScreen(onBack = { navController.popBackStack() })
                     }
                 }
             }

@@ -20,7 +20,8 @@ Material You 界面 + 基础房间协议已跑通。
 - 成员进入 / 离开通知
 - 可选悬浮状态条，需要系统悬浮窗权限
 - 使用情况访问识别前台应用，归一化为 `appId` / 分类后上报
-- 应用分类管理页：设置分类、隐藏应用的状态共享
+- 应用分类管理页：图标列表、应用详情、分类、本机显示名称、共享开关
+- 同步列表编辑器：拖拽排序、展开模板、启停、添加/删除、自定义块
 - 通知使用权读取当前媒体会话，生成音乐状态块
 - 待办本地持久化（SharedPreferences）
 - 专注计时器持久化，计时块上报，完成通知
@@ -73,6 +74,7 @@ app/src/main/java/com/ninemroom/app/
     PresenceSocket.kt
     RoomApi.kt
     RoomModels.kt
+    StatusLayoutStore.kt
     TodoStore.kt
     UpdateChecker.kt
   ui/
@@ -91,5 +93,6 @@ app/src/main/java/com/ninemroom/app/
     todo/
     room/
     settings/
+    sync/
 ```
 

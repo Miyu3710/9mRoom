@@ -131,13 +131,14 @@ private fun renderBlock(block: JSONObject): String {
     val data = block.optJSONObject("data") ?: JSONObject()
     val template = block.optString("template")
     val appId = data.optString("appId")
+    val customAppName = data.optString("name").ifBlank { appName(appId) }
     val title = data.optString("title")
     val artist = data.optString("artist")
     val progress = mediaProgress(data)
     val remaining = timerRemaining(data)
     val todo = data.optString("text")
     val value = when (type) {
-        "app" -> appName(appId)
+        "app" -> customAppName
         "media" -> listOf(title, artist).filter { it.isNotBlank() }.joinToString(" - ")
         "timer" -> remaining
         "todo" -> todo
@@ -147,7 +148,7 @@ private fun renderBlock(block: JSONObject): String {
     if (value.isBlank()) return ""
     if (template.isBlank()) return value
     return template
-        .replace("{app}", appName(appId))
+        .replace("{app}", customAppName)
         .replace("{title}", title)
         .replace("{artist}", artist)
         .replace("{progress}", progress)

@@ -15,7 +15,10 @@ import com.ninemroom.app.data.RoomApi
 import com.ninemroom.app.data.RoomInfo
 import com.ninemroom.app.data.RoomMember
 import com.ninemroom.app.data.ServerAddress
+import com.ninemroom.app.data.StatusBlockRule
+import com.ninemroom.app.data.StatusLayoutStore
 import com.ninemroom.app.data.TodoStore
+import com.ninemroom.app.data.defaultStatusTemplate
 import com.ninemroom.app.data.nowTime
 import com.ninemroom.app.data.parseMember
 import com.ninemroom.app.data.parseMembers
@@ -68,6 +71,7 @@ class RoomController(
     context: Context,
     private val todoStore: TodoStore,
     private val appRules: AppRuleStore,
+    private val statusLayout: StatusLayoutStore,
     private val focusTimer: FocusTimerController,
 ) {
     private val appContext = context.applicationContext
@@ -113,6 +117,14 @@ class RoomController(
 
         scope.launch {
             appRules.rules.collectLatest {
+                if (_state.value.status == ConnectionStatus.Connected) {
+                    sendPresence()
+                }
+            }
+        }
+
+        scope.launch {
+            statusLayout.rules.collectLatest {
                 if (_state.value.status == ConnectionStatus.Connected) {
                     sendPresence()
                 }
@@ -287,87 +299,104 @@ class RoomController(
     private fun buildStatusBlocks(): JSONArray {
         val blocks = JSONArray()
         val current = _state.value
-
-        if (current.shareApp) {
-            val app = foregroundAppReader.current()
-            val appId = app?.id ?: "android"
-            val category = app?.category ?: "other"
-            val rule = app?.let { appRules.ruleFor(it.packageName) }
-            if (rule?.hidden != true) {
-                blocks.put(
-                    JSONObject()
-                        .put("id", "app")
-                        .put("type", "app")
-                        .put("template", "📡 {app}")
-                        .put(
-                            "data",
-                            JSONObject()
-                                .put("appId", appId)
-                                .put("category", rule?.category ?: category),
-                        ),
-                )
-            }
-        }
-
-        if (current.shareMusic) {
-            val media = mediaReader.current()
-            if (media != null) {
-                val progress = if (media.durationMs > 0) {
-                    "${formatDuration(media.positionMs)}/${formatDuration(media.durationMs)}"
-                } else {
-                    ""
-                }
-                blocks.put(
-                    JSONObject()
-                        .put("id", "media")
-                        .put("type", "media")
-                        .put("template", "🎶 {title} - {artist} {progress}")
-                        .put(
-                            "data",
-                            JSONObject()
-                                .put("title", media.title)
-                                .put("artist", media.artist)
-                                .put("isPlaying", media.isPlaying)
-                                .put("positionMs", media.positionMs)
-                                .put("durationMs", media.durationMs)
-                                .put("sampledAt", System.currentTimeMillis())
-                                .put("progress", progress),
-                        ),
-                )
-            }
-        }
-
+        val app = if (current.shareApp) foregroundAppReader.current() else null
+        val appRule = app?.let { appRules.ruleFor(it.packageName) }
+        val media = if (current.shareMusic) mediaReader.current() else null
         val todo = todoStore.current()?.title.orEmpty()
-        if (todo.isNotBlank()) {
-            blocks.put(
-                JSONObject()
-                    .put("id", "todo")
-                    .put("type", "todo")
-                    .put("template", "📚 {todo}")
-                    .put(
-                        "data",
-                        JSONObject().put("text", todo),
-                    ),
-            )
-        }
-
         val focus = focusTimer.state.value
-        if (focus.running || focus.remainingSeconds < focus.durationSeconds) {
-            val elapsedSeconds = (focus.durationSeconds - focus.remainingSeconds).coerceAtLeast(0)
-            val startedAt = System.currentTimeMillis() - elapsedSeconds * 1000L
-            blocks.put(
-                JSONObject()
-                    .put("id", "timer")
-                    .put("type", "timer")
-                    .put("template", "⏱ {remaining}")
-                    .put(
-                        "data",
-                        JSONObject()
-                            .put("mode", "focus")
-                            .put("startedAt", startedAt)
-                            .put("durationMinutes", focus.durationSeconds / 60),
-                    ),
-            )
+        val focusActive = focus.running || focus.remainingSeconds < focus.durationSeconds
+
+        statusLayout.rules.value.filter { it.enabled }.forEach { rule ->
+            when (rule.type) {
+                "app" -> {
+                    if (current.shareApp && appRule?.hidden != true) {
+                        blocks.put(
+                            JSONObject()
+                                .put("id", rule.id)
+                                .put("type", "app")
+                                .put("template", rule.template.ifBlank { defaultStatusTemplate("app") })
+                                .put(
+                                    "data",
+                                    JSONObject()
+                                        .put("appId", app?.id ?: "android")
+                                        .put("category", appRule?.category ?: app?.category ?: "other")
+                                        .put("name", appRule?.displayName ?: ""),
+                                ),
+                        )
+                    }
+                }
+
+                "media" -> {
+                    if (media != null) {
+                        val progress = if (media.durationMs > 0) {
+                            "${formatDuration(media.positionMs)}/${formatDuration(media.durationMs)}"
+                        } else {
+                            ""
+                        }
+                        blocks.put(
+                            JSONObject()
+                                .put("id", rule.id)
+                                .put("type", "media")
+                                .put("template", rule.template.ifBlank { defaultStatusTemplate("media") })
+                                .put(
+                                    "data",
+                                    JSONObject()
+                                        .put("title", media.title)
+                                        .put("artist", media.artist)
+                                        .put("isPlaying", media.isPlaying)
+                                        .put("positionMs", media.positionMs)
+                                        .put("durationMs", media.durationMs)
+                                        .put("sampledAt", System.currentTimeMillis())
+                                        .put("progress", progress),
+                                ),
+                        )
+                    }
+                }
+
+                "todo" -> {
+                    if (todo.isNotBlank()) {
+                        blocks.put(
+                            JSONObject()
+                                .put("id", rule.id)
+                                .put("type", "todo")
+                                .put("template", rule.template.ifBlank { defaultStatusTemplate("todo") })
+                                .put("data", JSONObject().put("text", todo)),
+                        )
+                    }
+                }
+
+                "timer" -> {
+                    if (focusActive) {
+                        val elapsedSeconds = (focus.durationSeconds - focus.remainingSeconds).coerceAtLeast(0)
+                        val startedAt = System.currentTimeMillis() - elapsedSeconds * 1000L
+                        blocks.put(
+                            JSONObject()
+                                .put("id", rule.id)
+                                .put("type", "timer")
+                                .put("template", rule.template.ifBlank { defaultStatusTemplate("timer") })
+                                .put(
+                                    "data",
+                                    JSONObject()
+                                        .put("mode", "focus")
+                                        .put("startedAt", startedAt)
+                                        .put("durationMinutes", focus.durationSeconds / 60),
+                                ),
+                        )
+                    }
+                }
+
+                "text" -> {
+                    if (rule.template.isNotBlank()) {
+                        blocks.put(
+                            JSONObject()
+                                .put("id", rule.id)
+                                .put("type", "text")
+                                .put("template", rule.template)
+                                .put("data", JSONObject().put("text", rule.template)),
+                        )
+                    }
+                }
+            }
         }
 
         return blocks

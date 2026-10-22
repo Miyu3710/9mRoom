@@ -10,6 +10,7 @@ data class AppRule(
     val packageName: String,
     val category: String? = null,
     val hidden: Boolean = false,
+    val displayName: String? = null,
 )
 
 class AppRuleStore(context: Context) {
@@ -32,6 +33,16 @@ class AppRuleStore(context: Context) {
         persist()
     }
 
+    fun setDisplayName(packageName: String, displayName: String?) {
+        val current = _rules.value[packageName] ?: AppRule(packageName)
+        _rules.value = _rules.value + (
+            packageName to current.copy(
+                displayName = displayName?.trim()?.takeIf { it.isNotBlank() },
+            )
+        )
+        persist()
+    }
+
     private fun persist() {
         val root = JSONObject()
         _rules.value.forEach { (packageName, rule) ->
@@ -39,7 +50,8 @@ class AppRuleStore(context: Context) {
                 packageName,
                 JSONObject()
                     .put("category", rule.category ?: JSONObject.NULL)
-                    .put("hidden", rule.hidden),
+                    .put("hidden", rule.hidden)
+                    .put("displayName", rule.displayName ?: JSONObject.NULL),
             )
         }
         preferences.edit().putString("rules", root.toString()).apply()
@@ -59,6 +71,7 @@ class AppRuleStore(context: Context) {
                             packageName = packageName,
                             category = json.optString("category").takeIf { it.isNotBlank() },
                             hidden = json.optBoolean("hidden"),
+                            displayName = json.optString("displayName").takeIf { it.isNotBlank() },
                         ),
                     )
                 }
