@@ -20,6 +20,7 @@ Material You 界面 + 基础房间协议已跑通。
 - 成员进入 / 离开通知
 - 可选悬浮状态条，需要系统悬浮窗权限
 - 使用情况访问识别前台应用，归一化为 `appId` / 分类后上报
+- 应用分类管理页：设置分类、隐藏应用的状态共享
 - 通知使用权读取当前媒体会话，生成音乐状态块
 - 待办本地持久化（SharedPreferences）
 - 专注计时器持久化，计时块上报，完成通知
@@ -30,7 +31,6 @@ Material You 界面 + 基础房间协议已跑通。
 
 还在用示例数据的部分：
 
-- 应用分类管理页还未实现
 - 待办子任务编辑、起止时间还未实现
 - 悬浮条已支持点击回到房间
 - 应用识别只映射内置的常见包名，未知应用统一归为“其他应用”，不会上传原包名
@@ -65,6 +65,7 @@ app/src/main/java/com/ninemroom/app/
   MainActivity.kt
   RoomViewModel.kt
   data/
+    AppRuleStore.kt
     AppSettings.kt
     FocusTimerController.kt
     ForegroundAppReader.kt
@@ -83,6 +84,7 @@ app/src/main/java/com/ninemroom/app/
     NotificationCenter.kt
     PresenceService.kt
   feature/
+    apps/
     connect/
     home/
     focus/

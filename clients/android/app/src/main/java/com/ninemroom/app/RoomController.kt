@@ -3,6 +3,7 @@ package com.ninemroom.app
 import android.content.Context
 import androidx.core.content.ContextCompat
 import com.ninemroom.app.data.AppSettings
+import com.ninemroom.app.data.AppRuleStore
 import com.ninemroom.app.data.ChatLine
 import com.ninemroom.app.data.ConnectionStatus
 import com.ninemroom.app.data.FocusTimerController
@@ -66,6 +67,7 @@ data class RoomUiState(
 class RoomController(
     context: Context,
     private val todoStore: TodoStore,
+    private val appRules: AppRuleStore,
     private val focusTimer: FocusTimerController,
 ) {
     private val appContext = context.applicationContext
@@ -103,6 +105,14 @@ class RoomController(
             todoStore.items.collectLatest { items ->
                 val current = todoStore.current()?.title.orEmpty()
                 _state.update { it.copy(currentTodo = current) }
+                if (_state.value.status == ConnectionStatus.Connected) {
+                    sendPresence()
+                }
+            }
+        }
+
+        scope.launch {
+            appRules.rules.collectLatest {
                 if (_state.value.status == ConnectionStatus.Connected) {
                     sendPresence()
                 }
@@ -282,18 +292,21 @@ class RoomController(
             val app = foregroundAppReader.current()
             val appId = app?.id ?: "android"
             val category = app?.category ?: "other"
-            blocks.put(
-                JSONObject()
-                    .put("id", "app")
-                    .put("type", "app")
-                    .put("template", "📡 {app}")
-                    .put(
-                        "data",
-                        JSONObject()
-                            .put("appId", appId)
-                            .put("category", category),
-                    ),
-            )
+            val rule = app?.let { appRules.ruleFor(it.packageName) }
+            if (rule?.hidden != true) {
+                blocks.put(
+                    JSONObject()
+                        .put("id", "app")
+                        .put("type", "app")
+                        .put("template", "📡 {app}")
+                        .put(
+                            "data",
+                            JSONObject()
+                                .put("appId", appId)
+                                .put("category", rule?.category ?: category),
+                        ),
+                )
+            }
         }
 
         if (current.shareMusic) {

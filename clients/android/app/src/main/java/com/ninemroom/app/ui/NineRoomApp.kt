@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawing
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.People
@@ -62,6 +63,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ninemroom.app.RoomViewModel
 import com.ninemroom.app.data.ConnectionStatus
+import com.ninemroom.app.feature.apps.AppRulesScreen
 import com.ninemroom.app.feature.connect.ConnectScreen
 import com.ninemroom.app.feature.focus.FocusScreen
 import com.ninemroom.app.feature.home.HomeScreen
@@ -80,7 +82,10 @@ enum class Destination(
     Todo("todo", "待办", Icons.Outlined.Checklist),
     Room("room", "房间", Icons.Outlined.People),
     Settings("settings", "设置", Icons.Outlined.Settings),
+    Apps("apps", "应用", Icons.Outlined.Apps),
 }
+
+private val navDestinations = Destination.entries.filter { it != Destination.Apps }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -174,7 +179,7 @@ fun NineRoomApp(
             bottomBar = {
                 if (!useRail) {
                     NavigationBar(containerColor = MaterialTheme.colorScheme.surfaceContainer) {
-                        Destination.entries.forEach { destination ->
+                        navDestinations.forEach { destination ->
                             NavigationBarItem(
                                 selected = current == destination,
                                 onClick = { navigate(destination) },
@@ -198,7 +203,7 @@ fun NineRoomApp(
                     NavigationRail(
                         containerColor = MaterialTheme.colorScheme.surfaceContainer,
                     ) {
-                        Destination.entries.forEach { destination ->
+                        navDestinations.forEach { destination ->
                             NavigationRailItem(
                                 selected = current == destination,
                                 onClick = { navigate(destination) },
@@ -251,6 +256,7 @@ fun NineRoomApp(
                         SettingsScreen(
                             dynamicColor = dynamicColor,
                             onDynamicColorChange = onDynamicColorChange,
+                            onOpenAppRules = { navController.navigate(Destination.Apps.route) },
                             serverUrl = state.serverUrl,
                             roomName = state.roomName,
                             displayName = state.displayName,
@@ -308,6 +314,9 @@ fun NineRoomApp(
                             },
                             onDisconnect = roomViewModel::disconnect,
                         )
+                    }
+                    composable(Destination.Apps.route) {
+                        AppRulesScreen(onBack = { navController.popBackStack() })
                     }
                 }
             }

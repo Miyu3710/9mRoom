@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.Apps
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.ColorLens
 import androidx.compose.material.icons.outlined.Info
@@ -53,6 +54,7 @@ import kotlinx.coroutines.launch
 fun SettingsScreen(
     dynamicColor: Boolean,
     onDynamicColorChange: (Boolean) -> Unit,
+    onOpenAppRules: () -> Unit,
     serverUrl: String,
     roomName: String,
     displayName: String,
@@ -116,6 +118,16 @@ fun SettingsScreen(
                         Text("断开连接")
                     }
                 }
+            }
+        }
+
+        item {
+            SettingsCard("应用与分类", Icons.Outlined.Apps) {
+                SettingAction(
+                    title = "管理应用分类",
+                    description = "为应用设置分类、隐藏应用的状态共享",
+                    onClick = onOpenAppRules,
+                )
             }
         }
 
