@@ -1,28 +1,65 @@
 # 9mRoom · Android 客户端
 
-## 这一端要做什么（v1）
+## 当前状态
 
-- 前台服务常驻（带常驻通知），可选开机自启
-- 用 `UsageStatsManager` 识别前台应用，**在本地**映射成 `appId` 与类别
-- 读取当前音乐：`MediaSessionManager` 的媒体元数据
-- 锁屏或长时间无操作 → 「离开」
-- 房间看板界面，与 Windows 端使用同一套 design tokens
+Material You 界面骨架已可构建、安装。
 
-## 关键权限与限制
+已搭好：
 
-| 能力 | 权限 / API | 坑 |
-| --- | --- | --- |
-| 前台应用 | `PACKAGE_USAGE_STATS`（特殊权限，需跳系统设置授权）+ `UsageStatsManager` | 用户必须手动开启「使用情况访问权限」；国产 ROM 会杀后台 |
-| 音乐元数据 | `BIND_NOTIFICATION_LISTENER_SERVICE` + `MediaSessionManager.getActiveSessions()` | 需要「通知使用权」；部分应用不暴露 MediaSession |
-| 常驻后台 | `FOREGROUND_SERVICE` + 常驻通知 | Android 14 起必须声明 foreground service type；应用商店对长期后台监控类应用审核严格 |
-| 应用展示名 | `PackageManager` | Android 11+ 有包可见性限制；用内置目录覆盖常见应用，未知归为「其他」 |
-| 省电策略 | 引导关闭电池优化、开启自启动 | 各家 ROM 路径不同，只能给图文引导 |
+- Kotlin + Jetpack Compose + Material 3
+- Android 12+ 动态取色，低版本珊瑚橙回退主题
+- 手机底部导航 / 平板侧边 NavigationRail 自适应
+- 五个一级页面：自习室、专注、待办、房间、设置
+- 成员详情 BottomSheet、状态编辑 BottomSheet
+- 专注计时器、待办本地交互、聊天输入框
+- 设置中的常驻通知、悬浮窗、共享当前应用、共享音乐开关
 
-## 技术栈
+当前页面使用示例数据，**尚未接入 WebSocket / 服务端协议**。
 
-未定。候选：Kotlin + Jetpack Compose，对齐既有 Compose 项目的构建方式
-（Gradle wrapper、JDK 17、compileSdk 35）。
+## 包名
+
+```text
+com.ninemroom.app
+```
 
 ## 构建
 
-待定（补齐后在此记录 `build.ps1` 用法、APK 产物位置与真机安装步骤）。
+本地环境：JDK 17、Android SDK 35、Gradle 8.11.1。
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build.ps1
+```
+
+APK：
+
+```text
+app/build/outputs/apk/debug/app-debug.apk
+```
+
+首次构建会下载 Compose / AndroidX 依赖。如果本机代理不可用，Gradle 可能连接超时，需要先恢复代理或临时直连。
+
+## 下一阶段
+
+1. 协议层：`/healthz`、`/api/rooms/{code}`、`/v1/ws`
+2. 连接/加入房间与 `ClientId` 持久化
+3. 房间快照、成员状态、聊天和日志
+4. 前台服务、常驻通知、成员进出通知
+5. 使用情况 / 媒体会话权限与本地映射
+6. 悬浮窗
+7. GitHub Releases APK 检查更新
+
+## 目录
+
+```text
+app/src/main/java/com/ninemroom/app/
+  MainActivity.kt
+  ui/
+    NineRoomApp.kt
+    theme/
+  feature/
+    home/
+    focus/
+    todo/
+    room/
+    settings/
+```

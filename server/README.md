@@ -38,7 +38,6 @@ tar xzf 9mRoom-Server-1.0.0-linux-x64.tar.gz -C /opt/9mroom
 cd /opt/9mroom
 NINEMROOM_ADMIN_PASSWORD='...' NINEMROOM_DB=/var/lib/9mroom/9mroom.db bash run-server.sh
 ```
-
 检查更新：
 
 ```bash
