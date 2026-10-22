@@ -58,8 +58,14 @@ AdminRecord? CurrentAdmin(HttpContext context) =>
     database.SessionAdmin(context.Request.Cookies[AdminCookie]);
 
 app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(20) });
-app.UseDefaultFiles();
 app.UseStaticFiles();
+
+// 调试台不再占用站点根路径，统一走 /debug；静态资源也在 /debug/ 下。
+var debugIndex = Path.Combine(
+    app.Environment.WebRootPath ?? Path.Combine(app.Environment.ContentRootPath, "wwwroot"),
+    "debug",
+    "index.html");
+app.MapGet("/debug", () => Results.File(debugIndex, "text/html; charset=utf-8"));
 
 app.MapGet("/healthz", () => Results.Ok(new
 {

@@ -16,7 +16,7 @@ docker compose up -d --build
 docker compose ps
 ```
 
-- 服务端：<http://127.0.0.1:5080/>
+- 调试台：<http://127.0.0.1:5080/debug>
 - 管理页：<http://127.0.0.1:5080/admin>
 - 数据卷：`9mroom-data`
 - 完整部署、HTTPS、备份与升级见 [docs/deploy-docker.md](../docs/deploy-docker.md)
@@ -54,7 +54,7 @@ docker compose up -d --build
 首次启动且数据库没有管理员时，会用这两个环境变量创建管理员。
 未提供密码时会生成随机密码，并在启动日志中输出一次，请及时保存。
 
-- 调试台：<http://127.0.0.1:5080/>
+- 调试台：<http://127.0.0.1:5080/debug>
 - 管理页：<http://127.0.0.1:5080/admin>
 - 停止：`Ctrl+C`；端口被占用时改 `run.ps1` 里的 `ASPNETCORE_URLS`
 
@@ -70,7 +70,8 @@ docker compose up -d --build
 | `POST /admin/rooms/create` | 创建服务端房间（房间码 / 显示名） |
 | `POST /admin/rooms/delete` | 删除房间，并关闭该房间在线连接 |
 | `GET /debug/room/{id}` | 只读房间快照；仅 Development，或设置 `NINEMROOM_DEBUG=1` 时开放 |
-| `GET /` | 调试台静态页 |
+| `GET /debug` | 调试台静态页；`/` 不再提供控制台 |
+| `GET /` | 404（避免输入端口直接进入调试台） |
 | `WS /v1/ws` | 状态同步；加入前校验数据库房间，未知房间返回 404 |
 
 WebSocket 消息定义见 [`shared/protocol/`](../shared/protocol/README.md)，
