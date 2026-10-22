@@ -1,0 +1,64 @@
+{
+  "version": 1,
+  "note": "平台标识 → appId / 类别 / 展示名。客户端在本地完成映射，只上传 appId 与类别。",
+  "categories": ["coding", "writing", "reading", "meeting", "media", "game", "browsing", "other"],
+  "apps": [
+    { "id": "vscode", "name": "Visual Studio Code", "category": "coding", "aliases": { "windows": ["code.exe"], "android": [] } },
+    { "id": "visualstudio", "name": "Visual Studio", "category": "coding", "aliases": { "windows": ["devenv.exe"], "android": [] } },
+    { "id": "rider", "name": "JetBrains Rider", "category": "coding", "aliases": { "windows": ["rider64.exe"], "android": [] } },
+    { "id": "idea", "name": "IntelliJ IDEA", "category": "coding", "aliases": { "windows": ["idea64.exe"], "android": [] } },
+    { "id": "pycharm", "name": "PyCharm", "category": "coding", "aliases": { "windows": ["pycharm64.exe"], "android": [] } },
+    { "id": "webstorm", "name": "WebStorm", "category": "coding", "aliases": { "windows": ["webstorm64.exe"], "android": [] } },
+    { "id": "sublime", "name": "Sublime Text", "category": "coding", "aliases": { "windows": ["sublime_text.exe"], "android": [] } },
+    { "id": "terminal", "name": "Windows Terminal", "category": "coding", "aliases": { "windows": ["windowsterminal.exe"], "android": [] } },
+    { "id": "powershell", "name": "PowerShell", "category": "coding", "aliases": { "windows": ["powershell.exe", "pwsh.exe"], "android": [] } },
+    { "id": "cmd", "name": "命令提示符", "category": "coding", "aliases": { "windows": ["cmd.exe"], "android": [] } },
+    { "id": "gitbash", "name": "Git Bash", "category": "coding", "aliases": { "windows": ["mintty.exe"], "android": [] } },
+
+    { "id": "word", "name": "Microsoft Word", "category": "writing", "aliases": { "windows": ["winword.exe"], "android": ["com.microsoft.office.word"] } },
+    { "id": "onenote", "name": "OneNote", "category": "writing", "aliases": { "windows": ["onenote.exe"], "android": ["com.microsoft.office.onenote"] } },
+    { "id": "obsidian", "name": "Obsidian", "category": "writing", "aliases": { "windows": ["obsidian.exe"], "android": [] } },
+    { "id": "typora", "name": "Typora", "category": "writing", "aliases": { "windows": ["typora.exe"], "android": [] } },
+    { "id": "notion", "name": "Notion", "category": "writing", "aliases": { "windows": ["notion.exe"], "android": ["notion.id"] } },
+    { "id": "notepad", "name": "记事本", "category": "writing", "aliases": { "windows": ["notepad.exe"], "android": [] } },
+
+    { "id": "sumatrapdf", "name": "SumatraPDF", "category": "reading", "aliases": { "windows": ["sumatrapdf.exe"], "android": [] } },
+    { "id": "acrobat", "name": "Adobe Acrobat", "category": "reading", "aliases": { "windows": ["acrobat.exe", "acrord32.exe"], "android": [] } },
+    { "id": "calibre", "name": "Calibre", "category": "reading", "aliases": { "windows": ["calibre.exe"], "android": [] } },
+
+    { "id": "zoom", "name": "Zoom", "category": "meeting", "aliases": { "windows": ["zoom.exe"], "android": ["us.zoom.videomeetings"] } },
+    { "id": "teams", "name": "Microsoft Teams", "category": "meeting", "aliases": { "windows": ["ms-teams.exe", "teams.exe"], "android": ["com.microsoft.teams"] } },
+    { "id": "wemeet", "name": "腾讯会议", "category": "meeting", "aliases": { "windows": ["wemeetapp.exe"], "android": ["com.tencent.wemeet.app"] } },
+    { "id": "dingtalk", "name": "钉钉", "category": "meeting", "aliases": { "windows": ["dingtalk.exe"], "android": ["com.alibaba.android.rimet"] } },
+    { "id": "feishu", "name": "飞书", "category": "meeting", "aliases": { "windows": ["feishu.exe", "lark.exe"], "android": ["com.ss.android.lark"] } },
+
+    { "id": "potplayer", "name": "PotPlayer", "category": "media", "aliases": { "windows": ["potplayermini64.exe", "potplayermini.exe"], "android": [] } },
+    { "id": "vlc", "name": "VLC", "category": "media", "aliases": { "windows": ["vlc.exe"], "android": ["org.videolan.vlc"] } },
+    { "id": "spotify", "name": "Spotify", "category": "media", "aliases": { "windows": ["spotify.exe"], "android": ["com.spotify.music"] } },
+    { "id": "cloudmusic", "name": "网易云音乐", "category": "media", "aliases": { "windows": ["cloudmusic.exe"], "android": ["com.netease.cloudmusic"] } },
+    { "id": "qqmusic", "name": "QQ音乐", "category": "media", "aliases": { "windows": ["qqmusic.exe"], "android": ["com.tencent.qqmusic"] } },
+    { "id": "bilibili", "name": "哔哩哔哩", "category": "media", "aliases": { "windows": ["bilibili.exe"], "android": ["tv.danmaku.bili"] } },
+    { "id": "youtube", "name": "YouTube", "category": "media", "aliases": { "windows": [], "android": ["com.google.android.youtube"] } },
+    { "id": "syplayer", "name": "SYPlayer", "category": "media", "aliases": { "windows": ["syplayer.exe"], "android": ["com.frameyou.player"] } },
+    { "id": "symusic", "name": "SYMusic", "category": "media", "aliases": { "windows": ["symusic.exe"], "android": [] } },
+
+    { "id": "steam", "name": "Steam", "category": "game", "aliases": { "windows": ["steam.exe"], "android": ["com.valvesoftware.android.steam.community"] } },
+    { "id": "epic", "name": "Epic Games", "category": "game", "aliases": { "windows": ["epicgameslauncher.exe"], "android": [] } },
+    { "id": "genshin", "name": "原神", "category": "game", "aliases": { "windows": ["yuanshen.exe", "genshinimpact.exe"], "android": ["com.miHoYo.Yuanshen"] } },
+    { "id": "lol", "name": "英雄联盟", "category": "game", "aliases": { "windows": ["league of legends.exe"], "android": [] } },
+
+    { "id": "chrome", "name": "Chrome", "category": "browsing", "aliases": { "windows": ["chrome.exe"], "android": ["com.android.chrome"] } },
+    { "id": "edge", "name": "Microsoft Edge", "category": "browsing", "aliases": { "windows": ["msedge.exe"], "android": ["com.microsoft.emmx"] } },
+    { "id": "firefox", "name": "Firefox", "category": "browsing", "aliases": { "windows": ["firefox.exe"], "android": ["org.mozilla.firefox"] } },
+    { "id": "arc", "name": "Arc", "category": "browsing", "aliases": { "windows": ["arc.exe"], "android": [] } },
+
+    { "id": "wechat", "name": "微信", "category": "other", "aliases": { "windows": ["wechat.exe"], "android": ["com.tencent.mm"] } },
+    { "id": "qq", "name": "QQ", "category": "other", "aliases": { "windows": ["qq.exe"], "android": ["com.tencent.mobileqq"] } },
+    { "id": "tim", "name": "TIM", "category": "other", "aliases": { "windows": ["tim.exe"], "android": ["com.tencent.tim"] } },
+    { "id": "telegram", "name": "Telegram", "category": "other", "aliases": { "windows": ["telegram.exe"], "android": ["org.telegram.messenger"] } },
+    { "id": "discord", "name": "Discord", "category": "other", "aliases": { "windows": ["discord.exe"], "android": ["com.discord"] } },
+    { "id": "explorer", "name": "文件资源管理器", "category": "other", "aliases": { "windows": ["explorer.exe"], "android": [] } },
+    { "id": "9mroom", "name": "9mRoom", "category": "other", "aliases": { "windows": ["ninemroom.client.app.exe"], "android": [] } },
+    { "id": "deepseek-harness", "name": "DeepSeek Harness", "category": "coding", "aliases": { "windows": ["deepseek harness.exe"], "android": [] } }
+  ]
+}

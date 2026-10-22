@@ -1,0 +1,55 @@
+# 操作系统
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器与 IDE
+.idea/
+.vs/
+.vscode/*
+!.vscode/extensions.json
+*.user
+*.suo
+
+# .NET
+bin/
+obj/
+*.user
+
+# Gradle / Android
+.gradle/
+build/
+local.properties
+captures/
+*.apk
+*.aab
+*.jks
+*.keystore
+!debug.keystore
+
+# Node（以后可能用于网页调试台 / 工具脚本）
+node_modules/
+dist/
+
+# 本地配置与密钥
+.env
+.env.*
+!.env.example
+appsettings.Development.json
+*.pfx
+*.p12
+*.pvk
+
+# 日志与临时产物
+*.log
+tmp/
+artifacts/
+data/
+server/data/
+
+# 工作区本地工具链（dotnet SDK 等）
+.tools/
+.wix/
+
+# 由 design/tokens.json 生成的主题资源
+clients/windows/src/NineMRoom.Client.App/Themes/Tokens.xaml

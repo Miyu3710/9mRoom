@@ -1,0 +1,51 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui">
+  <Package Name="9mRoom"
+           Manufacturer="朔月"
+           Version="$(var.Version)"
+           UpgradeCode="8F3B6D2A-6C1E-4A7B-9D2F-3E5A1C7B4D90"
+           Language="2052"
+           Codepage="936"
+           Scope="perUser">
+
+    <MajorUpgrade DowngradeErrorMessage="已安装更高版本的 9mRoom。" />
+    <MediaTemplate EmbedCab="yes" />
+
+    <Icon Id="AppIcon" SourceFile="$(var.IconPath)" />
+    <Property Id="ARPPRODUCTICON" Value="AppIcon" />
+
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.LicensePath)" />
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
+
+    <StandardDirectory Id="LocalAppDataFolder">
+      <Directory Id="INSTALLFOLDER" Name="9mRoom">
+        <Files Include="$(var.PublishDir)\**" />
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="ProgramMenuFolder">
+      <Directory Id="ProgramMenuDir" Name="9mRoom" />
+    </StandardDirectory>
+
+    <StandardDirectory Id="DesktopFolder" />
+
+    <Component Id="StartMenuShortcut" Directory="ProgramMenuDir" Guid="2C7D9E41-5A3B-4F8C-8E21-7D6B0A9C3F12">
+      <Shortcut Id="StartMenuShortcutLink"
+                Name="9mRoom"
+                Target="[INSTALLFOLDER]NineMRoom.Client.App.exe"
+                WorkingDirectory="INSTALLFOLDER"
+                Icon="AppIcon" />
+      <RemoveFolder Id="RemoveProgramMenuDir" On="uninstall" />
+      <RegistryValue Root="HKCU" Key="Software\9mRoom" Name="startMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+
+    <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="7B4E2A19-8C3D-4F60-A2E7-5D9C1B8F6A23">
+      <Shortcut Id="DesktopShortcutLink"
+                Name="9mRoom"
+                Target="[INSTALLFOLDER]NineMRoom.Client.App.exe"
+                WorkingDirectory="INSTALLFOLDER"
+                Icon="AppIcon" />
+      <RegistryValue Root="HKCU" Key="Software\9mRoom" Name="desktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+  </Package>
+</Wix>

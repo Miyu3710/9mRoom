@@ -1,0 +1,117 @@
+{
+  "version": 1,
+  "note": "两端共用的一致性用例：给定 now、catalog 与 blocks，render() 的输出必须与 expected 逐字相同。",
+  "cases": [
+    {
+      "name": "basic-inline",
+      "now": 1730003600000,
+      "layout": "inline",
+      "separator": " | ",
+      "catalog": { "vscode": "VS Code" },
+      "blocks": [
+        { "id": "b1", "type": "app", "template": "🍚正在被 {app} 拷打", "data": { "appId": "vscode", "category": "coding", "idleSeconds": 0 } },
+        { "id": "b2", "type": "media", "template": "🎶{title} - {artist}", "data": { "title": "晴天", "artist": "周杰伦", "isPlaying": true, "positionMs": 0, "durationMs": 0, "sampledAt": 1730003600000 } },
+        { "id": "b3", "type": "todo", "template": "📚 {todo}", "data": { "text": "看完第三章" } },
+        { "id": "b4", "type": "uptime", "template": "🔌已开机 {uptime}", "data": { "startedAt": 1729989780000 } }
+      ],
+      "expected": "🍚正在被 VS Code 拷打 | 🎶晴天 - 周杰伦 | 📚 看完第三章 | 🔌已开机 3小时50分20秒"
+    },
+    {
+      "name": "empty-block-dropped",
+      "now": 1730003600000,
+      "layout": "inline",
+      "separator": " · ",
+      "catalog": { "chrome": "Chrome" },
+      "blocks": [
+        { "id": "b1", "type": "app", "template": "{app}", "data": { "appId": "chrome", "category": "browsing", "idleSeconds": 0 } },
+        { "id": "b2", "type": "media", "template": "🎶{title}", "data": { "title": null } },
+        { "id": "b3", "type": "text", "template": "{text}", "data": { "text": "  摸鱼中  " } }
+      ],
+      "expected": "Chrome · 摸鱼中"
+    },
+    {
+      "name": "uptime-short-format",
+      "now": 1730003600000,
+      "layout": "inline",
+      "separator": " | ",
+      "catalog": {},
+      "blocks": [
+        { "id": "b1", "type": "uptime", "template": "{uptime}", "data": { "startedAt": 1730003480000 } }
+      ],
+      "expected": "2分0秒"
+    },
+    {
+      "name": "unknown-placeholder-and-collapse-space",
+      "now": 1730003600000,
+      "layout": "inline",
+      "separator": " | ",
+      "catalog": {},
+      "blocks": [
+        { "id": "b1", "type": "todo", "template": "📚  {todo}  {nope}  待办", "data": { "text": "写周报" } }
+      ],
+      "expected": "📚 写周报 待办"
+    },
+    {
+      "name": "stacked-ignores-separator",
+      "now": 1730003600000,
+      "layout": "stacked",
+      "separator": " | ",
+      "catalog": { "vscode": "VS Code" },
+      "blocks": [
+        { "id": "b1", "type": "app", "template": "💻{app}", "data": { "appId": "vscode", "category": "coding", "idleSeconds": 0 } },
+        { "id": "b2", "type": "todo", "template": "📚 {todo}", "data": { "text": "看完第三章" } }
+      ],
+      "expected": "💻VS Code\n📚 看完第三章"
+    },
+    {
+      "name": "media-progress-extrapolated",
+      "now": 1730003600000,
+      "layout": "inline",
+      "separator": " | ",
+      "catalog": {},
+      "blocks": [
+        {
+          "id": "b1",
+          "type": "media",
+          "template": "🎵{title} - {artist} {progress}",
+          "data": {
+            "title": "晴天",
+            "artist": "周杰伦",
+            "isPlaying": true,
+            "positionMs": 143000,
+            "durationMs": 288000,
+            "sampledAt": 1730003580000
+          }
+        }
+      ],
+      "expected": "🎵晴天 - 周杰伦 [2:43/4:48]"
+    },
+    {
+      "name": "timer-countdown",
+      "now": 1730003600000,
+      "layout": "inline",
+      "separator": " | ",
+      "catalog": {},
+      "blocks": [
+        {
+          "id": "b1",
+          "type": "timer",
+          "template": "⏱ {elapsed} / {remaining}",
+          "data": { "mode": "countdown", "startedAt": 1730000000000, "durationMinutes": 90 }
+        }
+      ],
+      "expected": "⏱ 1:00:00 / 30:00"
+    },
+    {
+      "name": "idle-suffix",
+      "now": 1730003600000,
+      "layout": "inline",
+      "separator": " | ",
+      "catalog": { "chrome": "Chrome" },
+      "blocks": [
+        { "id": "b1", "type": "app", "template": "🖥 {app} · {idle}", "data": { "appId": "chrome", "category": "browsing", "idleSeconds": 65 } }
+      ],
+      "expected": "🖥 Chrome · 空闲1分"
+    }
+  ]
+}

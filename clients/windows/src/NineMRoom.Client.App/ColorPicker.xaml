@@ -1,0 +1,45 @@
+<UserControl x:Class="NineMRoom.Client.App.ColorPicker"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             FontFamily="{StaticResource FontUi}">
+    <UserControl.Resources>
+        <Style x:Key="PickerButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource BrushControlBg}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{StaticResource BrushGlassBorder}" BorderThickness="1"
+                                CornerRadius="{StaticResource RadiusSm}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+        </Grid.ColumnDefinitions>
+
+        <TextBox x:Name="HexBox" Style="{StaticResource ModernTextBox}" FontSize="{StaticResource FontSizeSm}" />
+        <Button Grid.Column="1" Click="OpenPalette_Click" Width="30" Margin="4,0,0,0"
+                Style="{StaticResource PickerButton}">
+            <Border x:Name="Swatch" Width="16" Height="16" CornerRadius="3"
+                    BorderBrush="{StaticResource BrushGlassBorder}" BorderThickness="1" />
+        </Button>
+
+        <Popup x:Name="PalettePopup" PlacementTarget="{Binding ElementName=HexBox}"
+               Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
+            <Border Background="{StaticResource BrushSurfaceAlt}"
+                    BorderBrush="{StaticResource BrushGlassBorder}" BorderThickness="1"
+                    CornerRadius="8" Padding="8" Margin="0,4,0,0">
+                <WrapPanel x:Name="Palette" Width="216" />
+            </Border>
+        </Popup>
+    </Grid>
+</UserControl>

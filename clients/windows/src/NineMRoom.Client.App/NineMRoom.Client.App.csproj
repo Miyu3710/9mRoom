@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
+    <SupportedOSPlatformVersion>10.0.19041.0</SupportedOSPlatformVersion>
+    <UseWPF>true</UseWPF>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>NineMRoom.Client.App</RootNamespace>
+    <PlatformTarget>x64</PlatformTarget>
+    <ApplicationIcon>..\..\..\..\packaging\9mRoom.ico</ApplicationIcon>
+    <Version>1.0.0</Version>
+    <Company>朔月</Company>
+    <Product>9mRoom</Product>
+    <AssemblyTitle>9mRoom</AssemblyTitle>
+    <Description>9mRoom 自习室</Description>
+    <Copyright>Copyright © 2026 朔月</Copyright>
+    <NoWarn>$(NoWarn);WFAC010</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NineMRoom.Client.Core\NineMRoom.Client.Core.csproj" />
+    <None Include="..\..\..\..\shared\app-catalog\catalog.json" Link="catalog.json" CopyToOutputDirectory="PreserveNewest" />
+    <Resource Include="Assets\9mRoom-mark.png" />
+  </ItemGroup>
+</Project>

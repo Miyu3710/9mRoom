@@ -1,0 +1,27 @@
+name: 9mroom
+
+services:
+  server:
+    build:
+      context: ./server
+    image: 9mroom-server:local
+    container_name: 9mroom-server
+    restart: unless-stopped
+    init: true
+    environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8080
+      ASPNETCORE_ENVIRONMENT: Production
+      NINEMROOM_DB: /data/9mroom.db
+      NINEMROOM_ADMIN_USER: "${NINEMROOM_ADMIN_USER:-admin}"
+      NINEMROOM_ADMIN_PASSWORD: "${NINEMROOM_ADMIN_PASSWORD:?请在 .env 中设置 NINEMROOM_ADMIN_PASSWORD}"
+      NINEMROOM_DEBUG: "0"
+      NINEMROOM_COOKIE_SECURE: "${NINEMROOM_COOKIE_SECURE:-0}"
+    ports:
+      - "${NINEMROOM_PORT:-5080}:8080"
+    volumes:
+      - 9mroom-data:/data
+    security_opt:
+      - no-new-privileges:true
+
+volumes:
+  9mroom-data:

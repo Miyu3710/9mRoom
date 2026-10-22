@@ -1,0 +1,100 @@
+<Window x:Class="NineMRoom.Client.App.CategoryDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="应用分类"
+        Width="760" Height="600"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False"
+        WindowStartupLocation="CenterOwner"
+        Foreground="{StaticResource BrushText}"
+        FontFamily="{StaticResource FontUi}">
+    <Window.Resources>
+        <Style x:Key="Label" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
+            <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
+        </Style>
+    </Window.Resources>
+    <Border Background="#17171A" BorderBrush="{StaticResource BrushGlassBorder}"
+            BorderThickness="1" CornerRadius="12">
+        <Grid Margin="22">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0" Margin="0,0,0,12" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+                <TextBlock Text="应用分类" FontSize="{StaticResource FontSizeLg}" FontWeight="SemiBold" />
+                <Button Content="×" Click="Close_Click" HorizontalAlignment="Right"
+                        Style="{StaticResource ModernButton}" Padding="10,3" />
+            </Grid>
+
+            <TextBlock Grid.Row="1" Text="分类模板只作用于 app 块；拖动 ≡ 可调整分类顺序，顺序会同步到应用规则。优先级：单应用模板 &gt; 分类模板 &gt; 全局模板。"
+                       Style="{StaticResource Label}" TextWrapping="Wrap" Margin="0,0,0,12" />
+
+            <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,0,-22,0">
+                <ItemsControl x:Name="CategoryItems" ItemsSource="{Binding AppCategories}"
+                              Margin="0,0,22,0">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Grid Margin="0,0,0,10">
+                                <Grid.Style>
+                                    <Style TargetType="Grid">
+                                        <Setter Property="Opacity" Value="1" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding IsDragging}" Value="True">
+                                                <Setter Property="Opacity" Value="0.3" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </Grid.Style>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="24" />
+                                    <ColumnDefinition Width="130" />
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0" Background="Transparent" Cursor="SizeAll"
+                                        PreviewMouseLeftButtonDown="Handle_PreviewMouseLeftButtonDown"
+                                        PreviewMouseMove="Handle_PreviewMouseMove"
+                                        PreviewMouseLeftButtonUp="Handle_PreviewMouseLeftButtonUp">
+                                    <TextBlock Text="≡" Foreground="{StaticResource BrushTextMuted}"
+                                               FontSize="{StaticResource FontSizeMd}"
+                                               HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                </Border>
+                                <TextBox Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource ModernTextBox}" Margin="0,0,8,0" />
+                                <TextBox Grid.Column="2" Text="{Binding Template, UpdateSourceTrigger=PropertyChanged}"
+                                         Style="{StaticResource ModernTextBox}" Margin="0,0,8,0" />
+                                <Button Grid.Column="3" Content="×" Tag="{Binding}" Click="Remove_Click"
+                                        Style="{StaticResource ModernButton}" Padding="10,3" />
+                            </Grid>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+
+            <StackPanel Grid.Row="3" Margin="0,14,0,0">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="24" />
+                        <ColumnDefinition Width="130" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="NewNameBox" Grid.Column="1" Style="{StaticResource ModernTextBox}" Margin="0,0,8,0" />
+                    <TextBox x:Name="NewTemplateBox" Grid.Column="2" Style="{StaticResource ModernTextBox}"
+                             Margin="0,0,8,0" />
+                    <Button Grid.Column="3" Content="新增分类" Click="Add_Click"
+                            Style="{StaticResource ModernPrimaryButton}" />
+                </Grid>
+                <TextBlock Text="新分类默认模板为空；删除分类后，使用该分类的应用会回到“自动”。"
+                           Style="{StaticResource Label}" Margin="0,8,0,0" />
+            </StackPanel>
+
+            <Canvas x:Name="DragLayer" Grid.RowSpan="4" IsHitTestVisible="False"
+                    Panel.ZIndex="20" />
+        </Grid>
+    </Border>
+</Window>
