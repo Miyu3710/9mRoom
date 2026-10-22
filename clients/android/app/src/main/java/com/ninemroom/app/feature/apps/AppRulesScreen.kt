@@ -1,9 +1,11 @@
 package com.ninemroom.app.feature.apps
 
 import android.content.Intent
+import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -26,6 +28,7 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -36,8 +39,10 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,47 +59,82 @@ import androidx.compose.ui.unit.dp
 import androidx.core.graphics.drawable.toBitmap
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ninemroom.app.NineRoomApplication
+import com.ninemroom.app.data.AppCategory
+import com.ninemroom.app.data.AppCategoryStore
 import com.ninemroom.app.data.AppRuleStore
-import com.ninemroom.app.data.appCategoryLabels
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 private data class InstalledApp(
     val packageName: String,
     val label: String,
     val icon: ImageBitmap?,
+    val isSystem: Boolean,
 )
 
 private fun loadInstalledApps(context: android.content.Context): List<InstalledApp> {
     val manager = context.packageManager
-    val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-    return manager.queryIntentActivities(intent, PackageManager.MATCH_ALL)
-        .mapNotNull { info ->
-            val application = info.activityInfo?.applicationInfo ?: return@mapNotNull null
+    return manager.getInstalledApplications(PackageManager.MATCH_ALL)
+        .asSequence()
+        .filter { it.enabled }
+        .map { application ->
             val icon = runCatching {
-                application.loadIcon(manager).toBitmap(96, 96).asImageBitmap()
+                application.loadIcon(manager).toBitmap(64, 64).asImageBitmap()
             }.getOrNull()
             InstalledApp(
                 packageName = application.packageName,
-                label = application.loadLabel(manager).toString(),
+                label = application.loadLabel(manager).toString()
+                    .ifBlank { application.packageName },
                 icon = icon,
+                isSystem = application.flags and
+                    (ApplicationInfo.FLAG_SYSTEM or ApplicationInfo.FLAG_UPDATED_SYSTEM_APP) != 0,
             )
         }
         .distinctBy { it.packageName }
-        .sortedBy { it.label.lowercase() }
+        .sortedWith(compareBy<InstalledApp> { it.isSystem }.thenBy { it.label.lowercase() })
+        .toList()
+}
+
+private enum class AppFilter(val label: String) {
+    All("全部"),
+    User("用户应用"),
+    System("系统应用"),
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AppRulesScreen(onBack: () -> Unit) {
+fun AppRulesScreen(
+    onBack: () -> Unit,
+    onManageCategories: () -> Unit,
+) {
     val context = LocalContext.current
-    val store = (context.applicationContext as NineRoomApplication).appRuleStore
+    val app = context.applicationContext as NineRoomApplication
+    val store = app.appRuleStore
+    val categoryStore = app.appCategoryStore
     val rules by store.rules.collectAsStateWithLifecycle()
-    val apps = remember { loadInstalledApps(context) }
+    val categories by categoryStore.categories.collectAsStateWithLifecycle()
+    var apps by remember { mutableStateOf<List<InstalledApp>>(emptyList()) }
+    var loading by remember { mutableStateOf(true) }
     var query by remember { mutableStateOf("") }
+    var filter by remember { mutableStateOf(AppFilter.All) }
     var selected by remember { mutableStateOf<InstalledApp?>(null) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val filtered = remember(query, apps) {
-        if (query.isBlank()) apps else apps.filter {
-            it.label.contains(query, ignoreCase = true) ||
+
+    LaunchedEffect(Unit) {
+        apps = withContext(Dispatchers.IO) { loadInstalledApps(context) }
+        loading = false
+    }
+
+    val filtered = remember(query, apps, filter) {
+        apps.filter { app ->
+            when (filter) {
+                AppFilter.All -> true
+                AppFilter.User -> !app.isSystem
+                AppFilter.System -> app.isSystem
+            }
+        }.filter {
+            query.isBlank() ||
+                it.label.contains(query, ignoreCase = true) ||
                 it.packageName.contains(query, ignoreCase = true)
         }
     }
@@ -109,13 +149,16 @@ fun AppRulesScreen(onBack: () -> Unit) {
             IconButton(onClick = onBack) {
                 Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
             }
-            Column {
+            Column(Modifier.weight(1f)) {
                 Text("应用与分类", style = MaterialTheme.typography.headlineSmall)
                 Text(
                     "点开应用可改分类、显示名称和共享开关；规则只保存在本机。",
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+            }
+            TextButton(onClick = onManageCategories) {
+                Text("管理分类")
             }
         }
 
@@ -130,6 +173,32 @@ fun AppRulesScreen(onBack: () -> Unit) {
                 .padding(horizontal = 20.dp, vertical = 8.dp),
         )
 
+        Row(
+            Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 2.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            AppFilter.entries.forEach { option ->
+                FilterChip(
+                    selected = filter == option,
+                    onClick = { filter = option },
+                    label = { Text(option.label) },
+                )
+            }
+        }
+
+        if (loading) {
+            Box(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(32.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                CircularProgressIndicator(modifier = Modifier.size(28.dp))
+            }
+        }
+
         LazyColumn(
             contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -139,7 +208,8 @@ fun AppRulesScreen(onBack: () -> Unit) {
                 AppRow(
                     app = app,
                     displayName = rule?.displayName ?: app.label,
-                    category = rule?.category ?: "other",
+                    categoryName = categories.firstOrNull { it.id == (rule?.category ?: "other") }?.name
+                        ?: "其他",
                     hidden = rule?.hidden == true,
                     onClick = { selected = app },
                 )
@@ -155,6 +225,8 @@ fun AppRulesScreen(onBack: () -> Unit) {
             AppDetail(
                 app = app,
                 store = store,
+                categoryStore = categoryStore,
+                categories = categories,
                 onDismiss = { selected = null },
             )
         }
@@ -165,7 +237,7 @@ fun AppRulesScreen(onBack: () -> Unit) {
 private fun AppRow(
     app: InstalledApp,
     displayName: String,
-    category: String,
+    categoryName: String,
     hidden: Boolean,
     onClick: () -> Unit,
 ) {
@@ -193,7 +265,7 @@ private fun AppRow(
                     overflow = TextOverflow.Ellipsis,
                 )
                 Text(
-                    "${appCategoryLabels[category] ?: "其他"} · ${app.packageName}",
+                    "${categoryName}${if (app.isSystem) " · 系统" else ""} · ${app.packageName}",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,
@@ -238,6 +310,8 @@ private fun AppIcon(app: InstalledApp) {
 private fun AppDetail(
     app: InstalledApp,
     store: AppRuleStore,
+    categoryStore: AppCategoryStore,
+    categories: List<AppCategory>,
     onDismiss: () -> Unit,
 ) {
     val rules by store.rules.collectAsStateWithLifecycle()
@@ -245,10 +319,14 @@ private fun AppDetail(
     var name by remember(app.packageName) {
         mutableStateOf(rule?.displayName ?: "")
     }
+    var template by remember(app.packageName) {
+        mutableStateOf(rule?.template ?: "")
+    }
 
     Column(
         Modifier
             .fillMaxWidth()
+            .verticalScroll(rememberScrollState())
             .padding(horizontal = 24.dp, vertical = 8.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -291,14 +369,41 @@ private fun AppDetail(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.padding(top = 6.dp),
         ) {
-            appCategoryLabels.forEach { (id, label) ->
+            categories.forEach { category ->
                 FilterChip(
-                    selected = (rule?.category ?: "other") == id,
-                    onClick = { store.setCategory(app.packageName, id) },
-                    label = { Text(label) },
+                    selected = (rule?.category ?: "other") == category.id,
+                    onClick = { store.setCategory(app.packageName, category.id) },
+                    label = { Text(category.name) },
                 )
             }
         }
+
+        Spacer(Modifier.size(16.dp))
+        Text("应用模板", style = MaterialTheme.typography.titleMedium)
+        Text(
+            "留空时继承分类模板；支持 {app} 占位符。",
+            style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 2.dp, bottom = 6.dp),
+        )
+        OutlinedTextField(
+            value = template,
+            onValueChange = {
+                template = it.take(80)
+                store.setTemplate(app.packageName, template)
+            },
+            placeholder = {
+                Text(
+                    categoryStore.find(rule?.category ?: "other")?.template
+                        ?: "📡 {app}",
+                )
+            },
+            singleLine = true,
+            supportingText = {
+                Text("优先于分类模板；清空后恢复继承。")
+            },
+            modifier = Modifier.fillMaxWidth(),
+        )
 
         Spacer(Modifier.size(16.dp))
         Row(

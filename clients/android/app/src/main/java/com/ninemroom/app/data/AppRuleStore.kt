@@ -11,6 +11,7 @@ data class AppRule(
     val category: String? = null,
     val hidden: Boolean = false,
     val displayName: String? = null,
+    val template: String? = null,
 )
 
 class AppRuleStore(context: Context) {
@@ -43,6 +44,23 @@ class AppRuleStore(context: Context) {
         persist()
     }
 
+    fun setTemplate(packageName: String, template: String?) {
+        val current = _rules.value[packageName] ?: AppRule(packageName)
+        _rules.value = _rules.value + (
+            packageName to current.copy(
+                template = template?.trim()?.takeIf { it.isNotBlank() },
+            )
+        )
+        persist()
+    }
+
+    fun clearCategory(categoryId: String) {
+        _rules.value = _rules.value.mapValues { (_, rule) ->
+            if (rule.category == categoryId) rule.copy(category = null) else rule
+        }
+        persist()
+    }
+
     private fun persist() {
         val root = JSONObject()
         _rules.value.forEach { (packageName, rule) ->
@@ -51,7 +69,8 @@ class AppRuleStore(context: Context) {
                 JSONObject()
                     .put("category", rule.category ?: JSONObject.NULL)
                     .put("hidden", rule.hidden)
-                    .put("displayName", rule.displayName ?: JSONObject.NULL),
+                    .put("displayName", rule.displayName ?: JSONObject.NULL)
+                    .put("template", rule.template ?: JSONObject.NULL),
             )
         }
         preferences.edit().putString("rules", root.toString()).apply()
@@ -72,6 +91,7 @@ class AppRuleStore(context: Context) {
                             category = json.optString("category").takeIf { it.isNotBlank() },
                             hidden = json.optBoolean("hidden"),
                             displayName = json.optString("displayName").takeIf { it.isNotBlank() },
+                            template = json.optString("template").takeIf { it.isNotBlank() },
                         ),
                     )
                 }
@@ -81,14 +101,3 @@ class AppRuleStore(context: Context) {
         }
     }
 }
-
-val appCategoryLabels = linkedMapOf(
-    "coding" to "编程",
-    "writing" to "写作",
-    "reading" to "阅读",
-    "meeting" to "会议",
-    "media" to "影音",
-    "game" to "游戏",
-    "browsing" to "浏览",
-    "other" to "其他",
-)

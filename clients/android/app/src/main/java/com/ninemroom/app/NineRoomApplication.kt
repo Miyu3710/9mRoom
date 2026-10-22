@@ -1,6 +1,7 @@
 package com.ninemroom.app
 
 import android.app.Application
+import com.ninemroom.app.data.AppCategoryStore
 import com.ninemroom.app.data.AppRuleStore
 import com.ninemroom.app.data.FocusTimerController
 import com.ninemroom.app.data.StatusLayoutStore
@@ -13,6 +14,8 @@ class NineRoomApplication : Application() {
         private set
     lateinit var appRuleStore: AppRuleStore
         private set
+    lateinit var appCategoryStore: AppCategoryStore
+        private set
     lateinit var statusLayoutStore: StatusLayoutStore
         private set
     lateinit var focusTimer: FocusTimerController
@@ -22,8 +25,16 @@ class NineRoomApplication : Application() {
         super.onCreate()
         todoStore = TodoStore(this)
         appRuleStore = AppRuleStore(this)
+        appCategoryStore = AppCategoryStore(this)
         statusLayoutStore = StatusLayoutStore(this)
         focusTimer = FocusTimerController(this)
-        roomController = RoomController(this, todoStore, appRuleStore, statusLayoutStore, focusTimer)
+        roomController = RoomController(
+            this,
+            todoStore,
+            appRuleStore,
+            appCategoryStore,
+            statusLayoutStore,
+            focusTimer,
+        )
     }
 }

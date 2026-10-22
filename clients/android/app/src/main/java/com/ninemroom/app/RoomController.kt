@@ -3,6 +3,7 @@ package com.ninemroom.app
 import android.content.Context
 import androidx.core.content.ContextCompat
 import com.ninemroom.app.data.AppSettings
+import com.ninemroom.app.data.AppCategoryStore
 import com.ninemroom.app.data.AppRuleStore
 import com.ninemroom.app.data.ChatLine
 import com.ninemroom.app.data.ConnectionStatus
@@ -58,6 +59,9 @@ data class RoomUiState(
     val shareApp: Boolean = true,
     val shareMusic: Boolean = true,
     val autoStart: Boolean = true,
+    val autoConnect: Boolean = true,
+    val homeRoomCode: String = "",
+    val homeRoomName: String = "",
     val currentTodo: String = "",
 ) {
     val self: RoomMember?
@@ -71,6 +75,7 @@ class RoomController(
     context: Context,
     private val todoStore: TodoStore,
     private val appRules: AppRuleStore,
+    private val appCategories: AppCategoryStore,
     private val statusLayout: StatusLayoutStore,
     private val focusTimer: FocusTimerController,
 ) {
@@ -80,11 +85,21 @@ class RoomController(
     private val foregroundAppReader = ForegroundAppReader(appContext)
     private val mediaReader = MediaReader(appContext)
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val initialRoom = if (settings.autoConnect && settings.homeRoomCode.isNotBlank()) {
+        settings.homeRoomCode
+    } else {
+        settings.roomCode
+    }
+    private val initialRoomName = if (initialRoom == settings.homeRoomCode && settings.homeRoomCode.isNotBlank()) {
+        settings.homeRoomName
+    } else {
+        settings.roomName
+    }
     private val _state = MutableStateFlow(
         RoomUiState(
             serverUrl = settings.serverUrl,
-            roomCode = settings.roomCode,
-            roomName = settings.roomName,
+            roomCode = initialRoom,
+            roomName = initialRoomName,
             displayName = settings.displayName,
             keepOnline = settings.keepOnline,
             overlayEnabled = settings.overlayEnabled,
@@ -92,6 +107,9 @@ class RoomController(
             shareApp = settings.shareApp,
             shareMusic = settings.shareMusic,
             autoStart = settings.autoStart,
+            autoConnect = settings.autoConnect,
+            homeRoomCode = settings.homeRoomCode,
+            homeRoomName = settings.homeRoomName,
             currentTodo = todoStore.current()?.title.orEmpty(),
         ),
     )
@@ -124,6 +142,14 @@ class RoomController(
         }
 
         scope.launch {
+            appCategories.categories.collectLatest {
+                if (_state.value.status == ConnectionStatus.Connected) {
+                    sendPresence()
+                }
+            }
+        }
+
+        scope.launch {
             statusLayout.rules.collectLatest {
                 if (_state.value.status == ConnectionStatus.Connected) {
                     sendPresence()
@@ -131,8 +157,9 @@ class RoomController(
             }
         }
 
-        if (settings.serverUrl.isNotBlank() &&
-            settings.roomCode.isNotBlank() &&
+        if (settings.autoConnect &&
+            initialRoom.isNotBlank() &&
+            settings.serverUrl.isNotBlank() &&
             settings.displayName.isNotBlank()
         ) {
             beginConnect()
@@ -310,16 +337,20 @@ class RoomController(
             when (rule.type) {
                 "app" -> {
                     if (current.shareApp && appRule?.hidden != true) {
+                        val categoryId = appRule?.category ?: app?.category ?: "other"
+                        val appTemplate = appRule?.template
+                            ?: appCategories.find(categoryId)?.template
+                            ?: defaultStatusTemplate("app")
                         blocks.put(
                             JSONObject()
                                 .put("id", rule.id)
                                 .put("type", "app")
-                                .put("template", rule.template.ifBlank { defaultStatusTemplate("app") })
+                                .put("template", appTemplate.ifBlank { defaultStatusTemplate("app") })
                                 .put(
                                     "data",
                                     JSONObject()
                                         .put("appId", app?.id ?: "android")
-                                        .put("category", appRule?.category ?: app?.category ?: "other")
+                                        .put("category", categoryId)
                                         .put("name", appRule?.displayName ?: ""),
                                 ),
                         )
@@ -422,6 +453,38 @@ class RoomController(
     fun setAutoStart(enabled: Boolean) {
         settings.autoStart = enabled
         _state.update { it.copy(autoStart = enabled) }
+    }
+
+    fun setAutoConnect(enabled: Boolean) {
+        settings.autoConnect = enabled
+        _state.update { it.copy(autoConnect = enabled) }
+        if (enabled &&
+            !_state.value.showMain &&
+            _state.value.serverUrl.isNotBlank() &&
+            _state.value.roomCode.isNotBlank() &&
+            _state.value.displayName.isNotBlank()
+        ) {
+            beginConnect()
+        }
+    }
+
+    fun setHomeToCurrentRoom() {
+        val current = _state.value
+        if (current.roomCode.isBlank()) return
+        settings.homeRoomCode = current.roomCode
+        settings.homeRoomName = current.roomName
+        _state.update {
+            it.copy(
+                homeRoomCode = current.roomCode,
+                homeRoomName = current.roomName,
+            )
+        }
+    }
+
+    fun clearHomeRoom() {
+        settings.homeRoomCode = ""
+        settings.homeRoomName = ""
+        _state.update { it.copy(homeRoomCode = "", homeRoomName = "") }
     }
 
     fun refreshPresence() {

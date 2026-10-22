@@ -11,6 +11,7 @@ class BootReceiver : BroadcastReceiver() {
         if (intent.action != Intent.ACTION_BOOT_COMPLETED) return
         val settings = AppSettings(context)
         if (!settings.autoStart ||
+            !settings.autoConnect ||
             !settings.keepOnline ||
             settings.serverUrl.isBlank() ||
             settings.roomCode.isBlank() ||

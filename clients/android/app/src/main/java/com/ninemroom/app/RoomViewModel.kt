@@ -34,6 +34,12 @@ class RoomViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setAutoStart(enabled: Boolean) = controller.setAutoStart(enabled)
 
+    fun setAutoConnect(enabled: Boolean) = controller.setAutoConnect(enabled)
+
+    fun setHomeToCurrentRoom() = controller.setHomeToCurrentRoom()
+
+    fun clearHomeRoom() = controller.clearHomeRoom()
+
     fun refreshPresence() = controller.refreshPresence()
 
     fun refreshOverlay() = controller.refreshOverlay()

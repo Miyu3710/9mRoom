@@ -46,6 +46,18 @@ class AppSettings(context: Context) {
         get() = preferences.getBoolean("auto_start", true)
         set(value) = preferences.edit().putBoolean("auto_start", value).apply()
 
+    var autoConnect: Boolean
+        get() = preferences.getBoolean("auto_connect", true)
+        set(value) = preferences.edit().putBoolean("auto_connect", value).apply()
+
+    var homeRoomCode: String
+        get() = preferences.getString("home_room_code", "").orEmpty()
+        set(value) = preferences.edit().putString("home_room_code", value.trim().lowercase()).apply()
+
+    var homeRoomName: String
+        get() = preferences.getString("home_room_name", "").orEmpty()
+        set(value) = preferences.edit().putString("home_room_name", value.trim()).apply()
+
     val clientId: String
         get() {
             val existing = preferences.getString("client_id", "").orEmpty()

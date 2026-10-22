@@ -65,6 +65,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ninemroom.app.RoomViewModel
 import com.ninemroom.app.data.ConnectionStatus
 import com.ninemroom.app.feature.apps.AppRulesScreen
+import com.ninemroom.app.feature.apps.CategoryManagerScreen
 import com.ninemroom.app.feature.connect.ConnectScreen
 import com.ninemroom.app.feature.focus.FocusScreen
 import com.ninemroom.app.feature.home.HomeScreen
@@ -85,11 +86,14 @@ enum class Destination(
     Room("room", "房间", Icons.Outlined.People),
     Settings("settings", "设置", Icons.Outlined.Settings),
     Apps("apps", "应用", Icons.Outlined.Apps),
+    Categories("categories", "分类管理", Icons.Outlined.Apps),
     SyncList("sync-list", "同步列表", Icons.Outlined.Tune),
 }
 
 private val navDestinations = Destination.entries.filter {
-    it != Destination.Apps && it != Destination.SyncList
+    it != Destination.Apps &&
+        it != Destination.Categories &&
+        it != Destination.SyncList
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -275,6 +279,9 @@ fun NineRoomApp(
                             shareApp = state.shareApp,
                             shareMusic = state.shareMusic,
                             autoStart = state.autoStart,
+                            autoConnect = state.autoConnect,
+                            homeRoomCode = state.homeRoomCode,
+                            homeRoomName = state.homeRoomName,
                             onKeepOnlineChange = roomViewModel::setKeepOnline,
                             onOverlayChange = { enabled ->
                                 roomViewModel.setOverlayEnabled(enabled)
@@ -294,6 +301,9 @@ fun NineRoomApp(
                             onShareAppChange = roomViewModel::setShareApp,
                             onShareMusicChange = roomViewModel::setShareMusic,
                             onAutoStartChange = roomViewModel::setAutoStart,
+                            onAutoConnectChange = roomViewModel::setAutoConnect,
+                            onSetHomeRoom = roomViewModel::setHomeToCurrentRoom,
+                            onClearHomeRoom = roomViewModel::clearHomeRoom,
                             onRequestNotifications = {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                                     ContextCompat.checkSelfPermission(
@@ -324,7 +334,15 @@ fun NineRoomApp(
                         )
                     }
                     composable(Destination.Apps.route) {
-                        AppRulesScreen(onBack = { navController.popBackStack() })
+                        AppRulesScreen(
+                            onBack = { navController.popBackStack() },
+                            onManageCategories = {
+                                navController.navigate(Destination.Categories.route)
+                            },
+                        )
+                    }
+                    composable(Destination.Categories.route) {
+                        CategoryManagerScreen(onBack = { navController.popBackStack() })
                     }
                     composable(Destination.SyncList.route) {
                         SyncListScreen(onBack = { navController.popBackStack() })
