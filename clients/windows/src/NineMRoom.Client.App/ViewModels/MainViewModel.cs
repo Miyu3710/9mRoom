@@ -2576,7 +2576,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 if (!_roomMemberLog.TryGetValue(member.Id, out var old))
                 {
                     AddRoomLog($"{member.Name} 加入了房间", "join");
-                    if (member.Id != _client?.SelfId && member.Online)
+                    if (member.Id != _client?.SelfId && member.Online && _settings.NotifyRoomEvents)
                     {
                         NotifySystem("9mRoom", $"{member.Name} 进入了房间");
                     }
@@ -2598,7 +2598,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             foreach (var old in _roomMemberLog.Where(pair => !currentIds.Contains(pair.Key)))
             {
                 AddRoomLog($"{old.Value.Name} 离开了房间", "leave");
-                if (old.Key != _client?.SelfId)
+                if (old.Key != _client?.SelfId && _settings.NotifyRoomEvents)
                 {
                     NotifySystem("9mRoom", $"{old.Value.Name} 离开了房间");
                 }
@@ -2937,17 +2937,32 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         client.MembersChanged += () => _dispatcher.Invoke(OnRoomMembersChanged);
         client.ChatReceived += message => _dispatcher.Invoke(() =>
         {
+            var isSelf = string.Equals(message.MemberId, client.SelfId, StringComparison.Ordinal);
             ChatMessages.Add(new ChatMessageItem(
                 message.Id,
                 message.Name,
                 message.Device,
                 message.Text,
                 DateTimeOffset.FromUnixTimeMilliseconds(message.At).ToLocalTime().ToString("HH:mm"),
-                string.Equals(message.MemberId, client.SelfId, StringComparison.Ordinal)));
+                isSelf));
 
             while (ChatMessages.Count > 500)
             {
                 ChatMessages.RemoveAt(0);
+            }
+
+            if (!isSelf && _settings.NotifyRoomChat)
+            {
+                var preview = (message.Text ?? string.Empty)
+                    .Replace('\r', ' ')
+                    .Replace('\n', ' ')
+                    .Trim();
+                if (preview.Length > 100)
+                {
+                    preview = preview[..100] + "…";
+                }
+
+                NotifySystem("9mRoom · 房间聊天", $"{message.Name}：{preview}");
             }
         });
         client.Message += message => _dispatcher.Invoke(() => MyStatusText = message);
@@ -3008,13 +3023,24 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
     }
 
+    public bool NotifyRoomChat
+    {
+        get => _settings.NotifyRoomChat;
+        set
+        {
+            if (_settings.NotifyRoomChat == value)
+            {
+                return;
+            }
+
+            _settings.NotifyRoomChat = value;
+            SettingsStore.Save(_settings);
+            OnPropertyChanged();
+        }
+    }
+
     private void NotifySystem(string title, string text)
     {
-        if (!_settings.NotifyRoomEvents)
-        {
-            return;
-        }
-
         SystemNotificationRequested?.Invoke(title, text);
     }
 

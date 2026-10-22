@@ -110,6 +110,8 @@
                         <TextBlock Text="通知" Style="{StaticResource SectionTitle}" />
                         <CheckBox Content="房间成员进入 / 离开时发送系统通知"
                                   IsChecked="{Binding NotifyRoomEvents}" />
+                        <CheckBox Content="房间聊天消息也显示系统通知"
+                                  IsChecked="{Binding NotifyRoomChat}" Margin="0,6,0,0" />
                         <TextBlock Text="通知通过 Windows 通知中心显示；关闭后不再弹出。"
                                    Style="{StaticResource Label}" Margin="0,2,0,0" />
                     </StackPanel>
@@ -118,17 +120,17 @@
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
                         <TextBlock Text="隐私" Style="{StaticResource SectionTitle}" />
+                        <CheckBox Content="共享当前窗口标题" IsChecked="{Binding ShareWindowTitles}" />
+                        <TextBlock Text="窗口标题只在这个开关开启后上传；关闭时只显示应用名。"
+                                   Style="{StaticResource Label}" Margin="0,2,0,8" />
                         <CheckBox Content="共享当前音乐状态" IsChecked="{Binding ShareMusic}" />
                         <TextBlock Text="只展示指定播放器的媒体；按播放器标识子串匹配，多个用英文逗号分隔，留空表示全部。"
                                    Style="{StaticResource Label}" Margin="0,6,0,4" TextWrapping="Wrap" />
                         <TextBox Text="{Binding MediaSourceFilter, UpdateSourceTrigger=LostFocus}"
                                  Style="{StaticResource InputBox}" Margin="0,0,0,2"
                                  ToolTip="例如：Spotify, QQMusic, 网易云" />
-                        <CheckBox Content="共享当前窗口标题" IsChecked="{Binding ShareWindowTitles}" Margin="0,4,0,0" />
                         <TextBlock Text="例如：Spotify, QQMusic, 网易云"
-                                   Style="{StaticResource Label}" Margin="0,2,0,2" />
-                        <TextBlock Text="窗口标题只在这个开关开启后上传；关闭时只显示应用名。"
-                                   Style="{StaticResource Label}" Margin="0,0,0,0" />
+                                   Style="{StaticResource Label}" Margin="0,2,0,0" />
                     </StackPanel>
                 </Border>
 

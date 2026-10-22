@@ -21,6 +21,7 @@ public sealed class AppSettings
     public string TitleWhitelistJson { get; set; } = string.Empty;
     public bool NotifyOnClose { get; set; } = true;
     public bool NotifyRoomEvents { get; set; } = true;
+    public bool NotifyRoomChat { get; set; }
     public string TodoText { get; set; } = string.Empty;
     public string TodosJson { get; set; } = string.Empty;
     public string StatusLayoutJson { get; set; } = string.Empty;
