@@ -67,6 +67,10 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
     val app = context.applicationContext as NineRoomApplication
     val categoryStore = app.appCategoryStore
     val categories by categoryStore.categories.collectAsStateWithLifecycle()
+    val layoutRules by app.statusLayoutStore.rules.collectAsStateWithLifecycle()
+    val globalAppTemplate = layoutRules.firstOrNull { it.type == "app" }?.template
+        ?.takeIf { it.isNotBlank() }
+        ?: "📡 {app}"
     var selected by remember { mutableStateOf<AppCategory?>(null) }
     var showAdd by remember { mutableStateOf(false) }
     var draggedIndex by remember { mutableIntStateOf(-1) }
@@ -135,6 +139,7 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
 
     if (showAdd) {
         AddCategoryDialog(
+            globalTemplate = globalAppTemplate,
             onDismiss = { showAdd = false },
             onAdd = { name, template ->
                 categoryStore.add(name, template)
@@ -152,6 +157,7 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
                 category = categories.firstOrNull { it.id == category.id } ?: category,
                 categoryStore = categoryStore,
                 appRuleStore = app.appRuleStore,
+                globalTemplate = globalAppTemplate,
                 onDeleted = { selected = null },
             )
         }
@@ -243,6 +249,7 @@ private fun CategoryRow(
 
 @Composable
 private fun AddCategoryDialog(
+    globalTemplate: String,
     onDismiss: () -> Unit,
     onAdd: (name: String, template: String) -> Unit,
 ) {
@@ -264,7 +271,7 @@ private fun AddCategoryDialog(
                     onValueChange = { template = it.take(80) },
                     label = { Text("分类模板") },
                     singleLine = true,
-                    placeholder = { Text("留空使用全局模板") },
+                    placeholder = { Text(globalTemplate) },
                     supportingText = { Text("占位符：{app}；留空则继承全局模板") },
                     modifier = Modifier.padding(top = 8.dp),
                 )
@@ -288,6 +295,7 @@ private fun CategoryDetail(
     category: AppCategory,
     categoryStore: AppCategoryStore,
     appRuleStore: com.ninemroom.app.data.AppRuleStore,
+    globalTemplate: String,
     onDeleted: () -> Unit,
 ) {
     var name by remember(category.id) { mutableStateOf(category.name) }
@@ -326,7 +334,7 @@ private fun CategoryDetail(
             },
             label = { Text("分类应用模板") },
             singleLine = true,
-            placeholder = { Text("留空使用全局模板") },
+            placeholder = { Text(globalTemplate) },
             supportingText = { Text("应用未单独设置模板时使用；留空则继承全局模板") },
             modifier = Modifier
                 .fillMaxWidth()

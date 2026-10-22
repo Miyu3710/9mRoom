@@ -90,6 +90,14 @@ class AppSettings(context: Context) {
         get() = preferences.getInt("overlay_margin", 8).coerceIn(4, 24)
         set(value) = preferences.edit().putInt("overlay_margin", value.coerceIn(4, 24)).apply()
 
+    var overlayXFraction: Float
+        get() = preferences.getFloat("overlay_x_fraction", -1f)
+        set(value) = preferences.edit().putFloat("overlay_x_fraction", value).apply()
+
+    var overlayYFraction: Float
+        get() = preferences.getFloat("overlay_y_fraction", -1f)
+        set(value) = preferences.edit().putFloat("overlay_y_fraction", value).apply()
+
     val clientId: String
         get() {
             val existing = preferences.getString("client_id", "").orEmpty()

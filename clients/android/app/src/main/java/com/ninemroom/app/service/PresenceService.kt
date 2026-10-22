@@ -22,6 +22,7 @@ import android.widget.TextView
 import androidx.core.app.ServiceCompat
 import com.ninemroom.app.NineRoomApplication
 import com.ninemroom.app.RoomUiState
+import com.ninemroom.app.data.AppSettings
 import com.ninemroom.app.data.ConnectionStatus
 import com.ninemroom.app.data.RoomMember
 import kotlinx.coroutines.CoroutineScope
@@ -35,6 +36,7 @@ import kotlin.math.min
 
 class PresenceService : Service() {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val settings by lazy { AppSettings(this) }
     private var collectJob: Job? = null
     private var overlayView: TextView? = null
     private var overlayParams: WindowManager.LayoutParams? = null
@@ -97,6 +99,7 @@ class PresenceService : Service() {
     override fun onDestroy() {
         collectJob?.cancel()
         scope.cancel()
+        saveOverlayPosition()
         removeOverlay()
         super.onDestroy()
     }
@@ -147,9 +150,26 @@ class PresenceService : Service() {
                 WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
             PixelFormat.TRANSLUCENT,
         ).apply {
+            val screenWidth = resources.displayMetrics.widthPixels
+            val screenHeight = resources.displayMetrics.heightPixels
+            val size = dp(settings.overlaySize)
+            val width = size
+            val height = dp(30)
+            val maxX = (screenWidth - width).coerceAtLeast(1)
+            val maxY = (screenHeight - height).coerceAtLeast(1)
             gravity = Gravity.TOP or Gravity.START
-            x = resources.displayMetrics.widthPixels - dp(120) - dp(12)
-            y = dp(108)
+            x = if (settings.overlayXFraction >= 0f) {
+                (settings.overlayXFraction * maxX).toInt().coerceIn(0, maxX)
+            } else {
+                screenWidth - width - dp(12)
+            }
+            y = if (settings.overlayYFraction >= 0f) {
+                (settings.overlayYFraction * maxY).toInt().coerceIn(0, maxY)
+            } else {
+                dp(108)
+            }
+            this.width = width
+            this.height = height
         }
         return try {
             getSystemService(WindowManager::class.java).addView(view, params)
@@ -169,10 +189,15 @@ class PresenceService : Service() {
         view.alpha = state.overlayOpacity
         if (appliedSize != state.overlaySize) {
             appliedSize = state.overlaySize
+            val screenWidth = resources.displayMetrics.widthPixels
+            val screenHeight = resources.displayMetrics.heightPixels
             params.width = dp(state.overlaySize)
             params.height = dp(30)
-            params.x = resources.displayMetrics.widthPixels - dp(state.overlaySize) - dp(12)
-            params.y = dp(108)
+            params.x = params.x.coerceIn(
+                0,
+                (screenWidth - dp(state.overlaySize)).coerceAtLeast(0),
+            )
+            params.y = params.y.coerceIn(0, (screenHeight - dp(30)).coerceAtLeast(0))
             try {
                 getSystemService(WindowManager::class.java).updateViewLayout(view, params)
             } catch (_: Exception) {
@@ -393,6 +418,7 @@ class PresenceService : Service() {
     }
 
     private fun removeOverlay() {
+        saveOverlayPosition()
         removePanelView()
         panelExpanded = false
         val view = overlayView ?: return
@@ -405,6 +431,15 @@ class PresenceService : Service() {
         overlayParams = null
         appliedMargin = Int.MIN_VALUE
         appliedSize = -1
+    }
+
+    private fun saveOverlayPosition() {
+        val view = overlayView ?: return
+        val params = overlayParams ?: return
+        val maxX = (resources.displayMetrics.widthPixels - view.width).coerceAtLeast(1)
+        val maxY = (resources.displayMetrics.heightPixels - view.height).coerceAtLeast(1)
+        settings.overlayXFraction = params.x.toFloat() / maxX
+        settings.overlayYFraction = params.y.toFloat() / maxY
     }
 
     private inner class DragTouchListener : View.OnTouchListener {
@@ -444,7 +479,16 @@ class PresenceService : Service() {
                 }
 
                 MotionEvent.ACTION_UP -> {
-                    if (!moved) view.performClick()
+                    if (moved) {
+                        saveOverlayPosition()
+                    } else {
+                        view.performClick()
+                    }
+                    return true
+                }
+
+                MotionEvent.ACTION_CANCEL -> {
+                    saveOverlayPosition()
                     return true
                 }
             }
