@@ -260,6 +260,7 @@ fun NineRoomApp(
                             notifyRoomEvents = state.notifyRoomEvents,
                             shareApp = state.shareApp,
                             shareMusic = state.shareMusic,
+                            autoStart = state.autoStart,
                             onKeepOnlineChange = roomViewModel::setKeepOnline,
                             onOverlayChange = { enabled ->
                                 roomViewModel.setOverlayEnabled(enabled)
@@ -278,6 +279,7 @@ fun NineRoomApp(
                             onNotifyRoomEventsChange = roomViewModel::setNotifyRoomEvents,
                             onShareAppChange = roomViewModel::setShareApp,
                             onShareMusicChange = roomViewModel::setShareMusic,
+                            onAutoStartChange = roomViewModel::setAutoStart,
                             onRequestNotifications = {
                                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
                                     ContextCompat.checkSelfPermission(

@@ -53,6 +53,7 @@ data class RoomUiState(
     val notifyRoomEvents: Boolean = true,
     val shareApp: Boolean = true,
     val shareMusic: Boolean = true,
+    val autoStart: Boolean = true,
     val currentTodo: String = "",
 ) {
     val self: RoomMember?
@@ -84,6 +85,7 @@ class RoomController(
             notifyRoomEvents = settings.notifyRoomEvents,
             shareApp = settings.shareApp,
             shareMusic = settings.shareMusic,
+            autoStart = settings.autoStart,
             currentTodo = todoStore.current()?.title.orEmpty(),
         ),
     )
@@ -373,6 +375,11 @@ class RoomController(
         settings.shareMusic = enabled
         _state.update { it.copy(shareMusic = enabled) }
         sendPresence()
+    }
+
+    fun setAutoStart(enabled: Boolean) {
+        settings.autoStart = enabled
+        _state.update { it.copy(autoStart = enabled) }
     }
 
     fun refreshPresence() {

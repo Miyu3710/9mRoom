@@ -42,6 +42,10 @@ class AppSettings(context: Context) {
         get() = preferences.getBoolean("share_music", true)
         set(value) = preferences.edit().putBoolean("share_music", value).apply()
 
+    var autoStart: Boolean
+        get() = preferences.getBoolean("auto_start", true)
+        set(value) = preferences.edit().putBoolean("auto_start", value).apply()
+
     val clientId: String
         get() {
             val existing = preferences.getString("client_id", "").orEmpty()

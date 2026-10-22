@@ -33,6 +33,7 @@ class PresenceService : Service() {
     private var collectJob: Job? = null
     private var overlayView: TextView? = null
     private var overlayParams: WindowManager.LayoutParams? = null
+    private var waitForConnection = false
 
     override fun onCreate() {
         super.onCreate()
@@ -48,11 +49,27 @@ class PresenceService : Service() {
                 0
             },
         )
+    }
 
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        waitForConnection = intent?.getBooleanExtra(EXTRA_WAIT_FOR_CONNECTION, false) == true
+        startObserving()
+        val state = (application as NineRoomApplication).roomController.state.value
+        updateOverlay(state)
+        return START_STICKY
+    }
+
+    private fun startObserving() {
+        if (collectJob != null) return
+        val controller = (application as NineRoomApplication).roomController
         collectJob = scope.launch {
             controller.state.collectLatest { state ->
-                if (state.status == ConnectionStatus.Idle ||
-                    (!state.keepOnline && !state.overlayEnabled)
+                if (state.status == ConnectionStatus.Connected) {
+                    waitForConnection = false
+                }
+                if ((state.status == ConnectionStatus.Idle && !waitForConnection) ||
+                    (!state.keepOnline && !state.overlayEnabled) ||
+                    (state.status == ConnectionStatus.Error && waitForConnection)
                 ) {
                     stopSelf()
                     return@collectLatest
@@ -62,12 +79,6 @@ class PresenceService : Service() {
                 updateOverlay(state)
             }
         }
-    }
-
-    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        val state = (application as NineRoomApplication).roomController.state.value
-        updateOverlay(state)
-        return START_STICKY
     }
 
     override fun onBind(intent: Intent?): IBinder? = null
@@ -195,6 +206,8 @@ class PresenceService : Service() {
     }
 
     companion object {
+        const val EXTRA_WAIT_FOR_CONNECTION = "wait_for_connection"
+
         fun intent(context: Context): Intent = Intent(context, PresenceService::class.java)
     }
 }

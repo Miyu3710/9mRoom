@@ -32,6 +32,8 @@ class RoomViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setShareMusic(enabled: Boolean) = controller.setShareMusic(enabled)
 
+    fun setAutoStart(enabled: Boolean) = controller.setAutoStart(enabled)
+
     fun refreshPresence() = controller.refreshPresence()
 
     fun refreshOverlay() = controller.refreshOverlay()

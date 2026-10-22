@@ -62,18 +62,19 @@ fun SettingsScreen(
     notifyRoomEvents: Boolean,
     shareApp: Boolean,
     shareMusic: Boolean,
+    autoStart: Boolean,
     onKeepOnlineChange: (Boolean) -> Unit,
     onOverlayChange: (Boolean) -> Unit,
     onNotifyRoomEventsChange: (Boolean) -> Unit,
     onShareAppChange: (Boolean) -> Unit,
     onShareMusicChange: (Boolean) -> Unit,
+    onAutoStartChange: (Boolean) -> Unit,
     onRequestNotifications: () -> Unit,
     onRequestOverlay: () -> Unit,
     onRequestUsageAccess: () -> Unit,
     onRequestNotificationAccess: () -> Unit,
     onDisconnect: () -> Unit,
 ) {
-    var boot by rememberSaveable { mutableStateOf(true) }
     var focusNotify by rememberSaveable { mutableStateOf(true) }
     var checkingUpdate by remember { mutableStateOf(false) }
     var updateStatus by remember { mutableStateOf("") }
@@ -129,8 +130,8 @@ fun SettingsScreen(
                 SettingSwitch(
                     title = "开机自启",
                     description = "开机后静默恢复上次的房间",
-                    checked = boot,
-                    onCheckedChange = { boot = it },
+                    checked = autoStart,
+                    onCheckedChange = onAutoStartChange,
                 )
                 SettingSwitch(
                     title = "悬浮窗",
