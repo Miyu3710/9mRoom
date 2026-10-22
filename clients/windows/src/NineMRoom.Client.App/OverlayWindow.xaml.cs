@@ -13,13 +13,18 @@ public partial class OverlayWindow : Window
     private const int WsExTransparent = 0x00000020;
     private const int WsExToolWindow = 0x00000080;
     private const int WsExNoActivate = 0x08000000;
-    private const double SnapThreshold = 26;
-    private const double SnapMargin = 12;
+    private const double EdgeTrigger = 5;
+    private const double DockedWidth = 48;
+    private const double EdgeMargin = 12;
 
     private readonly AppSettings _settings;
     private bool _clickThrough;
     private bool _userMoved;
-    private bool _snapped;
+    private bool _docked;
+    private bool _dockLeft;
+    private double _dockedTop;
+    private double _themeWidth = 420;
+    private Thickness _themePadding = new(14, 10, 14, 10);
     private string _position = "bottomRight";
 
     public OverlayWindow(MainViewModel viewModel, AppSettings settings)
@@ -55,6 +60,11 @@ public partial class OverlayWindow : Window
 
     public void ApplyTheme(OverlayTheme theme, bool reposition = true)
     {
+        if (_docked)
+        {
+            ExpandFromDock();
+        }
+
         Resources["OverlayTextBrush"] = new Media.SolidColorBrush(ParseColor(theme.Text, Media.Colors.White));
         Resources["OverlayMutedBrush"] = new Media.SolidColorBrush(ParseColor(theme.Muted, Media.Colors.LightGray));
         Resources["OverlayFontSize"] = theme.FontSize;
@@ -65,17 +75,18 @@ public partial class OverlayWindow : Window
             ? System.Windows.TextWrapping.Wrap
             : System.Windows.TextWrapping.NoWrap;
 
+        _themeWidth = theme.Width;
+        _themePadding = new Thickness(theme.Padding);
         RootBorder.Background = new Media.SolidColorBrush(ParseColor(theme.Background, Media.Colors.Transparent));
         RootBorder.BorderBrush = new Media.SolidColorBrush(ParseColor(theme.Border, Media.Colors.Transparent));
         RootBorder.BorderThickness = new Thickness(theme.BorderThickness);
         RootBorder.CornerRadius = new CornerRadius(theme.CornerRadius);
-        RootBorder.Padding = new Thickness(theme.Padding);
+        RootBorder.Padding = _themePadding;
 
         HeaderText.Visibility = theme.ShowHeader ? Visibility.Visible : Visibility.Collapsed;
         MembersList.ItemTemplate = (DataTemplate)FindResource(
             theme.Layout == "oneLine" ? "OneLineTemplate" : "TwoLineTemplate");
-        SetSnapped(false);
-        Width = theme.Width;
+        Width = _themeWidth;
 
         _position = theme.Position == "bottomCenter" ? "bottomCenter" : "bottomRight";
 
@@ -120,66 +131,67 @@ public partial class OverlayWindow : Window
     public void ResetPosition()
     {
         _userMoved = false;
-        SetSnapped(false);
+        if (_docked)
+        {
+            ExpandFromDock(save: false);
+        }
+
         PositionByTheme();
         SavePosition();
     }
 
-    private void SetSnapped(bool snapped)
+    private void DockToSide(bool left)
     {
-        if (_snapped == snapped)
+        if (_docked)
         {
             return;
         }
 
-        _snapped = snapped;
-        MembersScroll.Visibility = snapped ? Visibility.Collapsed : Visibility.Visible;
-        CompactInfo.Visibility = snapped ? Visibility.Visible : Visibility.Collapsed;
+        _docked = true;
+        _dockLeft = left;
+        _dockedTop = Top > 0 ? Top : MonitorWorkArea.Get(this).Top + 80;
+        MainPanel.Visibility = Visibility.Collapsed;
+        DockedPanel.Visibility = Visibility.Visible;
+        RootBorder.Padding = new Thickness(6);
+        Width = DockedWidth;
+        _userMoved = true;
 
-        if (snapped)
+        Dispatcher.BeginInvoke(new Action(() =>
         {
-            Dispatcher.BeginInvoke(new Action(() =>
-            {
-                if (_snapped)
-                {
-                    SnapToEdges();
-                }
-            }), DispatcherPriority.Loaded);
-        }
+            var area = MonitorWorkArea.Get(this);
+            Left = left ? area.Left : area.Right - ActualWidth;
+            Top = Math.Clamp(_dockedTop, area.Top + EdgeMargin,
+                Math.Max(area.Top + EdgeMargin, area.Bottom - ActualHeight - EdgeMargin));
+        }), DispatcherPriority.Loaded);
     }
 
-    private void SnapToEdges()
+    private void ExpandFromDock(bool save = true)
     {
+        if (!_docked)
+        {
+            return;
+        }
+
+        var wasLeft = _dockLeft;
+        _docked = false;
+        DockedPanel.Visibility = Visibility.Collapsed;
+        MainPanel.Visibility = Visibility.Visible;
+        RootBorder.Padding = _themePadding;
+        Width = _themeWidth;
+
+        UpdateLayout();
         var area = MonitorWorkArea.Get(this);
-        var snapped = false;
+        Left = wasLeft
+            ? area.Left + EdgeMargin
+            : area.Right - ActualWidth - EdgeMargin;
+        Top = Math.Clamp(_dockedTop, area.Top + EdgeMargin,
+            Math.Max(area.Top + EdgeMargin, area.Bottom - ActualHeight - EdgeMargin));
+        _userMoved = true;
 
-        var leftGap = Left - area.Left;
-        var rightGap = area.Right - (Left + ActualWidth);
-        if (leftGap <= SnapThreshold)
+        if (save)
         {
-            Left = area.Left + SnapMargin;
-            snapped = true;
+            SavePosition();
         }
-        else if (rightGap <= SnapThreshold)
-        {
-            Left = area.Right - ActualWidth - SnapMargin;
-            snapped = true;
-        }
-
-        var topGap = Top - area.Top;
-        var bottomGap = area.Bottom - (Top + ActualHeight);
-        if (topGap <= SnapThreshold)
-        {
-            Top = area.Top + SnapMargin;
-            snapped = true;
-        }
-        else if (bottomGap <= SnapThreshold)
-        {
-            Top = area.Bottom - ActualHeight - SnapMargin;
-            snapped = true;
-        }
-
-        SetSnapped(snapped);
     }
 
     private void ClampToWorkArea()
@@ -258,7 +270,11 @@ public partial class OverlayWindow : Window
             return;
         }
 
-        SetSnapped(false);
+        if (_docked)
+        {
+            ExpandFromDock();
+            return;
+        }
 
         try
         {
@@ -270,7 +286,20 @@ public partial class OverlayWindow : Window
             return;
         }
 
-        SnapToEdges();
+        var area = MonitorWorkArea.Get(this);
+        var centerX = Left + ActualWidth / 2;
+        if (centerX <= area.Left + EdgeTrigger)
+        {
+            DockToSide(left: true);
+            return;
+        }
+
+        if (centerX >= area.Right - EdgeTrigger)
+        {
+            DockToSide(left: false);
+            return;
+        }
+
         _settings.OverlayLeft = Left;
         _settings.OverlayTop = Top;
         _userMoved = true;

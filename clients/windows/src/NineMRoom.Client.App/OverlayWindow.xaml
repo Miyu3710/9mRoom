@@ -99,23 +99,62 @@
             BorderThickness="1"
             CornerRadius="{StaticResource RadiusMd}"
             Padding="14,10">
-        <StackPanel>
-            <Grid Margin="0,0,0,7">
-                <TextBlock x:Name="HeaderText"
-                           Text="{Binding OverlayHeader}"
-                           Foreground="{DynamicResource OverlayMutedBrush}"
-                           FontFamily="{DynamicResource OverlayFontFamily}"
-                           FontSize="{StaticResource FontSizeXs}"
-                           VerticalAlignment="Center" />
-                <Ellipse x:Name="ConnectionLight"
-                         Width="7" Height="7"
-                         HorizontalAlignment="Right"
-                         VerticalAlignment="Center"
-                         ToolTip="{Binding ConnectionText}"
-                         RenderTransformOrigin="0.5,0.5">
-                    <Ellipse.RenderTransform>
-                        <ScaleTransform ScaleX="1" ScaleY="1" />
-                    </Ellipse.RenderTransform>
+        <Grid>
+            <StackPanel x:Name="MainPanel">
+                <Grid Margin="0,0,0,7">
+                    <TextBlock x:Name="HeaderText"
+                               Text="{Binding OverlayHeader}"
+                               Foreground="{DynamicResource OverlayMutedBrush}"
+                               FontFamily="{DynamicResource OverlayFontFamily}"
+                               FontSize="{StaticResource FontSizeXs}"
+                               VerticalAlignment="Center" />
+                    <Ellipse x:Name="ConnectionLight"
+                             Width="7" Height="7"
+                             HorizontalAlignment="Right"
+                             VerticalAlignment="Center"
+                             ToolTip="{Binding ConnectionText}"
+                             RenderTransformOrigin="0.5,0.5">
+                        <Ellipse.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1" />
+                        </Ellipse.RenderTransform>
+                        <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                                <Setter Property="Fill" Value="#6B7280" />
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding ConnectionState}" Value="connected">
+                                        <Setter Property="Fill" Value="#4ADE80" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ConnectionState}" Value="reconnecting">
+                                        <Setter Property="Fill" Value="#FBBF24" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding ConnectionState}" Value="offline">
+                                        <Setter Property="Fill" Value="#6B7280" />
+                                    </DataTrigger>
+                                    <EventTrigger RoutedEvent="Loaded">
+                                        <BeginStoryboard>
+                                            <Storyboard>
+                                                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                                                 From="1" To="0.35" Duration="0:0:1.1"
+                                                                 AutoReverse="True" RepeatBehavior="Forever" />
+                                            </Storyboard>
+                                        </BeginStoryboard>
+                                    </EventTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Ellipse.Style>
+                    </Ellipse>
+                </Grid>
+                <ScrollViewer x:Name="MembersScroll" MaxHeight="360" VerticalScrollBarVisibility="Auto">
+                    <ItemsControl x:Name="MembersList"
+                                  ItemsSource="{Binding Members}"
+                                  ItemTemplate="{StaticResource TwoLineTemplate}" />
+                </ScrollViewer>
+            </StackPanel>
+
+            <StackPanel x:Name="DockedPanel" Visibility="Collapsed"
+                        HorizontalAlignment="Center" VerticalAlignment="Center"
+                        ToolTip="{Binding OverlayHeader}">
+                <Ellipse Width="8" Height="8" HorizontalAlignment="Center">
                     <Ellipse.Style>
                         <Style TargetType="Ellipse">
                             <Setter Property="Fill" Value="#6B7280" />
@@ -129,31 +168,17 @@
                                 <DataTrigger Binding="{Binding ConnectionState}" Value="offline">
                                     <Setter Property="Fill" Value="#6B7280" />
                                 </DataTrigger>
-                                <EventTrigger RoutedEvent="Loaded">
-                                    <BeginStoryboard>
-                                        <Storyboard>
-                                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
-                                                             From="1" To="0.35" Duration="0:0:1.1"
-                                                             AutoReverse="True" RepeatBehavior="Forever" />
-                                        </Storyboard>
-                                    </BeginStoryboard>
-                                </EventTrigger>
                             </Style.Triggers>
                         </Style>
                     </Ellipse.Style>
                 </Ellipse>
-            </Grid>
-            <ScrollViewer x:Name="MembersScroll" MaxHeight="360" VerticalScrollBarVisibility="Auto">
-                <ItemsControl x:Name="MembersList"
-                              ItemsSource="{Binding Members}"
-                              ItemTemplate="{StaticResource TwoLineTemplate}" />
-            </ScrollViewer>
-            <TextBlock x:Name="CompactInfo"
-                       Text="{Binding MemberCountText}"
-                       Foreground="{DynamicResource OverlayMutedBrush}"
-                       FontFamily="{DynamicResource OverlayFontFamily}"
-                       FontSize="{StaticResource FontSizeXs}"
-                       Visibility="Collapsed" />
-        </StackPanel>
+                <TextBlock Text="{Binding MemberCountText}"
+                           Foreground="{DynamicResource OverlayMutedBrush}"
+                           FontFamily="{DynamicResource OverlayFontFamily}"
+                           FontSize="{StaticResource FontSizeXs}"
+                           HorizontalAlignment="Center"
+                           Margin="0,6,0,0" />
+            </StackPanel>
+        </Grid>
     </Border>
 </Window>
