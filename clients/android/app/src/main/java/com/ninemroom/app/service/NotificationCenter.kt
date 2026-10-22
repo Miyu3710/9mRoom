@@ -18,6 +18,8 @@ object NotificationCenter {
     const val CHANNEL_PRESENCE = "presence"
     const val CHANNEL_ROOM_EVENTS = "room_events"
     const val CHANNEL_FOCUS = "focus"
+    const val CHANNEL_POKES = "pokes"
+    const val CHANNEL_MESSAGES = "messages"
     const val PRESENCE_ID = 1001
 
     fun ensureChannels(context: Context) {
@@ -49,6 +51,27 @@ object NotificationCenter {
                 NotificationManager.IMPORTANCE_DEFAULT,
             ).apply {
                 description = "专注计时结束"
+            },
+        )
+        manager.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_POKES,
+                "戳一下",
+                NotificationManager.IMPORTANCE_HIGH,
+            ).apply {
+                description = "有人戳你一下"
+                enableVibration(true)
+                enableLights(true)
+            },
+        )
+        manager.createNotificationChannel(
+            NotificationChannel(
+                CHANNEL_MESSAGES,
+                "聊天消息",
+                NotificationManager.IMPORTANCE_DEFAULT,
+            ).apply {
+                description = "房间内收到新的聊天消息"
+                enableVibration(true)
             },
         )
     }
@@ -121,5 +144,56 @@ object NotificationCenter {
             .build()
         NotificationManagerCompat.from(context)
             .notify(2001, notification)
+    }
+
+    fun poke(context: Context, fromName: String) {
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
+        ensureChannels(context)
+        val openIntent = PendingIntent.getActivity(
+            context,
+            3,
+            Intent(context, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val text = "${fromName.ifBlank { "有人" }} 戳了你一下！"
+        val notification = NotificationCompat.Builder(context, CHANNEL_POKES)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle("9mRoom")
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setContentIntent(openIntent)
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_SOCIAL)
+            .build()
+        NotificationManagerCompat.from(context)
+            .notify(3000 + (fromName.hashCode() and 0x7fffffff) % 1000, notification)
+    }
+
+    fun chat(context: Context, author: String, text: String) {
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
+        val body = text.trim()
+        if (body.isBlank()) return
+        ensureChannels(context)
+        val openIntent = PendingIntent.getActivity(
+            context,
+            4,
+            Intent(context, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notification = NotificationCompat.Builder(context, CHANNEL_MESSAGES)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle(author.ifBlank { "房间消息" })
+            .setContentText(body)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(body))
+            .setContentIntent(openIntent)
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setDefaults(NotificationCompat.DEFAULT_ALL)
+            .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_MESSAGE)
+            .build()
+        NotificationManagerCompat.from(context)
+            .notify(4000 + (body.hashCode() and 0x7fffffff) % 1000, notification)
     }
 }

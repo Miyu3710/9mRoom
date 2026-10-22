@@ -248,6 +248,7 @@ fun NineRoomApp(
                             onEditStatus = {
                                 navController.navigate(Destination.SyncList.route)
                             },
+                            onPoke = roomViewModel::sendPoke,
                         )
                     }
                     composable(Destination.Focus.route) {
@@ -262,6 +263,7 @@ fun NineRoomApp(
                             chat = state.chat,
                             logs = state.logs,
                             onSendChat = roomViewModel::sendChat,
+                            onPoke = roomViewModel::sendPoke,
                         )
                     }
                     composable(Destination.Settings.route) {

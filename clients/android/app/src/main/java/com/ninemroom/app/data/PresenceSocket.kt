@@ -65,6 +65,10 @@ class PresenceSocket(
         sendEnvelope("chat.send", JSONObject().put("text", text))
     }
 
+    fun sendPoke(targetId: String) {
+        sendEnvelope("poke.send", JSONObject().put("targetId", targetId))
+    }
+
     private fun sendEnvelope(type: String, payload: JSONObject) {
         val envelope = JSONObject()
             .put("v", 1)

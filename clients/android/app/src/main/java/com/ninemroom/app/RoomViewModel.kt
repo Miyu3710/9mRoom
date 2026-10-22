@@ -20,6 +20,8 @@ class RoomViewModel(application: Application) : AndroidViewModel(application) {
 
     fun sendChat(text: String) = controller.sendChat(text)
 
+    fun sendPoke(targetId: String) = controller.sendPoke(targetId)
+
     fun disconnect() = controller.disconnect()
 
     fun setKeepOnline(enabled: Boolean) = controller.setKeepOnline(enabled)

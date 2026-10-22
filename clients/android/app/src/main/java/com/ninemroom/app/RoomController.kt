@@ -547,6 +547,12 @@ class RoomController(
         socket?.sendChat(message)
     }
 
+    fun sendPoke(targetId: String) {
+        val id = targetId.trim()
+        if (id.isBlank() || id == _state.value.selfId) return
+        socket?.sendPoke(id)
+    }
+
     fun setKeepOnline(enabled: Boolean) {
         settings.keepOnline = enabled
         _state.update { it.copy(keepOnline = enabled) }
@@ -708,7 +714,30 @@ class RoomController(
                 )
                 if (line.text.isNotBlank()) {
                     _state.update { it.copy(chat = (it.chat + line).takeLast(200)) }
+                    if (line.memberId != _state.value.selfId) {
+                        NotificationCenter.chat(
+                            appContext,
+                            author = line.author,
+                            text = line.text,
+                        )
+                    }
                 }
+            }
+
+            "poke.received" -> {
+                val payload = message.optJSONObject("payload") ?: return
+                val name = payload.optJSONObject("from")
+                    ?.optString("name")
+                    .orEmpty()
+                    .ifBlank { "有人" }
+                addLog("$name 戳了你一下！")
+                NotificationCenter.poke(appContext, name)
+            }
+
+            "poke.sent" -> {
+                val payload = message.optJSONObject("payload") ?: return
+                val target = payload.optString("targetName").ifBlank { "对方" }
+                addLog("你戳了 $target 一下")
             }
 
             "error" -> {

@@ -56,6 +56,7 @@ fun RoomScreen(
     chat: List<ChatLine>,
     logs: List<LogLine>,
     onSendChat: (String) -> Unit,
+    onPoke: (String) -> Unit,
 ) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var selectedMember by remember { mutableStateOf<RoomMember?>(null) }
@@ -115,7 +116,9 @@ fun RoomScreen(
             onDismissRequest = { selectedMember = null },
             sheetState = sheetState,
         ) {
-            MemberDetail(member, member.id == selfId)
+            MemberDetail(member, member.id == selfId) {
+                onPoke(member.id)
+            }
         }
     }
 }
@@ -328,7 +331,11 @@ private fun ChatComposer(
 }
 
 @Composable
-internal fun MemberDetail(member: RoomMember, isSelf: Boolean) {
+internal fun MemberDetail(
+    member: RoomMember,
+    isSelf: Boolean,
+    onPoke: () -> Unit,
+) {
     Column(Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             Surface(
@@ -362,8 +369,12 @@ internal fun MemberDetail(member: RoomMember, isSelf: Boolean) {
         DetailRow("今日专注", formatFocus(member.focusSecondsToday))
         DetailRow("状态", member.statusText.ifBlank { "未共享状态" }, stacked = true)
         Spacer(Modifier.size(18.dp))
-        Button(onClick = {}, modifier = Modifier.fillMaxWidth()) {
-            Text("打个招呼")
+        Button(
+            onClick = onPoke,
+            enabled = !isSelf && member.online,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("戳一下")
         }
         Spacer(Modifier.size(20.dp))
     }

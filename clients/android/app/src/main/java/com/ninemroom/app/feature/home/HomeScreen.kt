@@ -64,6 +64,7 @@ fun HomeScreen(
     onCopyRoomCode: () -> Unit,
     onModeChange: (String) -> Unit,
     onEditStatus: () -> Unit,
+    onPoke: (String) -> Unit,
 ) {
     val self = members.firstOrNull { it.id == selfId }
     val onlineCount = members.count { it.online }
@@ -110,7 +111,9 @@ fun HomeScreen(
             onDismissRequest = { selectedMember = null },
             sheetState = memberSheetState,
         ) {
-            MemberDetail(member, member.id == selfId)
+            MemberDetail(member, member.id == selfId) {
+                onPoke(member.id)
+            }
         }
     }
 }
