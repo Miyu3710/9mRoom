@@ -164,7 +164,8 @@ $manifest = Join-Path $dist 'update.json'
     }
 } | ConvertTo-Json -Depth 5 | Set-Content $manifest -Encoding UTF8
 
-$hashes += "$(Get-FileHash $manifest -Algorithm SHA256).Hash  update.json"
+$manifestHash = (Get-FileHash $manifest -Algorithm SHA256).Hash
+$hashes += "$manifestHash  update.json"
 $hashes | Set-Content (Join-Path $dist 'SHA256SUMS.txt') -Encoding ASCII
 
 Get-ChildItem $dist | Select-Object Name, Length
