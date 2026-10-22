@@ -62,8 +62,11 @@ data class RoomUiState(
     val autoConnect: Boolean = true,
     val homeRoomCode: String = "",
     val homeRoomName: String = "",
+    val roomKind: String = "",
     val currentTodo: String = "",
 ) {
+    val isServerRoom: Boolean
+        get() = roomKind == "server"
     val self: RoomMember?
         get() = members.firstOrNull { it.id == selfId }
 
@@ -220,7 +223,11 @@ class RoomController(
                 }
                 settings.saveRoomName(info.name)
                 _state.update {
-                    it.copy(serverUrl = base, roomName = info.name.ifBlank { info.code })
+                    it.copy(
+                        serverUrl = base,
+                        roomName = info.name.ifBlank { info.code },
+                        roomKind = info.kind,
+                    )
                 }
                 openSocket(base, info)
             } catch (error: Exception) {
@@ -250,6 +257,7 @@ class RoomController(
                         showMain = true,
                         error = null,
                         roomName = info.name.ifBlank { info.code },
+                        roomKind = info.kind,
                     )
                 }
                 startHeartbeat()
@@ -470,7 +478,7 @@ class RoomController(
 
     fun setHomeToCurrentRoom() {
         val current = _state.value
-        if (current.roomCode.isBlank()) return
+        if (current.roomCode.isBlank() || !current.isServerRoom) return
         settings.homeRoomCode = current.roomCode
         settings.homeRoomName = current.roomName
         _state.update {

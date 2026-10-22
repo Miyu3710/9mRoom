@@ -20,6 +20,7 @@ data class RoomInfo(
     val name: String,
     val exists: Boolean,
     val online: Int,
+    val kind: String = "",
 )
 
 data class RoomMember(

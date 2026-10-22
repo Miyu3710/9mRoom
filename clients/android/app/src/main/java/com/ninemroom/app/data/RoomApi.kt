@@ -57,6 +57,7 @@ class RoomApi(
                 name = json.optString("name"),
                 exists = json.optBoolean("exists", false),
                 online = json.optInt("online", 0),
+                kind = json.optString("kind"),
             )
         }
     }

@@ -69,6 +69,7 @@ fun SettingsScreen(
     autoConnect: Boolean,
     homeRoomCode: String,
     homeRoomName: String,
+    isServerRoom: Boolean,
     onKeepOnlineChange: (Boolean) -> Unit,
     onOverlayChange: (Boolean) -> Unit,
     onNotifyRoomEventsChange: (Boolean) -> Unit,
@@ -128,34 +129,36 @@ fun SettingsScreen(
             }
         }
 
-        item {
-            SettingsCard("家房间", Icons.Outlined.Home) {
-                Text(
-                    if (homeRoomCode.isBlank()) "未设置" else "$homeRoomName（$homeRoomCode）",
-                    style = MaterialTheme.typography.bodyLarge,
-                )
-                Text(
-                    "打开应用时自动登录服务器并进入这个房间。",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 2.dp),
-                )
-                SettingSwitch(
-                    title = "打开应用自动连接",
-                    description = "启动后自动登录并进入家房间",
-                    checked = autoConnect,
-                    onCheckedChange = onAutoConnectChange,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton(
-                        onClick = onSetHomeRoom,
-                        enabled = roomName.isNotBlank(),
-                    ) {
-                        Text("设为当前房间")
-                    }
-                    if (homeRoomCode.isNotBlank()) {
-                        TextButton(onClick = onClearHomeRoom) {
-                            Text("清除")
+        if (isServerRoom) {
+            item {
+                SettingsCard("家房间", Icons.Outlined.Home) {
+                    Text(
+                        if (homeRoomCode.isBlank()) "未设置" else "$homeRoomName（$homeRoomCode）",
+                        style = MaterialTheme.typography.bodyLarge,
+                    )
+                    Text(
+                        "打开应用时自动登录服务器并进入这个房间。",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 2.dp),
+                    )
+                    SettingSwitch(
+                        title = "打开应用自动连接",
+                        description = "启动后自动登录并进入家房间",
+                        checked = autoConnect,
+                        onCheckedChange = onAutoConnectChange,
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(
+                            onClick = onSetHomeRoom,
+                            enabled = roomName.isNotBlank(),
+                        ) {
+                            Text("设为当前房间")
+                        }
+                        if (homeRoomCode.isNotBlank()) {
+                            TextButton(onClick = onClearHomeRoom) {
+                                Text("清除")
+                            }
                         }
                     }
                 }

@@ -282,6 +282,7 @@ fun NineRoomApp(
                             autoConnect = state.autoConnect,
                             homeRoomCode = state.homeRoomCode,
                             homeRoomName = state.homeRoomName,
+                            isServerRoom = state.isServerRoom,
                             onKeepOnlineChange = roomViewModel::setKeepOnline,
                             onOverlayChange = { enabled ->
                                 roomViewModel.setOverlayEnabled(enabled)
