@@ -1,6 +1,7 @@
 package com.ninemroom.app.feature.room
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -24,7 +25,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
@@ -80,46 +80,31 @@ fun RoomScreen() {
     var draft by rememberSaveable { mutableStateOf("") }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            if (tab == 2) {
-                ChatComposer(
-                    value = draft,
-                    onValueChange = { draft = it },
-                    onSend = { draft = "" },
-                )
-            }
-        },
-    ) { padding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(padding),
+    Column(Modifier.fillMaxSize()) {
+        Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
+            Text("房间", style = MaterialTheme.typography.headlineMedium)
+            Text(
+                "鱼高自习室 · 3 人在线",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp),
+            )
+        }
+
+        TabRow(
+            selectedTabIndex = tab,
+            containerColor = MaterialTheme.colorScheme.background,
         ) {
-            Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
-                Text("房间", style = MaterialTheme.typography.headlineMedium)
-                Text(
-                    "鱼高自习室 · 3 人在线",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp),
+            listOf("成员", "日志", "聊天").forEachIndexed { index, label ->
+                Tab(
+                    selected = tab == index,
+                    onClick = { tab = index },
+                    text = { Text(label) },
                 )
             }
+        }
 
-            TabRow(
-                selectedTabIndex = tab,
-                containerColor = MaterialTheme.colorScheme.background,
-            ) {
-                listOf("成员", "日志", "聊天").forEachIndexed { index, label ->
-                    Tab(
-                        selected = tab == index,
-                        onClick = { tab = index },
-                        text = { Text(label) },
-                    )
-                }
-            }
-
+        Box(Modifier.weight(1f)) {
             when (tab) {
                 0 -> MemberList(
                     onMemberClick = { selectedMember = it },
@@ -127,6 +112,14 @@ fun RoomScreen() {
                 1 -> LogList()
                 else -> ChatList()
             }
+        }
+
+        if (tab == 2) {
+            ChatComposer(
+                value = draft,
+                onValueChange = { draft = it },
+                onSend = { draft = "" },
+            )
         }
     }
 
