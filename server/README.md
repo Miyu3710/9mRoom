@@ -34,7 +34,7 @@ $env:NINEMROOM_ADMIN_PASSWORD = '换成一个强密码'
 GitHub Release 中的 `9mRoom-Server-<version>-linux-x64.tar.gz` 是自包含包：
 
 ```bash
-tar xzf 9mRoom-Server-1.0.0-linux-x64.tar.gz -C /opt/9mroom
+tar xzf 9mRoom-Server-1.1.0-linux-x64.tar.gz -C /opt/9mroom
 cd /opt/9mroom
 NINEMROOM_ADMIN_PASSWORD='...' NINEMROOM_DB=/var/lib/9mroom/9mroom.db bash run-server.sh
 ```
