@@ -71,17 +71,38 @@ powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.0.0 `
 
 这是 Windows Installer 的 **D:\Config.Msi 权限损坏**，不是 9mRoom 文件本身的问题。MSI 仍会返回成功并完成卸载，但会弹出大量非致命错误。
 
-处理方式（任选其一）：
+仅删除目录不够：Windows Installer 会重新创建该目录，并再次继承 D 盘根目录的受限 ACL。需要让**当前普通用户**拥有该目录的写权限，或者使用静默卸载。
 
-1. **安装到默认的 C 盘用户目录**，卸载时不会使用 D:\Config.Msi；这是最稳妥的方式。
-2. 以管理员身份修复 D 盘安装器缓存：
+### 方法一：修复目录 ACL
+
+在**管理员** PowerShell 中：
 
 ```powershell
-takeown /f D:\Config.Msi /r /d y
-icacls D:\Config.Msi /reset /t /c
+Remove-Item D:\Config.Msi -Recurse -Force -ErrorAction SilentlyContinue
+New-Item D:\Config.Msi -ItemType Directory -Force | Out-Null
+icacls D:\Config.Msi /grant "$env:USERNAME:(OI)(CI)F" /T /C
 ```
 
-如果修复仍失败，可在管理员权限下删除 `D:\Config.Msi`，Windows Installer 会重新创建。
+然后重新安装 9mRoom 到 D 盘，并在**普通** PowerShell 中验证：
+
+```powershell
+Set-Content D:\Config.Msi\write-test.txt "ok"
+Remove-Item D:\Config.Msi\write-test.txt
+```
+
+能写入后再正常卸载。`takeown` 只改所有者，单独执行它不够。
+
+### 方法二：静默卸载
+
+如果不想修 ACL，可以直接静默卸载，错误仍会记录但不会弹窗：
+
+```powershell
+msiexec /x "{ProductCode}" /qn
+```
+
+### 方法三：安装到 C 盘
+
+安装到默认 C 盘用户目录不会使用 D:\Config.Msi，卸载不会触发 1926。
 
 ## 当前测试限制
 
