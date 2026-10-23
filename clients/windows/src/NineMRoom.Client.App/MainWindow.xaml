@@ -303,17 +303,11 @@
     </Window.Resources>
 
     <Border x:Name="ShellBorder"
+            Background="#FF17171A"
             BorderBrush="{StaticResource BrushGlassBorder}"
             BorderThickness="0"
             ClipToBounds="True"
             RenderOptions.ClearTypeHint="Enabled">
-        <Border.Background>
-            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                <GradientStop Color="#FF17161C" Offset="0" />
-                <GradientStop Color="#FF111116" Offset="0.55" />
-                <GradientStop Color="#FF191722" Offset="1" />
-            </LinearGradientBrush>
-        </Border.Background>
         <Grid>
             <Grid.RowDefinitions>
                 <RowDefinition Height="48" />
@@ -346,8 +340,8 @@
 
         <!-- 侧边栏 -->
         <Border Grid.Column="0"
-                Background="#FF1B1B21"
-                BorderBrush="{StaticResource BrushGlassBorder}"
+                Background="#FF1B1B1E"
+                BorderBrush="Transparent"
                 BorderThickness="0">
             <Grid Margin="12,16,12,16">
                 <Grid.RowDefinitions>
@@ -600,7 +594,7 @@
                             </Grid>
                             <TextBlock Text="连接后会自动同步当前应用、音乐与专注状态。"
                                        Style="{StaticResource Label}"
-                                       Margin="4,8,0,0" />
+                                       Margin="4,10,0,0" />
                             <TextBlock Text="{Binding NoticeText}" Foreground="{StaticResource BrushBreak}"
                                        FontSize="{StaticResource FontSizeSm}" TextWrapping="Wrap" Margin="4,6,0,0">
                                 <TextBlock.Style>
@@ -675,7 +669,7 @@
                             </StackPanel>
                         </Border>
 
-                    <Border Margin="4,0,4,16" Padding="0"
+                    <Border Margin="4,26,4,16" Padding="0"
                             Background="Transparent" BorderThickness="0"
                             Visibility="{Binding IsInRoom, Converter={StaticResource BoolToVisibility}}">
                         <StackPanel>
