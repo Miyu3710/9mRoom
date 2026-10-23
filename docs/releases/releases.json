@@ -1,0 +1,95 @@
+[
+    {
+        "platform":  "server",
+        "name":  "9mRoom Server 1.1.0",
+        "tag":  "server-v1.1.0",
+        "publishedAt":  "2026-10-23T05:42:25Z",
+        "url":  "https://github.com/Miyu3710/9mRoom/releases/tag/server-v1.1.0",
+        "prerelease":  false,
+        "body":  "# 9mRoom Server 1.1.0\n\nLinux 服务端 1.1.0，包含多管理员、戳一下协议与生产部署改进。\n\n## 主要变化\n\n- 首次启动时 `.env` 中的管理员为超级管理员\n- 旧数据库升级时，最早创建的管理员自动升级为超级管理员\n- 超级管理员在 `/admin` 可以创建 / 删除普通管理员、设置任意管理员密码\n- 普通管理员只能管理房间，看不到管理员管理区\n- 超级管理员不能被删除\n- 调试台迁移到 `/debug`，根路径不再进入控制台\n- 新增“戳一下”协议：`poke.send` / `poke.received` / `poke.sent`，同房间在线成员、2 秒限频\n- 服务端版本：`1.1.0`\n\n## 资产\n\n- `9mRoom-Server-1.1.0-linux-x64.tar.gz`：Linux 自包含包\n- 解压后运行 `./run-server.sh`；数据目录与 `.env` 不会被归档覆盖\n- 对应 `.sha256` 校验文件\n\n## Docker\n\n也可以直接使用仓库根目录的 `docker-compose.yml` 构建部署，数据保存在命名卷 `9mroom-data`。\n\n## 更新通道\n\n服务端更新检查读取仓库根目录的 `update-server.json`，不会与 Windows / Android 版本混用。\n",
+        "assets":  [
+                       {
+                           "name":  "9mRoom-Server-1.1.0-linux-x64.tar.gz",
+                           "size":  44440731,
+                           "url":  "https://github.com/Miyu3710/9mRoom/releases/download/server-v1.1.0/9mRoom-Server-1.1.0-linux-x64.tar.gz"
+                       },
+                       {
+                           "name":  "9mRoom-Server-1.1.0-linux-x64.tar.gz.sha256",
+                           "size":  104,
+                           "url":  "https://github.com/Miyu3710/9mRoom/releases/download/server-v1.1.0/9mRoom-Server-1.1.0-linux-x64.tar.gz.sha256"
+                       },
+                       {
+                           "name":  "update-server.json",
+                           "size":  335,
+                           "url":  "https://github.com/Miyu3710/9mRoom/releases/download/server-v1.1.0/update-server.json"
+                       }
+                   ]
+    },
+    {
+        "platform":  "windows",
+        "name":  "9mRoom Windows 1.1.0",
+        "tag":  "windows-v1.1.0",
+        "publishedAt":  "2026-10-23T05:42:13Z",
+        "url":  "https://github.com/Miyu3710/9mRoom/releases/tag/windows-v1.1.0",
+        "prerelease":  false,
+        "body":  "# 9mRoom Windows 1.1.0\n\nWindows 客户端 1.1.0。\n\n## 主要变化\n\n- 浏览器式房间标签，标签与内容面板相连\n- 更紧凑的侧边栏、统一图标与选中指示条\n- 主窗口透明渐变背景、蓝紫光晕与系统 Acrylic / Mica\n- 设置与对话框统一圆角、字号和间距\n- 房间成员名称改为白色\n- 房间聊天消息系统通知（默认关闭，可在设置开启）\n- 戳一下：成员详情右侧按钮，2 秒冷却，收到后 Windows 通知\n- 启动自动检查更新、应用内下载，下载完成询问是否安装\n- 叠加窗口支持左右贴边收起，双击切换简洁 / 详细模式\n- 修复聊天输入框和发送按钮超出页面边框的问题\n\n## 安装\n\n- `9mRoom-Setup-1.1.0.msi`：双击安装\n- `9mRoom-1.1.0-win-x64.zip`：便携版\n- 当前构建未做代码签名，SmartScreen 可能提示“未知发布者”，选择“仍要运行”即可\n\n## 资产\n\n- `9mRoom-Setup-1.1.0.msi`\n- `9mRoom-1.1.0-win-x64.zip`\n- 对应 `.sha256` 校验文件\n\n## 更新通道\n\nWindows 更新检查读取仓库根目录的 `update-windows.json`，不会与 Android / 服务端版本混用。\n",
+        "assets":  [
+                       {
+                           "name":  "9mRoom-1.1.0-win-x64.zip",
+                           "size":  77438969,
+                           "url":  "https://github.com/Miyu3710/9mRoom/releases/download/windows-v1.1.0/9mRoom-1.1.0-win-x64.zip"
+                       },
+                       {
+                           "name":  "9mRoom-1.1.0-win-x64.zip.sha256",
+                           "size":  92,
+                           "url":  "https://github.com/Miyu3710/9mRoom/releases/download/windows-v1.1.0/9mRoom-1.1.0-win-x64.zip.sha256"
+                       },
+                       {
+                           "name":  "9mRoom-Setup-1.1.0.msi",
+                           "size":  65479300,
+                           "url":  "https://github.com/Miyu3710/9mRoom/releases/download/windows-v1.1.0/9mRoom-Setup-1.1.0.msi"
+                       },
+                       {
+                           "name":  "9mRoom-Setup-1.1.0.msi.sha256",
+                           "size":  90,
+                           "url":  "https://github.com/Miyu3710/9mRoom/releases/download/windows-v1.1.0/9mRoom-Setup-1.1.0.msi.sha256"
+                       },
+                       {
+                           "name":  "update-windows.json",
+                           "size":  430,
+                           "url":  "https://github.com/Miyu3710/9mRoom/releases/download/windows-v1.1.0/update-windows.json"
+                       },
+                       {
+                           "name":  "update.json",
+                           "size":  648,
+                           "url":  "https://github.com/Miyu3710/9mRoom/releases/download/windows-v1.1.0/update.json"
+                       }
+                   ]
+    },
+    {
+        "platform":  "android",
+        "name":  "9mRoom Android 1.1.1",
+        "tag":  "android-v1.1.1",
+        "publishedAt":  "2026-10-22T17:43:57Z",
+        "url":  "https://github.com/Miyu3710/9mRoom/releases/tag/android-v1.1.1",
+        "prerelease":  false,
+        "body":  "## 9mRoom Android 1.1.1\n\nAndroid 移动端补丁版本。\n\n### 本次更新\n\n- 锁屏时应用状态块显示“🔒 锁定中”，解锁后恢复\n- 新增后台运行权限入口，按厂商打开自启动/后台运行设置\n- 新增后台耗电无限制入口，可申请电池优化白名单\n- 悬浮窗记住上次位置\n- 悬浮菜单高度随人数和状态内容实时变化\n- 戳一下与聊天新消息通知\n- 应用分类支持删除默认分类、拖拽排序\n- 应用模板、分类模板默认留空，按应用 \u003e 分类 \u003e 全局继承\n- 媒体白名单\n- 首页成员头像查看详情\n- 所有配置覆盖安装后保留\n\n### 安装\n\n- Android 8.0 及以上\n- 直接覆盖安装可保留配置，不要先卸载旧版\n- 需要按需授予通知、悬浮窗、使用情况访问、通知使用权、后台运行和电池优化白名单\n\n### 签名\n\n当前 APK 继续使用调试签名，便于覆盖安装测试版本并保留数据。\n\n### 校验\n\nSHA-256 见同目录 `9mRoom-Android-1.1.1.apk.sha256`。\n",
+        "assets":  [
+                       {
+                           "name":  "9mRoom-Android-1.1.1.apk",
+                           "size":  18392112,
+                           "url":  "https://github.com/Miyu3710/9mRoom/releases/download/android-v1.1.1/9mRoom-Android-1.1.1.apk"
+                       },
+                       {
+                           "name":  "9mRoom-Android-1.1.1.apk.sha256",
+                           "size":  92,
+                           "url":  "https://github.com/Miyu3710/9mRoom/releases/download/android-v1.1.1/9mRoom-Android-1.1.1.apk.sha256"
+                       },
+                       {
+                           "name":  "update-android.json",
+                           "size":  298,
+                           "url":  "https://github.com/Miyu3710/9mRoom/releases/download/android-v1.1.1/update-android.json"
+                       }
+                   ]
+    }
+]
