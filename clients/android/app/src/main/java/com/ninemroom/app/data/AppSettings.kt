@@ -3,6 +3,12 @@ package com.ninemroom.app.data
 import android.content.Context
 import java.util.UUID
 
+enum class ThemeMode(val label: String) {
+    SYSTEM("跟随系统"),
+    LIGHT("浅色"),
+    DARK("深色"),
+}
+
 class AppSettings(context: Context) {
     private val preferences = context.getSharedPreferences("nine_room", Context.MODE_PRIVATE)
 
@@ -41,6 +47,14 @@ class AppSettings(context: Context) {
     var dynamicColor: Boolean
         get() = preferences.getBoolean("dynamic_color", true)
         set(value) = preferences.edit().putBoolean("dynamic_color", value).apply()
+
+    var themeMode: ThemeMode
+        get() = runCatching {
+            ThemeMode.valueOf(
+                preferences.getString("theme_mode", ThemeMode.SYSTEM.name).orEmpty(),
+            )
+        }.getOrDefault(ThemeMode.SYSTEM)
+        set(value) = preferences.edit().putString("theme_mode", value.name).apply()
 
     var shareApp: Boolean
         get() = preferences.getBoolean("share_app", true)

@@ -71,6 +71,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ninemroom.app.RoomViewModel
 import com.ninemroom.app.data.ConnectionStatus
+import com.ninemroom.app.data.ThemeMode
 import com.ninemroom.app.feature.apps.AppRulesScreen
 import com.ninemroom.app.feature.apps.CategoryManagerScreen
 import com.ninemroom.app.feature.connect.ConnectScreen
@@ -155,6 +156,8 @@ private fun openBackgroundSettings(context: Context) {    val candidates = listO
 @Composable
 fun NineRoomApp(
     dynamicColor: Boolean,
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     roomViewModel: RoomViewModel = viewModel(),
 ) {
@@ -357,6 +360,8 @@ fun NineRoomApp(
                     composable(Destination.Settings.route) {
                         SettingsScreen(
                             dynamicColor = dynamicColor,
+                            themeMode = themeMode,
+                            onThemeModeChange = onThemeModeChange,
                             onDynamicColorChange = onDynamicColorChange,
                             onOpenAppRules = { navController.navigate(Destination.Apps.route) },
                             serverUrl = state.serverUrl,

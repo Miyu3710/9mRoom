@@ -36,6 +36,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Switch
@@ -55,6 +56,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.ninemroom.app.data.ConnectionStatus
+import com.ninemroom.app.data.ThemeMode
 import com.ninemroom.app.data.UpdateChecker
 import com.ninemroom.app.data.UpdateInfo
 import kotlinx.coroutines.Dispatchers
@@ -64,6 +66,8 @@ import kotlinx.coroutines.withContext
 @Composable
 fun SettingsScreen(
     dynamicColor: Boolean,
+    themeMode: ThemeMode,
+    onThemeModeChange: (ThemeMode) -> Unit,
     onDynamicColorChange: (Boolean) -> Unit,
     onOpenAppRules: () -> Unit,
     serverUrl: String,
@@ -111,6 +115,8 @@ fun SettingsScreen(
 ) {
     var checkingUpdate by remember { mutableStateOf(false) }
     var showMediaPicker by remember { mutableStateOf(false) }
+    var showThemeDialog by remember { mutableStateOf(false) }
+    var showLicenses by remember { mutableStateOf(false) }
     var updateStatus by remember { mutableStateOf("") }
     var updateInfo by remember { mutableStateOf<UpdateInfo?>(null) }
     val context = LocalContext.current
@@ -349,7 +355,8 @@ fun SettingsScreen(
                 )
                 SettingAction(
                     title = "主题模式",
-                    description = "跟随系统",
+                    description = themeMode.label,
+                    onClick = { showThemeDialog = true },
                 )
             }
         }
@@ -396,6 +403,7 @@ fun SettingsScreen(
                 SettingAction(
                     title = "开源许可",
                     description = "查看使用的开源组件",
+                    onClick = { showLicenses = true },
                 )
             }
         }
@@ -436,6 +444,59 @@ fun SettingsScreen(
             },
         )
     }
+
+    if (showThemeDialog) {
+        ThemeModeDialog(
+            current = themeMode,
+            onSelect = {
+                onThemeModeChange(it)
+                showThemeDialog = false
+            },
+            onDismiss = { showThemeDialog = false },
+        )
+    }
+
+    if (showLicenses) {
+        LicensesDialog(onDismiss = { showLicenses = false })
+    }
+}
+
+@Composable
+private fun ThemeModeDialog(
+    current: ThemeMode,
+    onSelect: (ThemeMode) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("主题模式") },
+        text = {
+            Column {
+                ThemeMode.entries.forEach { mode ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onSelect(mode) }
+                            .padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(
+                            selected = current == mode,
+                            onClick = { onSelect(mode) },
+                        )
+                        Text(
+                            mode.label,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(start = 8.dp),
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text("关闭") }
+        },
+    )
 }
 
 @Composable
