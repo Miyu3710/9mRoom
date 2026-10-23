@@ -137,17 +137,16 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <Border Width="190" Margin="0,0,10,10" Padding="10"
-                                            BorderThickness="1"
+                                            BorderThickness="0"
                                             CornerRadius="{StaticResource RadiusSm}" Cursor="Hand"
                                             MouseLeftButtonUp="AppTile_Click">
                                         <Border.Style>
                                             <Style TargetType="Border">
                                                 <Setter Property="Background" Value="{StaticResource BrushControlBg}" />
-                                                <Setter Property="BorderBrush" Value="{StaticResource BrushGlassBorder}" />
+                                                <Setter Property="BorderBrush" Value="Transparent" />
                                                 <Style.Triggers>
                                                     <DataTrigger Binding="{Binding IsSelected}" Value="True">
                                                         <Setter Property="Background" Value="{StaticResource BrushAccentSoft}" />
-                                                        <Setter Property="BorderBrush" Value="{StaticResource BrushAccent}" />
                                                     </DataTrigger>
                                                 </Style.Triggers>
                                             </Style>
