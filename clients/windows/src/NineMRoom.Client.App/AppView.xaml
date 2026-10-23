@@ -46,7 +46,7 @@
                                     MouseLeftButtonDown="SearchBox_Click">
                                 <Grid>
                                     <TextBox x:Name="AppSearchBox"
-                                             Style="{StaticResource ModernTextBox}"
+                                             Style="{StaticResource InputBox}"
                                              Text="{Binding AppSearchText, UpdateSourceTrigger=PropertyChanged}"
                                              ToolTip="支持应用名、原应用名、进程名和应用分类"
                                              Background="Transparent"

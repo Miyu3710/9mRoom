@@ -66,9 +66,9 @@
                                                HorizontalAlignment="Center" VerticalAlignment="Center" />
                                 </Border>
                                 <TextBox Grid.Column="1" Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{StaticResource ModernTextBox}" Margin="0,0,8,0" />
+                                         Style="{StaticResource InputBox}" Margin="0,0,8,0" />
                                 <TextBox Grid.Column="2" Text="{Binding Template, UpdateSourceTrigger=PropertyChanged}"
-                                         Style="{StaticResource ModernTextBox}" Margin="0,0,8,0" />
+                                         Style="{StaticResource InputBox}" Margin="0,0,8,0" />
                                 <Button Grid.Column="3" Content="×" Tag="{Binding}" Click="Remove_Click"
                                         Style="{StaticResource ModernButton}" Padding="10,3" />
                             </Grid>
@@ -85,8 +85,8 @@
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
-                    <TextBox x:Name="NewNameBox" Grid.Column="1" Style="{StaticResource ModernTextBox}" Margin="0,0,8,0" />
-                    <TextBox x:Name="NewTemplateBox" Grid.Column="2" Style="{StaticResource ModernTextBox}"
+                    <TextBox x:Name="NewNameBox" Grid.Column="1" Style="{StaticResource InputBox}" Margin="0,0,8,0" />
+                    <TextBox x:Name="NewTemplateBox" Grid.Column="2" Style="{StaticResource InputBox}"
                              Margin="0,0,8,0" />
                     <Button Grid.Column="3" Content="新增分类" Click="Add_Click"
                             Style="{StaticResource ModernPrimaryButton}" />

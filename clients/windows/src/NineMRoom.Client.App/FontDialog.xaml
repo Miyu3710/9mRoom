@@ -61,7 +61,7 @@
                     </WrapPanel>
 
                     <TextBlock Text="字号" Style="{StaticResource Label}" Margin="0,0,0,6" />
-                    <TextBox x:Name="SizeBox" Style="{StaticResource ModernTextBox}" Width="80"
+                    <TextBox x:Name="SizeBox" Style="{StaticResource InputBox}" Width="80"
                              HorizontalAlignment="Left" Margin="0,0,0,8" />
 
                     <TextBlock Text="预览" Style="{StaticResource Label}" Margin="0,4,0,6" />

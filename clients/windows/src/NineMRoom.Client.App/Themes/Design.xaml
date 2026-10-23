@@ -125,10 +125,15 @@
                             BorderThickness="1"
                             CornerRadius="16"
                             Padding="{TemplateBinding Padding}"
+                            RenderTransformOrigin="0.5,0.5"
                             SnapsToDevicePixels="True">
+                        <Border.RenderTransform>
+                            <ScaleTransform x:Name="ChipScale" ScaleX="1" ScaleY="1" />
+                        </Border.RenderTransform>
                         <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
                             <materialDesign:PackIcon x:Name="CheckIcon" Kind="Check"
                                                      Width="14" Height="14" Margin="0,0,6,0"
+                                                     Opacity="0"
                                                      Visibility="Collapsed"
                                                      Foreground="{TemplateBinding Foreground}" />
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -143,6 +148,24 @@
                             <Setter TargetName="Chip" Property="Background" Value="{DynamicResource BrushPrimaryContainer}" />
                             <Setter Property="Foreground" Value="{DynamicResource BrushOnPrimaryContainer}" />
                             <Setter TargetName="CheckIcon" Property="Visibility" Value="Visible" />
+                            <Trigger.EnterActions>
+                                <BeginStoryboard>
+                                    <Storyboard>
+                                        <DoubleAnimation Storyboard.TargetName="Chip"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="0.72" To="1" Duration="0:0:0.16" />
+                                        <DoubleAnimation Storyboard.TargetName="ChipScale"
+                                                         Storyboard.TargetProperty="ScaleX"
+                                                         From="0.94" To="1" Duration="0:0:0.16" />
+                                        <DoubleAnimation Storyboard.TargetName="ChipScale"
+                                                         Storyboard.TargetProperty="ScaleY"
+                                                         From="0.94" To="1" Duration="0:0:0.16" />
+                                        <DoubleAnimation Storyboard.TargetName="CheckIcon"
+                                                         Storyboard.TargetProperty="Opacity"
+                                                         From="0" To="1" Duration="0:0:0.18" />
+                                    </Storyboard>
+                                </BeginStoryboard>
+                            </Trigger.EnterActions>
                         </Trigger>
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="Chip" Property="BorderBrush" Value="{DynamicResource BrushAccent}" />
@@ -156,20 +179,61 @@
         </Setter>
     </Style>
 
-    <Style x:Key="InputBox" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignFilledTextBox}">
+    <Style x:Key="InputBox" TargetType="TextBox">
         <Setter Property="Background" Value="{DynamicResource BrushSurfaceAlt}" />
         <Setter Property="Foreground" Value="{DynamicResource BrushText}" />
+        <Setter Property="BorderBrush" Value="{DynamicResource BrushOutline}" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CaretBrush" Value="{DynamicResource BrushText}" />
-        <Setter Property="SelectionBrush" Value="{DynamicResource BrushAccent}" />
+        <Setter Property="SelectionBrush" Value="{DynamicResource BrushPrimary}" />
         <Setter Property="FontSize" Value="{DynamicResource FontSizeMd}" />
-        <Setter Property="Height" Value="48" />
+        <Setter Property="Padding" Value="12,0" />
+        <Setter Property="MinHeight" Value="44" />
         <Setter Property="IsReadOnly" Value="False" />
         <Setter Property="InputMethod.IsInputMethodEnabled" Value="True" />
         <Setter Property="Focusable" Value="True" />
         <Setter Property="IsTabStop" Value="True" />
-        <Setter Property="MinHeight" Value="44" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border x:Name="Field"
+                            Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}"
+                            BorderThickness="{TemplateBinding BorderThickness}"
+                            CornerRadius="{DynamicResource RadiusSm}"
+                            SnapsToDevicePixels="True">
+                        <Grid>
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"
+                                          HorizontalAlignment="Stretch" />
+                            <Border x:Name="FocusLine" Height="1" Margin="8,0"
+                                    VerticalAlignment="Bottom"
+                                    Background="{DynamicResource BrushOutline}"
+                                    IsHitTestVisible="False" />
+                        </Grid>
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsKeyboardFocused" Value="True">
+                            <Setter TargetName="FocusLine" Property="Background" Value="{DynamicResource BrushPrimary}" />
+                            <Setter TargetName="FocusLine" Property="Height" Value="2" />
+                        </Trigger>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Field" Property="Background" Value="{DynamicResource BrushControlHover}" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Field" Property="Opacity" Value="0.42" />
+                        </Trigger>
+                        <Trigger Property="Validation.HasError" Value="True">
+                            <Setter TargetName="Field" Property="BorderBrush" Value="{DynamicResource BrushError}" />
+                            <Setter TargetName="Field" Property="BorderThickness" Value="1" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
     </Style>
 
 </ResourceDictionary>

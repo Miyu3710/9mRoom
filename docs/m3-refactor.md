@@ -70,3 +70,11 @@
 - 服务器操作：连接为主操作（填充 Primary），连接后断开为文本操作，离开房间为次级文本操作。
 - 主内容空态增加最小高度，减少大面积无意义空白。
 - 输入框显式 `IsReadOnly=False`、`IsTabStop=True`、`InputMethod.IsInputMethodEnabled=True`；服务器地址连接态按原需求只读。\n- 最终浅色/深色均在 125% 下实际启动检查；深色主界面和浅色已连接状态见 `tmp/round2-final2.png`、`tmp/round2-light2.png`。
+## 输入与交互故障修复
+
+- `InputBox` 不再依赖 MaterialDesignFilledTextBox 的浮动提示/固定高度布局，改为共享轻量模板：有背景、焦点底线、hover、错误状态和稳定的 `PART_ContentHost`。
+- 服务器地址框、房间号、昵称、应用规则、设置页、起止时间和子任务统一使用该模板。
+- 待办首行使用外置字段标签，避免输入文字被浮动提示裁切。
+- 状态 chip 切换增加缩放、透明度和 Check 淡入动画。
+- 连接按钮使用独立模板，hover 仅改变透明度，不会丢失填充背景。
+- 标签页关闭库 ripple，避免波纹溢出标签边界。

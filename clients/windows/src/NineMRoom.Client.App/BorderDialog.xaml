@@ -83,11 +83,11 @@
 
                         <WrapPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <TextBlock Text="圆角" Style="{StaticResource Label}" VerticalAlignment="Center" Margin="0,0,6,6" />
-                            <TextBox x:Name="RadiusBox" Style="{StaticResource ModernTextBox}" Width="58" Margin="0,0,14,6" />
+                            <TextBox x:Name="RadiusBox" Style="{StaticResource InputBox}" Width="58" Margin="0,0,14,6" />
                             <TextBlock Text="内边距" Style="{StaticResource Label}" VerticalAlignment="Center" Margin="0,0,6,6" />
-                            <TextBox x:Name="PaddingBox" Style="{StaticResource ModernTextBox}" Width="58" Margin="0,0,14,6" />
+                            <TextBox x:Name="PaddingBox" Style="{StaticResource InputBox}" Width="58" Margin="0,0,14,6" />
                             <TextBlock Text="宽度" Style="{StaticResource Label}" VerticalAlignment="Center" Margin="0,0,6,6" />
-                            <TextBox x:Name="WidthBox" Style="{StaticResource ModernTextBox}" Width="66" Margin="0,0,0,6" />
+                            <TextBox x:Name="WidthBox" Style="{StaticResource InputBox}" Width="66" Margin="0,0,0,6" />
                         </WrapPanel>
 
                         <WrapPanel Orientation="Horizontal" Margin="0,0,0,10">

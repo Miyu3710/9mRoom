@@ -44,12 +44,14 @@
             <Setter Property="Padding" Value="20" />
         </Style>
 
-        <Style x:Key="ServerInput" TargetType="TextBox">
+        <Style x:Key="ServerInput" TargetType="TextBox" BasedOn="{StaticResource InputBox}">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="Foreground" Value="{StaticResource BrushText}" />
             <Setter Property="CaretBrush" Value="{StaticResource BrushText}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
+            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Padding" Value="0" />
         </Style>
@@ -109,6 +111,33 @@
         <Style x:Key="BarConnectButton" TargetType="Button" BasedOn="{StaticResource BarActionButton}">
             <Setter Property="Background" Value="{StaticResource BrushPrimary}" />
             <Setter Property="Foreground" Value="{StaticResource BrushOnPrimary}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ConnectSurface"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="0,8,8,0"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ConnectSurface" Property="Opacity" Value="0.88" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ConnectSurface" Property="Opacity" Value="0.76" />
+                            </Trigger>
+                            <DataTrigger Binding="{Binding IsInRoom}" Value="True">
+                                <Setter TargetName="ConnectSurface" Property="CornerRadius" Value="0" />
+                            </DataTrigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.42" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsInRoom}" Value="True">
                     <Setter Property="Background" Value="Transparent" />
@@ -191,6 +220,8 @@
         <Style x:Key="RoomTab" TargetType="RadioButton" BasedOn="{StaticResource MaterialDesignTabRadioButton}">
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
             <Setter Property="Height" Value="46" />
+            <Setter Property="ClipToBounds" Value="True" />
+            <Setter Property="materialDesign:RippleAssist.IsDisabled" Value="True" />
             <Setter Property="MinWidth" Value="76" />
             <Setter Property="Padding" Value="16,0" />
             <Setter Property="Margin" Value="0" />
