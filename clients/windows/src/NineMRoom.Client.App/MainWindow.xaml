@@ -132,12 +132,71 @@
             <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="20" />
         </Style>
 
-        <Style x:Key="InlineConnectButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
-            <Setter Property="Height" Value="34" />
-            <Setter Property="MinWidth" Value="80" />
-            <Setter Property="Padding" Value="14,0" />
+        <Style x:Key="BarActionButton" TargetType="Button">
+            <Setter Property="Height" Value="46" />
+            <Setter Property="MinWidth" Value="76" />
+            <Setter Property="Padding" Value="12,0" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="17" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ActionBackground"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="0"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ActionBackground" Property="Background" Value="#14FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ActionBackground" Property="Background" Value="#22FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="BarSecondaryActionButton" TargetType="Button" BasedOn="{StaticResource BarActionButton}">
+            <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
+        </Style>
+
+        <Style x:Key="DrawerCloseButton" TargetType="Button">
+            <Setter Property="Width" Value="32" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="CloseBackground"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="CloseBackground" Property="Background" Value="#14FFFFFF" />
+                                <Setter Property="Foreground" Value="{StaticResource BrushText}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <local:CategoryMatchConverter x:Key="ModeMatch" />
@@ -458,7 +517,8 @@
                                     <Border Height="48"
                                             Background="{StaticResource BrushSurfaceAlt}"
                                             BorderThickness="1"
-                                            CornerRadius="12">
+                                            CornerRadius="8"
+                                            ClipToBounds="True">
                                         <Border.Style>
                                             <Style TargetType="Border">
                                                 <Setter Property="BorderBrush" Value="{StaticResource BrushControlBorder}" />
@@ -469,10 +529,11 @@
                                                 </Style.Triggers>
                                             </Style>
                                         </Border.Style>
-                                        <Grid Margin="13,0">
+                                        <Grid Margin="13,0,0,0">
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <materialDesign:PackIcon Kind="Server"
@@ -511,19 +572,21 @@
                                                     </Style>
                                                 </TextBlock.Style>
                                             </TextBlock>
-                                            <Button Grid.Column="2"
-                                                    Content="{Binding ConnectButtonText}"
-                                                    Click="Connect_Click"
-                                                    Style="{StaticResource InlineConnectButton}"
-                                                    Margin="6,0,0,0" />
+                                            <Border Grid.Column="2" Width="1" Margin="8,10"
+                                                    Background="{StaticResource BrushBorder}" />
+                                            <StackPanel Grid.Column="3" Orientation="Horizontal">
+                                                <Button Content="{Binding ConnectButtonText}"
+                                                        Click="Connect_Click"
+                                                        Style="{StaticResource BarActionButton}" />
+                                                <Button Content="离开房间"
+                                                        Click="LeaveRoom_Click"
+                                                        Style="{StaticResource BarSecondaryActionButton}"
+                                                        Visibility="{Binding IsInRoom, Converter={StaticResource BoolToVisibility}}" />
+                                            </StackPanel>
                                         </Grid>
                                     </Border>
                                 </StackPanel>
 
-                                <Button Grid.Column="1" Content="离开房间" Click="LeaveRoom_Click"
-                                        Style="{StaticResource SecondaryButton}"
-                                        VerticalAlignment="Bottom" Margin="12,0,0,0"
-                                        Visibility="{Binding IsInRoom, Converter={StaticResource BoolToVisibility}}" />
                             </Grid>
                             <TextBlock Text="连接后会自动同步当前应用、音乐与专注状态。"
                                        Style="{StaticResource Label}"
@@ -860,8 +923,10 @@
                 <StackPanel DataContext="{Binding SelectedMember}">
                     <Grid Margin="0,0,0,16">
                         <TextBlock Text="成员详情" FontSize="{StaticResource FontSizeLg}" FontWeight="SemiBold" />
-                        <Button Content="×" Click="CloseDrawer_Click" HorizontalAlignment="Right"
-                                Style="{StaticResource SecondaryButton}" Padding="8,3" />
+                        <Button Click="CloseDrawer_Click" HorizontalAlignment="Right"
+                                Style="{StaticResource DrawerCloseButton}">
+                            <materialDesign:PackIcon Kind="Close" Width="16" Height="16" />
+                        </Button>
                     </Grid>
 
                     <Grid Margin="0,0,0,6">
