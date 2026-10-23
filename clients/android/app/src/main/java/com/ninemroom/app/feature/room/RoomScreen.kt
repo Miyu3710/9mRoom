@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -64,7 +65,11 @@ fun RoomScreen(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val onlineCount = members.count { it.online }
 
-    Column(Modifier.fillMaxSize()) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .imePadding(),
+    ) {
         Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
             Text("房间", style = MaterialTheme.typography.headlineMedium)
             Text(
