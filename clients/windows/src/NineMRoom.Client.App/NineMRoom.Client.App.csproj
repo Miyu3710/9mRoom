@@ -20,6 +20,7 @@
     <NoWarn>$(NoWarn);WFAC010</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="MaterialDesignThemes" Version="5.4.0" />
     <ProjectReference Include="..\NineMRoom.Client.Core\NineMRoom.Client.Core.csproj" />
     <None Include="..\..\..\..\shared\app-catalog\catalog.json" Link="catalog.json" CopyToOutputDirectory="PreserveNewest" />
     <Resource Include="Assets\9mRoom-mark.png" />

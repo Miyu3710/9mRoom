@@ -424,6 +424,15 @@
   - 短标签、原生圆角、系统字体，避免自定义圆角接缝、模糊和宽度问题。
   - 菜单项：显示、暂停、隐身、叠加层、穿透、退出。
   - **已完成**：编译通过，原生菜单截图已核对；未重新打包 MSI。
+- **FIX-057 主界面 Material Design 3 重构**：
+  - 引入 `MaterialDesignThemes 5.4.0`，加载 `MaterialDesign3.Defaults.xaml` 与深色 BundledTheme。
+  - 参考 `dotnet-wpf-design`、MaterialDesignInXaml WPF toolkit 和 Syncfusion WPF UI Builder 的页面结构建议。
+  - 侧栏改为 MD3 navigation rail 样式，使用 `PackIcon`；活动项使用 tonal pill。
+  - 房间标签改为 MD3 primary tabs，活动项底部 3px 指示条。
+  - 服务器输入使用 `MaterialDesignFilledTextBox`，按钮改用 Raised/Outlined MD3 组件。
+  - 主内容增加未连接/未进房空状态卡片，使用 MD3 图标、typography 与 assist chips。
+  - 修复右侧内容溢出：移除内容区错误的右边距叠加，服务器行改为星号列自适应。
+  - **已完成**：编译通过，状态页与房间页截图已核对；未重新打包 MSI。
 
 
 
