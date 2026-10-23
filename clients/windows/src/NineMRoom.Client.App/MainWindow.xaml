@@ -48,7 +48,7 @@
         </Style>
 
         <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Background" Value="#FF232228" />
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="16" />
@@ -59,7 +59,8 @@
             <Setter Property="Background" Value="{StaticResource BrushControlBg}" />
             <Setter Property="Foreground" Value="{StaticResource BrushText}" />
             <Setter Property="CaretBrush" Value="{StaticResource BrushText}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BrushControlBorder}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
             <Setter Property="MinHeight" Value="52" />
             <Setter Property="MinWidth" Value="220" />
@@ -417,8 +418,8 @@
                     </RadioButton>
                 </StackPanel>
 
-                <Border Grid.Row="1" Background="{StaticResource BrushSurface}" CornerRadius="12"
-                        BorderBrush="{StaticResource BrushBorder}" BorderThickness="0"
+                <Border Grid.Row="1" Background="Transparent" CornerRadius="12"
+                        BorderBrush="Transparent" BorderThickness="0"
                         Padding="12,10">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
@@ -494,6 +495,8 @@
                         <RadioButton x:Name="ChatTabButton" Content="聊天" GroupName="RoomTabs"
                                      Style="{StaticResource RoomTab}" Checked="ChatTab_Checked" />
                     </StackPanel>
+                    <Border Height="1" VerticalAlignment="Bottom"
+                            Background="{StaticResource BrushBorder}" />
                     <Border x:Name="TabIndicator"
                             Width="0"
                             Height="3"
@@ -579,6 +582,8 @@
                                                     </Style>
                                                 </TextBlock.Style>
                                             </TextBlock>
+                                            <Border Grid.Column="2" Width="1" Margin="8,10"
+                                                    Background="{StaticResource BrushBorder}" />
                                             <StackPanel Grid.Column="3" Orientation="Horizontal">
                                                 <Button Content="{Binding ConnectButtonText}"
                                                         Click="Connect_Click"

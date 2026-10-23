@@ -88,8 +88,8 @@
 
                             <Border Grid.Column="1" Width="238" Height="34"
                                     Background="{StaticResource BrushControlBg}"
-                                    BorderBrush="{StaticResource BrushControlBorder}"
-                                    BorderThickness="1" CornerRadius="{StaticResource RadiusSm}"
+                                    BorderBrush="Transparent"
+                                    BorderThickness="0" CornerRadius="{StaticResource RadiusSm}"
                                     HorizontalAlignment="Right" VerticalAlignment="Center"
                                     MouseLeftButtonDown="SearchBox_Click">
                                 <Grid>

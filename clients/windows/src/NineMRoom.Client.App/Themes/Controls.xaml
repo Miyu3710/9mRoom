@@ -97,8 +97,8 @@
     <Style x:Key="ModernTextBox" TargetType="{x:Type TextBox}">
         <Setter Property="Background" Value="{StaticResource BrushControlBg}" />
         <Setter Property="Foreground" Value="{StaticResource BrushText}" />
-        <Setter Property="BorderBrush" Value="{StaticResource BrushControlBorder}" />
-        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="BorderBrush" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CaretBrush" Value="{StaticResource BrushText}" />
         <Setter Property="SelectionBrush" Value="{StaticResource BrushAccent}" />
         <Setter Property="Padding" Value="10,7" />
