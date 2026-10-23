@@ -469,6 +469,34 @@ public partial class SettingsView : UserControl
         }
     }
 
+    private void CopySettingsPath_Click(object sender, RoutedEventArgs e)
+    {
+        var path = SettingsStore.CurrentPath;
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            ViewModel?.ShowNoticeText("配置尚未写入：退出应用后才会保存。");
+            return;
+        }
+
+        CopyToClipboard(path, "配置文件路径");
+    }
+
+    private void CopyLogPath_Click(object sender, RoutedEventArgs e) =>
+        CopyToClipboard(LogService.DirectoryPath, "日志目录");
+
+    private void CopyToClipboard(string text, string label)
+    {
+        try
+        {
+            System.Windows.Clipboard.SetText(text);
+            ViewModel?.ShowNoticeText($"{label}已复制");
+        }
+        catch
+        {
+            ViewModel?.ShowNoticeText("复制失败：无法访问剪贴板。");
+        }
+    }
+
     private async void CheckUpdate_Click(object sender, RoutedEventArgs e)
     {
         if (ViewModel is not null)

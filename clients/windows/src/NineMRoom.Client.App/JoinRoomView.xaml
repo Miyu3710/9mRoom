@@ -1,32 +1,58 @@
 <UserControl x:Class="NineMRoom.Client.App.JoinRoomView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             FontFamily="{StaticResource FontUi}">
-    <UserControl.Resources>
-</UserControl.Resources>
+             xmlns:controls="clr-namespace:NineMRoom.Client.App.Controls"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             FontFamily="{StaticResource FontUi}"
+        TextElement.Foreground="{DynamicResource BrushOnSurface}">
 
-    <StackPanel Margin="24">
-        <TextBlock Text="加入房间" FontSize="{StaticResource FontSizeLg}" FontWeight="SemiBold" />
-        <TextBlock Text="输入服务端提供的房间号，并设置本次使用的昵称。"
-                   Style="{StaticResource Label}" Margin="0,4,0,18" />
+  <StackPanel>
+    <Grid Margin="0,0,0,8">
+      <TextBlock Text="加入房间" Style="{DynamicResource M3HeadlineSmall}" VerticalAlignment="Center" />
+      <controls:M3Button HorizontalAlignment="Right"
+                         Style="{StaticResource M3IconButton}"
+                         ToolTip="关闭"
+                         AutomationProperties.Name="关闭加入房间对话框"
+                         Click="Cancel_Click">
+        <materialDesign:PackIcon Kind="Close" Width="20" Height="20"
+                                 Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=controls:M3Button}}" />
+      </controls:M3Button>
+    </Grid>
 
-        <TextBlock Text="房间号" Style="{StaticResource Label}" Margin="0,0,0,4" />
-        <TextBox Text="{Binding JoinRoomCode, UpdateSourceTrigger=PropertyChanged}"
-                 Style="{StaticResource InputBox}" Margin="0,0,0,4" />
-        <TextBlock Text="{Binding JoinRoomInfoText}" Style="{StaticResource Label}" Margin="0,0,0,14" />
+    <TextBlock Text="输入服务端提供的房间号，并设置本次使用的昵称。"
+               Style="{DynamicResource M3BodyMedium}"
+               Foreground="{StaticResource BrushOnSurfaceVariant}"
+               TextWrapping="Wrap" />
 
-        <TextBlock Text="昵称" Style="{StaticResource Label}" Margin="0,0,0,4" />
-        <TextBox Text="{Binding JoinRoomName, UpdateSourceTrigger=PropertyChanged}"
-                 Style="{StaticResource InputBox}" Margin="0,0,0,10" />
+    <TextBox Text="{Binding JoinRoomCode, UpdateSourceTrigger=PropertyChanged}"
+             Style="{StaticResource M3TextBox}"
+             controls:M3Field.Label="房间号"
+             controls:M3Field.HelperText="{Binding JoinRoomInfoText}"
+             Margin="0,8,0,0"
+             VerticalAlignment="Top" />
 
-        <CheckBox Content="以后默认使用此昵称" IsChecked="{Binding JoinRememberName}" Margin="0,0,0,8" />
-        <CheckBox Content="设为家房间（仅服务端创建的房间可用）" IsChecked="{Binding JoinSetHome}"
-                  IsEnabled="{Binding JoinCanSetHome}" Margin="0,0,0,18" />
+    <TextBox Text="{Binding JoinRoomName, UpdateSourceTrigger=PropertyChanged}"
+             Style="{StaticResource M3TextBox}"
+             controls:M3Field.Label="昵称"
+             controls:M3Field.HelperText="昵称会显示给同房间的成员。"
+             Margin="0,8,0,0"
+             VerticalAlignment="Top" />
 
-        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
-            <Button Content="取消" Click="Cancel_Click" Style="{StaticResource ModernButton}" Margin="0,0,8,0" />
-            <Button Content="加入房间" Click="Join_Click"
-                    Style="{StaticResource ModernPrimaryButton}" />
-        </StackPanel>
+    <CheckBox Style="{StaticResource M3CheckBox}"
+              Content="以后默认使用此昵称"
+              IsChecked="{Binding JoinRememberName}"
+              Margin="0,12,0,0" />
+    <CheckBox Style="{StaticResource M3CheckBox}"
+              Content="设为家房间（仅服务端创建的房间可用）"
+              IsChecked="{Binding JoinSetHome}"
+              IsEnabled="{Binding JoinCanSetHome}"
+              Margin="0,0,0,0" />
+
+    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
+      <controls:M3Button Style="{StaticResource M3TextButtonNeutral}" Content="取消" Click="Cancel_Click" />
+      <controls:M3Button Style="{StaticResource M3TextButton}" Content="加入房间" Margin="8,0,0,0"
+                         AutomationProperties.Name="确认加入房间"
+                         Click="Join_Click" />
     </StackPanel>
+  </StackPanel>
 </UserControl>

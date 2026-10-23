@@ -67,10 +67,15 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private string _lastSyncText = "未同步";
     private string _trayText = "9mRoom";
     private string _overlayHeader = "9mRoom · 未连接";
+    private string _persistentNoticeText = string.Empty;
+    private bool _isConnecting;
     private string _manualMode = "auto";
     private bool _paused;
     private long _timerStartedAt;
-    private int _timerDurationMinutes = 25;
+    private int _focusMinutes = 25;
+    private int _breakMinutes = 5;
+    private bool _timerCycleEnabled;
+    private string _timerPhase = "focus";
     private bool _timerRunning;
     private long _timerRemainingMs = 25 * 60_000L;
     private string _timerText = "25:00";
@@ -101,6 +106,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public MainViewModel(AppSettings settings)
     {
         _settings = settings;
+        _focusMinutes = Math.Clamp(settings.TimerFocusMinutes > 0 ? settings.TimerFocusMinutes : 25, 1, 600);
+        _breakMinutes = Math.Clamp(settings.TimerBreakMinutes > 0 ? settings.TimerBreakMinutes : 5, 1, 600);
+        _timerCycleEnabled = settings.TimerCycleEnabled;
+        _timerPhase = "focus";
+        _timerRemainingMs = _focusMinutes * 60_000L;
+        _timerText = FormatRemaining(_timerRemainingMs);
         settings.CommandEnabled = false;
         if (string.IsNullOrWhiteSpace(settings.ClientId))
         {
@@ -376,7 +387,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             SettingsStore.Save(_settings);
             OnPropertyChanged();
 
-            _nameDebounce.Stop();
+            // 构造函数里已经创建该定时器；这里只是重启防抖。
+            _nameDebounce!.Stop();
             _nameDebounce.Start();
         }
     }
@@ -933,6 +945,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         return hours > 0 ? $"{hours} 小时 {minutes} 分" : $"{minutes} 分";
     }
 
+    public bool IsTimerRunning => _timerRunning;
+
     public string ManualMode => _manualMode;
 
     public string ManualModeText => _manualMode switch
@@ -951,6 +965,13 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         get => _timerText;
         private set => SetProperty(ref _timerText, value);
     }
+
+    /// <summary>开始 / 暂停 / 继续共用一个按钮。</summary>
+    public string TimerButtonText => _timerRunning
+        ? "暂停"
+        : _timerRemainingMs > 0 && _timerRemainingMs < PhaseMinutes * 60_000L
+            ? "继续"
+            : "开始";
 
     public ObservableCollection<TodoItem> Todos { get; } = new();
 
@@ -1120,6 +1141,86 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         SettingsStore.Save(_settings);
     }
 
+    private int PhaseMinutes => _timerPhase == "break" ? _breakMinutes : _focusMinutes;
+
+    public int FocusMinutes
+    {
+        get => _focusMinutes;
+        set
+        {
+            var minutes = Math.Clamp(value, 1, 600);
+            if (_focusMinutes == minutes)
+            {
+                return;
+            }
+
+            _focusMinutes = minutes;
+            _settings.TimerFocusMinutes = minutes;
+            SettingsStore.Save(_settings);
+            OnPropertyChanged();
+
+            if (!_timerRunning && _timerPhase != "break")
+            {
+                _timerRemainingMs = minutes * 60_000L;
+                UpdateTimer(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+            }
+        }
+    }
+
+    public int BreakMinutes
+    {
+        get => _breakMinutes;
+        set
+        {
+            var minutes = Math.Clamp(value, 1, 600);
+            if (_breakMinutes == minutes)
+            {
+                return;
+            }
+
+            _breakMinutes = minutes;
+            _settings.TimerBreakMinutes = minutes;
+            SettingsStore.Save(_settings);
+            OnPropertyChanged();
+
+            if (!_timerRunning && _timerPhase == "break")
+            {
+                _timerRemainingMs = minutes * 60_000L;
+                UpdateTimer(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+            }
+        }
+    }
+
+    public bool TimerCycleEnabled
+    {
+        get => _timerCycleEnabled;
+        set
+        {
+            if (_timerCycleEnabled == value)
+            {
+                return;
+            }
+
+            _timerCycleEnabled = value;
+            _settings.TimerCycleEnabled = value;
+            SettingsStore.Save(_settings);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(TimerPhaseText));
+
+            if (!value && !_timerRunning)
+            {
+                _timerPhase = "focus";
+                _timerRemainingMs = _focusMinutes * 60_000L;
+                OnPropertyChanged(nameof(TimerPhaseText));
+                UpdateTimer(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+            }
+        }
+    }
+
+    public string TimerPhaseText => _timerCycleEnabled
+        ? (_timerPhase == "break" ? "休息" : "专注")
+        : "专注";
+
     public void StartTimer()
     {
         if (_timerRunning)
@@ -1128,7 +1229,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
 
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        var durationMs = _timerDurationMinutes * 60_000L;
+        var durationMs = PhaseMinutes * 60_000L;
         if (_timerRemainingMs <= 0 || _timerRemainingMs > durationMs)
         {
             _timerRemainingMs = durationMs;
@@ -1136,6 +1237,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
         _timerStartedAt = now - (durationMs - _timerRemainingMs);
         _timerRunning = true;
+        OnPropertyChanged(nameof(IsTimerRunning));
         if (_timer is not null)
         {
             _timer.Interval = TimeSpan.FromSeconds(1);
@@ -1153,8 +1255,9 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
 
         var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-        _timerRemainingMs = Math.Max(0, _timerStartedAt + _timerDurationMinutes * 60_000L - now);
+        _timerRemainingMs = Math.Max(0, _timerStartedAt + PhaseMinutes * 60_000L - now);
         _timerRunning = false;
+        OnPropertyChanged(nameof(IsTimerRunning));
         if (_timer is not null)
         {
             _timer.Interval = TimeSpan.FromSeconds(2);
@@ -1167,7 +1270,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public void ResetTimer()
     {
         _timerRunning = false;
-        _timerRemainingMs = _timerDurationMinutes * 60_000L;
+        OnPropertyChanged(nameof(IsTimerRunning));
+        _timerPhase = "focus";
+        OnPropertyChanged(nameof(TimerPhaseText));
+        _timerRemainingMs = _focusMinutes * 60_000L;
         if (_timer is not null)
         {
             _timer.Interval = TimeSpan.FromSeconds(2);
@@ -1177,18 +1283,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _ = _client?.SendNowAsync();
     }
 
-    public void SetTimerMinutes(int minutes)
-    {
-        if (_timerRunning || minutes <= 0)
-        {
-            return;
-        }
+    public void SetTimerMinutes(int minutes) => FocusMinutes = minutes;
 
-        _timerDurationMinutes = minutes;
-        _timerRemainingMs = minutes * 60_000L;
-        UpdateTimer(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
-    }
-
+    /// <summary>当前阶段时长（分钟）。</summary>
+    public int TimerDurationMinutes => PhaseMinutes;
     public void ToggleTimer()
     {
         if (_timerRunning)
@@ -2023,10 +2121,30 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         if (_timerRunning)
         {
-            var remaining = _timerStartedAt + _timerDurationMinutes * 60_000L - nowMs;
+            var remaining = _timerStartedAt + PhaseMinutes * 60_000L - nowMs;
             if (remaining <= 0)
             {
                 _timerRunning = false;
+                _timerRemainingMs = 0;
+
+                if (_timerCycleEnabled)
+                {
+                    _timerPhase = _timerPhase == "break" ? "focus" : "break";
+                    OnPropertyChanged(nameof(TimerPhaseText));
+                    OnPropertyChanged(nameof(TimerDurationMinutes));
+                    _timerRemainingMs = PhaseMinutes * 60_000L;
+                    StartTimer();
+                    return;
+                }
+
+                if (_timerPhase == "break")
+                {
+                    _timerPhase = "focus";
+                    OnPropertyChanged(nameof(TimerPhaseText));
+                    OnPropertyChanged(nameof(TimerDurationMinutes));
+                }
+
+                OnPropertyChanged(nameof(IsTimerRunning));
                 _timerRemainingMs = 0;
                 if (_timer is not null)
                 {
@@ -2045,16 +2163,15 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             return;
         }
 
-        if (_timerRemainingMs > 0 && _timerRemainingMs < _timerDurationMinutes * 60_000L)
+        if (_timerRemainingMs > 0 && _timerRemainingMs < PhaseMinutes * 60_000L)
         {
             TimerText = $"已暂停 {FormatRemaining(_timerRemainingMs)}";
         }
         else
         {
-            TimerText = FormatRemaining(_timerDurationMinutes * 60_000L);
+            TimerText = FormatRemaining(PhaseMinutes * 60_000L);
         }
     }
-
     private static string FormatRemaining(long milliseconds)
     {
         var totalSeconds = Math.Max(0, (int)Math.Ceiling(milliseconds / 1000.0));
@@ -2559,7 +2676,24 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public void ShowPersistentNotice(string text)
     {
         _noticeTimer?.Stop();
-        NoticeText = text;
+        PersistentNoticeText = text;
+    }
+
+    /// <summary>
+    /// 长期有效的系统状态（例如托盘不可用）。这类信息不能用 Snackbar 表达，
+    /// 由主窗口以常驻提示条显示。
+    /// </summary>
+    public string PersistentNoticeText
+    {
+        get => _persistentNoticeText;
+        private set => SetProperty(ref _persistentNoticeText, value);
+    }
+
+    /// <summary>连接/断开进行中：按钮进入 busy 状态，避免重复提交。</summary>
+    public bool IsConnecting
+    {
+        get => _isConnecting;
+        private set => SetProperty(ref _isConnecting, value);
     }
 
     public bool IsServerConnected => _isServerConnected;
@@ -2835,13 +2969,26 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public async Task ToggleConnectionAsync()
     {
-        if (_isServerConnected)
+        if (IsConnecting)
         {
-            await DisconnectServerAsync();
             return;
         }
 
-        await ConnectServerAsync();
+        IsConnecting = true;
+        try
+        {
+            if (_isServerConnected)
+            {
+                await DisconnectServerAsync();
+                return;
+            }
+
+            await ConnectServerAsync();
+        }
+        finally
+        {
+            IsConnecting = false;
+        }
     }
 
     private async Task ConnectServerAsync()
@@ -3359,7 +3506,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         else
         {
             var timer = _timerRunning
-                ? new FocusTimer("countdown", _timerStartedAt, _timerDurationMinutes)
+                ? new FocusTimer("countdown", _timerStartedAt, PhaseMinutes)
                 : null;
             var todo = ActiveTodoText;
             var status = StatusComposer.Compose(match, media, idle, _bootTime, timer, todo, _commandOutput, CurrentLayout(match.Id, match.Category));
@@ -3501,7 +3648,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if (mode != "invisible")
         {
             var timer = _timerRunning
-                ? new FocusTimer("countdown", _timerStartedAt, _timerDurationMinutes)
+                ? new FocusTimer("countdown", _timerStartedAt, PhaseMinutes)
                 : null;
             var todo = ActiveTodoText;
 

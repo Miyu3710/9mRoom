@@ -1,77 +1,176 @@
 <UserControl x:Class="NineMRoom.Client.App.FocusView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             FontFamily="{StaticResource FontUi}">
+             xmlns:local="clr-namespace:NineMRoom.Client.App"
+             xmlns:controls="clr-namespace:NineMRoom.Client.App.Controls"
+             FontFamily="{StaticResource FontUi}"
+        TextElement.Foreground="{DynamicResource BrushOnSurface}">
 
-    <UserControl.Resources>
-</UserControl.Resources>
+  <UserControl.Resources>
+    <local:StringEqualsConverter x:Key="ValueEquals" />
+    <local:InverseBooleanConverter x:Key="Not" />
+  </UserControl.Resources>
 
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-        </Grid.RowDefinitions>
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+    </Grid.ColumnDefinitions>
 
-        <StackPanel Grid.Row="0" Margin="0,0,24,16">
-            <TextBlock Text="专注" Style="{StaticResource PageTitle}" Margin="0,0,0,16" />
-        </StackPanel>
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto" />
+      <RowDefinition Height="*" />
+    </Grid.RowDefinitions>
 
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-            <StackPanel Margin="0,0,24,0">
-                <Border Style="{StaticResource Card}">
-                    <StackPanel>
-                        <TextBlock Text="今日" Style="{StaticResource SectionTitle}" />
-                        <TextBlock Text="{Binding TodayFocusText}" FontSize="{StaticResource FontSizeTitle}" FontWeight="SemiBold" />
-                        <ProgressBar Value="{Binding GoalPercent, Mode=OneWay}" Maximum="100" Margin="0,12,0,8" />
-                        <TextBlock Text="{Binding GoalProgressText}" Style="{StaticResource Label}" TextWrapping="Wrap" />
-                        <TextBlock Text="{Binding StreakText}" Style="{StaticResource Label}" Margin="0,4,0,0" />
-                        <TextBlock Text="{Binding WeekFocusText, StringFormat=近 7 天合计：{0}}"
-                                   Style="{StaticResource Label}" Margin="0,12,0,0" />
-                    </StackPanel>
-                </Border>
+    <StackPanel Grid.Row="0" Margin="0,0,28,16">
+      <TextBlock Text="专注" Style="{StaticResource PageTitle}" />
+      <TextBlock Text="本地专注统计与番茄计时。统计只保存在本机，房间内仅同步今日总时长。"
+                 Style="{StaticResource PageSupporting}" />
+    </StackPanel>
 
-                <Border Style="{StaticResource Card}">
-                    <StackPanel>
-                        <TextBlock Text="番茄计时" Style="{StaticResource SectionTitle}" />
-                        <TextBlock Text="{Binding TimerText}" FontSize="{StaticResource FontSizeTitle}" FontWeight="SemiBold" />
-                        <WrapPanel Margin="0,12,0,0">
-                            <Button Content="开始" Click="TimerStart_Click" Style="{StaticResource ActionButton}" Margin="0,0,6,6" />
-                            <Button Content="暂停" Click="TimerPause_Click" Style="{StaticResource ActionButton}" Margin="0,0,6,6" />
-                            <Button Content="重置" Click="TimerReset_Click" Style="{StaticResource ActionButton}" Margin="0,0,6,6" />
-                        </WrapPanel>
-                        <WrapPanel Margin="0,2,0,0">
-                            <Button Content="25 分" Tag="25" Click="TimerMinutes_Click" Style="{StaticResource ActionButton}" Padding="10,5" Margin="0,0,6,6" />
-                            <Button Content="45 分" Tag="45" Click="TimerMinutes_Click" Style="{StaticResource ActionButton}" Padding="10,5" Margin="0,0,6,6" />
-                            <Button Content="60 分" Tag="60" Click="TimerMinutes_Click" Style="{StaticResource ActionButton}" Padding="10,5" Margin="0,0,6,6" />
-                        </WrapPanel>
-                    </StackPanel>
-                </Border>
+    <ScrollViewer Grid.Row="1" Style="{StaticResource M3PageScroll}">
+      <StackPanel>
 
-                <Border Style="{StaticResource Card}">
-                    <StackPanel>
-                        <TextBlock Text="统计设置" Style="{StaticResource SectionTitle}" />
-                        <CheckBox Content="记录专注统计（仅本机，可随时关闭）" IsChecked="{Binding StatsEnabled}" />
-                        <TextBlock Text="每日目标（分钟，0 为关闭）" Style="{StaticResource Label}" Margin="0,6,0,4" />
-                        <TextBox Text="{Binding DailyGoalMinutes, UpdateSourceTrigger=LostFocus}"
-                                 Style="{StaticResource InputBox}" Width="100" Height="34" HorizontalAlignment="Left" />
+        <!-- 今日：数值 + 确定性进度（带标签） -->
+        <TextBlock Text="今日专注" Style="{StaticResource SectionTitle}" />
+        <Grid Margin="0,12,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <TextBlock Text="{Binding TodayFocusText}" Style="{DynamicResource M3DisplaySmall}" />
+          <TextBlock Grid.Column="1" Text="{Binding StreakText}" Style="{StaticResource ItemSupporting}"
+                     VerticalAlignment="Bottom" Margin="16,0,0,8" />
+        </Grid>
 
-                        <TextBlock Text="近 7 天" Style="{StaticResource Label}" Margin="0,16,0,8" />
-                        <ItemsControl ItemsSource="{Binding FocusHistory}">
-                            <ItemsControl.ItemTemplate>
-                                <DataTemplate>
-                                    <Grid Margin="0,0,0,6">
-                                        <TextBlock Text="{Binding Label}" Style="{StaticResource Body}" />
-                                        <TextBlock Text="{Binding DurationText}" Style="{StaticResource Label}"
-                                                   HorizontalAlignment="Right" />
-                                    </Grid>
-                                </DataTemplate>
-                            </ItemsControl.ItemTemplate>
-                        </ItemsControl>
-                        <TextBlock Text="统计只保存在本机；房间内仅同步今日总秒数。"
-                                   Style="{StaticResource Label}" Margin="0,8,0,0" />
-                    </StackPanel>
-                </Border>
+        <ProgressBar Value="{Binding GoalPercent, Mode=OneWay}" Maximum="100" Margin="0,16,0,0"
+                     AutomationProperties.Name="每日专注目标进度" />
+
+        <Grid Margin="0,8,0,0">
+          <TextBlock Text="{Binding GoalProgressText}" Style="{StaticResource ItemSupporting}" />
+          <TextBlock Text="{Binding WeekFocusText, StringFormat=近 7 天合计：{0}}"
+                     Style="{StaticResource ItemSupporting}" HorizontalAlignment="Right" />
+        </Grid>
+
+        <Border Style="{StaticResource M3Divider}" Margin="0,24,0,0" />
+
+        <!-- 番茄计时 -->
+        <TextBlock Text="番茄计时" Style="{StaticResource SectionTitle}" Margin="0,24,0,0" />
+        <Grid Margin="0,8,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="Auto" />
+          </Grid.ColumnDefinitions>
+          <StackPanel VerticalAlignment="Center">
+            <TextBlock Text="{Binding TimerPhaseText}" Style="{StaticResource ItemSupporting}" Margin="0,0,0,4" />
+            <TextBlock Text="{Binding TimerText}" Style="{StaticResource TimerDisplay}" />
+          </StackPanel>
+          <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+            <controls:M3Button Style="{StaticResource M3FilledButton}"
+                               Content="{Binding TimerButtonText}"
+                               MinWidth="96"
+                               AutomationProperties.Name="{Binding TimerButtonText}"
+                               Click="TimerToggle_Click" />
+            <controls:M3Button Style="{StaticResource M3TextButtonNeutral}" Content="重置"
+                               AutomationProperties.Name="重置计时"
+                               Margin="8,0,0,0"
+                               Click="TimerReset_Click" />
+          </StackPanel>
+        </Grid>
+
+        <Grid Margin="0,20,0,0">
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+          </Grid.ColumnDefinitions>
+          <TextBox Grid.Column="0"
+                   controls:M3Field.Label="专注时长（分钟）"
+                   Text="{Binding FocusMinutes, UpdateSourceTrigger=LostFocus}"
+                   IsEnabled="{Binding IsTimerRunning, Converter={StaticResource Not}}"
+                   PreviewTextInput="Minutes_PreviewTextInput"
+                   LostFocus="Minutes_LostFocus" />
+          <TextBox Grid.Column="1"
+                   controls:M3Field.Label="休息时长（分钟）"
+                   Text="{Binding BreakMinutes, UpdateSourceTrigger=LostFocus}"
+                   IsEnabled="{Binding IsTimerRunning, Converter={StaticResource Not}}"
+                   Margin="16,0,0,0"
+                   PreviewTextInput="Minutes_PreviewTextInput"
+                   LostFocus="Minutes_LostFocus" />
+        </Grid>
+
+        <Border Padding="0,6">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+              <TextBlock Text="专注 / 休息循环" Style="{StaticResource ValueText}" />
+              <TextBlock Text="专注结束后自动进入休息，休息结束后回到专注"
+                         Style="{StaticResource ItemSupporting}" TextWrapping="Wrap" />
             </StackPanel>
-        </ScrollViewer>
-    </Grid>
+            <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}"
+                      IsChecked="{Binding TimerCycleEnabled}"
+                      AutomationProperties.Name="专注与休息循环"
+                      VerticalAlignment="Center" Margin="16,0,0,0" />
+          </Grid>
+        </Border>
+
+        <TextBlock Text="快捷键 Ctrl+Alt+Shift+T 可开始或暂停；时长范围 1–600 分钟。"
+                   Style="{StaticResource HintText}" Margin="0,4,0,0" />
+
+        <Border Style="{StaticResource M3Divider}" Margin="0,24,0,0" />
+
+        <!-- 统计设置：即时生效用 Switch，连续数值用 Slider -->
+        <TextBlock Text="统计设置" Style="{StaticResource SectionTitle}" Margin="0,24,0,0" />
+
+        <Border Padding="0,6" Margin="0,8,0,0">
+          <Grid>
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+              <TextBlock Text="记录专注统计" Style="{StaticResource ValueText}" />
+              <TextBlock Text="仅保存在本机，可随时关闭" Style="{StaticResource ItemSupporting}" />
+            </StackPanel>
+            <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}"
+                      IsChecked="{Binding StatsEnabled}"
+                      AutomationProperties.Name="记录专注统计"
+                      VerticalAlignment="Center" Margin="16,0,0,0" />
+          </Grid>
+        </Border>
+
+        <TextBox Margin="0,20,0,0"
+                 controls:M3Field.Label="每日目标（分钟）"
+                 Text="{Binding DailyGoalMinutes, UpdateSourceTrigger=LostFocus}"
+                 IsEnabled="{Binding StatsEnabled}"
+                 PreviewTextInput="Minutes_PreviewTextInput"
+                 LostFocus="Minutes_LostFocus" />
+        <TextBlock Text="0 表示不设目标。"
+                   Style="{StaticResource HintText}" Margin="0,4,0,0" />
+
+        <TextBlock Text="近 7 天" Style="{StaticResource ItemSupporting}" Margin="0,24,0,4" />
+        <Border Style="{StaticResource M3Divider}" />
+        <ItemsControl ItemsSource="{Binding FocusHistory}">
+          <ItemsControl.ItemTemplate>
+            <DataTemplate>
+              <Grid MinHeight="44">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="{Binding Label}" Style="{DynamicResource M3BodyMedium}" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="{Binding DurationText}" Style="{StaticResource ItemSupporting}"
+                           VerticalAlignment="Center" />
+              </Grid>
+            </DataTemplate>
+          </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <Border Style="{StaticResource M3Divider}" />
+
+        <TextBlock Text="统计只保存在本机；房间内仅同步今日总秒数。"
+                   Style="{StaticResource HintText}" Margin="0,12,0,0" />
+      </StackPanel>
+    </ScrollViewer>
+  </Grid>
 </UserControl>

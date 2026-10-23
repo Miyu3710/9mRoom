@@ -1,0 +1,45 @@
+<UserControl x:Class="NineMRoom.Client.App.Controls.M3DialogHost"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:NineMRoom.Client.App.Controls"
+             Visibility="Collapsed"
+             FocusManager.IsFocusScope="True"
+             TextElement.Foreground="{DynamicResource BrushOnSurface}">
+  <Grid x:Name="Root" Background="Transparent" PreviewKeyDown="Root_PreviewKeyDown">
+    <Border x:Name="Scrim" Background="{DynamicResource BrushScrim}" Opacity="0" />
+
+    <Border x:Name="DialogSurface"
+            Style="{StaticResource M3DialogSurface}"
+            MaxWidth="{StaticResource SizeDialogMax}"
+            MinWidth="380"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            Margin="24">
+      <Border.RenderTransform>
+        <ScaleTransform x:Name="DialogScale" ScaleX="0.96" ScaleY="0.96" />
+      </Border.RenderTransform>
+      <Border.RenderTransformOrigin>0.5,0.5</Border.RenderTransformOrigin>
+
+      <StackPanel>
+        <TextBlock x:Name="TitleText" Style="{DynamicResource M3HeadlineSmall}" TextWrapping="Wrap" />
+        <TextBlock x:Name="MessageText"
+                   Style="{DynamicResource M3BodyMedium}"
+                   Foreground="{DynamicResource BrushOnSurfaceVariant}"
+                   TextWrapping="Wrap"
+                   Margin="0,12,0,0" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,24,0,0">
+          <controls:M3Button x:Name="CancelButton"
+                             Style="{StaticResource M3TextButtonNeutral}"
+                             Content="取消"
+                             Click="Cancel_Click" />
+          <controls:M3Button x:Name="ConfirmButton"
+                             Style="{StaticResource M3TextButton}"
+                             Content="确定"
+                             Margin="8,0,0,0"
+                             Click="Confirm_Click" />
+        </StackPanel>
+      </StackPanel>
+    </Border>
+  </Grid>
+</UserControl>

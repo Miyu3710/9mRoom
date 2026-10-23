@@ -14,11 +14,12 @@
         Width="420"
         SizeToContent="Height"
         FontFamily="{StaticResource FontUi}"
+        TextElement.Foreground="{DynamicResource BrushOnSurface}"
         Cursor="SizeAll">
 
     <Window.Resources>
-        <SolidColorBrush x:Key="OverlayTextBrush" Color="{StaticResource ColorText}" />
-        <SolidColorBrush x:Key="OverlayMutedBrush" Color="{StaticResource ColorTextMuted}" />
+        <SolidColorBrush x:Key="OverlayTextBrush" Color="{StaticResource ColorOnSurface}" />
+        <SolidColorBrush x:Key="OverlayMutedBrush" Color="{StaticResource ColorOnSurfaceVariant}" />
         <sys:Double x:Key="OverlayFontSize">12</sys:Double>
         <FontWeight x:Key="OverlayNameWeight">SemiBold</FontWeight>
 
@@ -94,10 +95,10 @@
     </Window.Resources>
 
     <Border x:Name="RootBorder"
-            Background="{StaticResource BrushOverlayBg}"
-            BorderBrush="{StaticResource BrushOverlayBorder}"
+            Background="{StaticResource BrushOverlaySurface}"
+            BorderBrush="{StaticResource BrushOverlayOutline}"
             BorderThickness="0"
-            CornerRadius="{StaticResource RadiusMd}"
+            CornerRadius="{StaticResource ShapeMedium}"
             Padding="14,10">
         <Grid>
             <StackPanel x:Name="MainPanel">
@@ -106,7 +107,7 @@
                                Text="{Binding OverlayHeader}"
                                Foreground="{DynamicResource OverlayMutedBrush}"
                                FontFamily="{DynamicResource OverlayFontFamily}"
-                               FontSize="{StaticResource FontSizeXs}"
+                               FontSize="{StaticResource TypeLabelSmallSize}"
                                VerticalAlignment="Center" />
                     <Ellipse x:Name="ConnectionLight"
                              Width="7" Height="7"
@@ -119,16 +120,16 @@
                         </Ellipse.RenderTransform>
                         <Ellipse.Style>
                             <Style TargetType="Ellipse">
-                                <Setter Property="Fill" Value="#6B7280" />
+                                <Setter Property="Fill" Value="{StaticResource BrushStatusOffline}" />
                                 <Style.Triggers>
                                     <DataTrigger Binding="{Binding ConnectionState}" Value="connected">
-                                        <Setter Property="Fill" Value="#4ADE80" />
+                                        <Setter Property="Fill" Value="{StaticResource BrushStatusFocus}" />
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding ConnectionState}" Value="reconnecting">
-                                        <Setter Property="Fill" Value="#FBBF24" />
+                                        <Setter Property="Fill" Value="{StaticResource BrushStatusBreak}" />
                                     </DataTrigger>
                                     <DataTrigger Binding="{Binding ConnectionState}" Value="offline">
-                                        <Setter Property="Fill" Value="#6B7280" />
+                                        <Setter Property="Fill" Value="{StaticResource BrushStatusOffline}" />
                                     </DataTrigger>
                                     <EventTrigger RoutedEvent="Loaded">
                                         <BeginStoryboard>
@@ -157,16 +158,16 @@
                 <Ellipse Width="8" Height="8" HorizontalAlignment="Center">
                     <Ellipse.Style>
                         <Style TargetType="Ellipse">
-                            <Setter Property="Fill" Value="#6B7280" />
+                            <Setter Property="Fill" Value="{StaticResource BrushStatusOffline}" />
                             <Style.Triggers>
                                 <DataTrigger Binding="{Binding ConnectionState}" Value="connected">
-                                    <Setter Property="Fill" Value="#4ADE80" />
+                                    <Setter Property="Fill" Value="{StaticResource BrushStatusFocus}" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding ConnectionState}" Value="reconnecting">
-                                    <Setter Property="Fill" Value="#FBBF24" />
+                                    <Setter Property="Fill" Value="{StaticResource BrushStatusBreak}" />
                                 </DataTrigger>
                                 <DataTrigger Binding="{Binding ConnectionState}" Value="offline">
-                                    <Setter Property="Fill" Value="#6B7280" />
+                                    <Setter Property="Fill" Value="{StaticResource BrushStatusOffline}" />
                                 </DataTrigger>
                             </Style.Triggers>
                         </Style>
@@ -175,7 +176,7 @@
                 <TextBlock Text="{Binding MemberCountText}"
                            Foreground="{DynamicResource OverlayMutedBrush}"
                            FontFamily="{DynamicResource OverlayFontFamily}"
-                           FontSize="{StaticResource FontSizeXs}"
+                           FontSize="{StaticResource TypeLabelSmallSize}"
                            HorizontalAlignment="Center"
                            Margin="0,6,0,0" />
             </StackPanel>

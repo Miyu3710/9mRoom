@@ -1,0 +1,212 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:NineMRoom.Client.App.Controls"
+                    xmlns:local="clr-namespace:NineMRoom.Client.App">
+
+  <!--
+    M3 buttons. One shared template provides the state layers, focus ring, disabled
+    and busy states; variants only choose color roles and shape, per Google M3
+    buttons guidance (filled / filled tonal / outlined / text / icon).
+  -->
+  <ControlTemplate x:Key="M3ButtonTemplate" TargetType="{x:Type controls:M3Button}">
+    <Grid>
+      <Border x:Name="Root"
+              Background="{TemplateBinding Background}"
+              BorderBrush="{TemplateBinding BorderBrush}"
+              BorderThickness="{TemplateBinding BorderThickness}"
+              CornerRadius="{TemplateBinding CornerRadius}"
+              SnapsToDevicePixels="True">
+        <Grid>
+          <Border x:Name="StateLayer"
+                  Background="{TemplateBinding Foreground}"
+                  CornerRadius="{TemplateBinding CornerRadius}"
+                  Opacity="0"
+                  IsHitTestVisible="False" />
+          <Canvas x:Name="RippleHost"
+                  IsHitTestVisible="False"
+                  ClipToBounds="True" />
+          <StackPanel Orientation="Horizontal"
+                      HorizontalAlignment="Center"
+                      VerticalAlignment="Center"
+                      Margin="{TemplateBinding Padding}">
+            <Grid x:Name="BusyRing" Width="16" Height="16" Margin="0,0,8,0"
+                  VerticalAlignment="Center" Visibility="Collapsed">
+              <Ellipse Stroke="{TemplateBinding Foreground}" StrokeThickness="2" Opacity="0.28" />
+              <Path Stroke="{TemplateBinding Foreground}" StrokeThickness="2"
+                    StrokeStartLineCap="Round" StrokeEndLineCap="Round"
+                    Data="M 8,1 A 7,7 0 0 1 15,8"
+                    RenderTransformOrigin="0.5,0.5">
+                <Path.RenderTransform>
+                  <RotateTransform x:Name="BusyRotate" Angle="0" />
+                </Path.RenderTransform>
+              </Path>
+            </Grid>
+            <ContentPresenter VerticalAlignment="Center"
+                              HorizontalAlignment="Center"
+                              TextElement.Foreground="{TemplateBinding Foreground}"
+                              RecognizesAccessKey="True">
+              <ContentPresenter.Resources>
+                <Style TargetType="TextBlock">
+                  <Setter Property="FontSize" Value="{DynamicResource TypeLabelLargeSize}" />
+                  <Setter Property="FontWeight" Value="{DynamicResource TypeLabelLargeWeight}" />
+                  <Setter Property="LineHeight" Value="{DynamicResource TypeLabelLargeLine}" />
+                  <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+                </Style>
+              </ContentPresenter.Resources>
+            </ContentPresenter>
+          </StackPanel>
+        </Grid>
+      </Border>
+
+      <Border x:Name="FocusRing"
+              Margin="-3"
+              BorderBrush="{DynamicResource BrushPrimary}"
+              BorderThickness="3"
+              CornerRadius="{TemplateBinding CornerRadius}"
+              Visibility="Collapsed"
+              IsHitTestVisible="False" />
+    </Grid>
+
+    <ControlTemplate.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter TargetName="StateLayer" Property="Opacity" Value="{DynamicResource StateHover}" />
+      </Trigger>
+      <Trigger Property="IsPressed" Value="True">
+        <Setter TargetName="StateLayer" Property="Opacity" Value="{DynamicResource StatePressed}" />
+      </Trigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource TemplatedParent}}" Value="True" />
+          <Condition Binding="{Binding Cue, Source={x:Static local:InputMode.Instance}}" Value="True" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="FocusRing" Property="Visibility" Value="Visible" />
+      </MultiDataTrigger>
+      <Trigger Property="IsEnabled" Value="False">
+        <Setter TargetName="Root" Property="Opacity" Value="{DynamicResource StateDisabledContent}" />
+        <Setter TargetName="StateLayer" Property="Opacity" Value="0" />
+      </Trigger>
+      <Trigger Property="IsBusy" Value="True">
+        <Setter TargetName="BusyRing" Property="Visibility" Value="Visible" />
+        <Setter TargetName="StateLayer" Property="Opacity" Value="0" />
+        <Trigger.EnterActions>
+          <BeginStoryboard x:Name="BusySpin">
+            <Storyboard>
+              <DoubleAnimation Storyboard.TargetName="BusyRotate"
+                               Storyboard.TargetProperty="Angle"
+                               From="0" To="360" Duration="0:0:0.9"
+                               RepeatBehavior="Forever" />
+            </Storyboard>
+          </BeginStoryboard>
+        </Trigger.EnterActions>
+        <Trigger.ExitActions>
+          <RemoveStoryboard BeginStoryboardName="BusySpin" />
+        </Trigger.ExitActions>
+      </Trigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+
+  <!-- Filled: the single most important action in a region. -->
+  <Style x:Key="M3FilledButton" TargetType="{x:Type controls:M3Button}">
+    <Setter Property="Background" Value="{DynamicResource BrushPrimary}" />
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnPrimary}" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Height" Value="{DynamicResource SizeButton}" />
+    <Setter Property="MinWidth" Value="72" />
+    <Setter Property="Padding" Value="24,0" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontUi}" />
+    <Setter Property="FontSize" Value="{DynamicResource TypeLabelLargeSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TypeLabelLargeWeight}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="Template" Value="{StaticResource M3ButtonTemplate}" />
+    <Setter Property="controls:M3Button.CornerRadius" Value="{DynamicResource ShapeSmall}" />
+  </Style>
+
+  <!-- Filled tonal: secondary emphasis. -->
+  <Style x:Key="M3FilledTonalButton" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3FilledButton}">
+    <Setter Property="Background" Value="{DynamicResource BrushSecondaryContainer}" />
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnSecondaryContainer}" />
+  </Style>
+
+  <!-- Outlined: important but bounded secondary action. -->
+  <Style x:Key="M3OutlinedButton" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3FilledButton}">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource BrushPrimary}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BrushOutline}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+
+  <!-- Text: low emphasis action, also used for dialog actions. -->
+  <Style x:Key="M3TextButton" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3FilledButton}">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource BrushPrimary}" />
+    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="MinWidth" Value="64" />
+  </Style>
+
+  <Style x:Key="M3TextButtonNeutral" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3TextButton}">
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnSurfaceVariant}" />
+  </Style>
+
+  <Style x:Key="M3TextButtonOnInverse" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3TextButton}">
+    <Setter Property="Foreground" Value="{DynamicResource BrushInversePrimary}" />
+    <Setter Property="Height" Value="32" />
+  </Style>
+
+  <!-- Icon buttons: 40dp visual with a full-radius state layer and focus ring. -->
+  <Style x:Key="M3IconButton" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3FilledButton}">
+    <Setter Property="Width" Value="{DynamicResource SizeIconButton}" />
+    <Setter Property="Height" Value="{DynamicResource SizeIconButton}" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="Padding" Value="8" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnSurfaceVariant}" />
+    <Setter Property="HorizontalContentAlignment" Value="Center" />
+  </Style>
+
+  <Style x:Key="M3IconButtonFilled" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3IconButton}">
+    <Setter Property="Background" Value="{DynamicResource BrushPrimary}" />
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnPrimary}" />
+  </Style>
+
+  <Style x:Key="M3IconButtonOutlined" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3IconButton}">
+    <Setter Property="BorderBrush" Value="{DynamicResource BrushOutlineVariant}" />
+    <Setter Property="BorderThickness" Value="1" />
+  </Style>
+
+  <!-- Window caption buttons keep the Windows hit area but use M3 state layers. -->
+  <Style x:Key="M3CaptionButton" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3IconButton}">
+    <Setter Property="Width" Value="46" />
+    <Setter Property="Height" Value="32" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="controls:M3Button.CornerRadius" Value="{DynamicResource ShapeExtraSmall}" />
+  </Style>
+
+  <Style x:Key="M3CloseCaptionButton" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3CaptionButton}">
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Background" Value="{DynamicResource BrushErrorContainer}" />
+        <Setter Property="Foreground" Value="{DynamicResource BrushOnErrorContainer}" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <!-- Assist chip: compact action with a leading icon, e.g. "add a status block". -->
+  <Style x:Key="M3AssistChip" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3FilledButton}">
+    <Setter Property="Height" Value="32" />
+    <Setter Property="MinWidth" Value="0" />
+    <Setter Property="Padding" Value="12,0" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnSurfaceVariant}" />
+    <Setter Property="BorderBrush" Value="{DynamicResource BrushOutlineVariant}" />
+    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="FontSize" Value="{DynamicResource TypeLabelLargeSize}" />
+    <Setter Property="controls:M3Button.CornerRadius" Value="{DynamicResource ShapeSmall}" />
+  </Style>
+
+  <Style TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3TextButton}" />
+
+</ResourceDictionary>

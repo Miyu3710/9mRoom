@@ -2,85 +2,97 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:NineMRoom.Client.App"
+        xmlns:controls="clr-namespace:NineMRoom.Client.App.Controls"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         Title="选择字体"
-        Width="680" Height="540"
+        Width="720" Height="560"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize" ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
-        Foreground="{StaticResource BrushText}"
+        Foreground="{StaticResource BrushOnSurface}"
         FontFamily="{StaticResource FontUi}"
+        TextElement.Foreground="{DynamicResource BrushOnSurface}"
         TextOptions.TextFormattingMode="Ideal"
         TextOptions.TextRenderingMode="ClearType"
         UseLayoutRounding="True"
         SnapsToDevicePixels="True">
-    <Window.Resources>
-        </Window.Resources>
-    <Border Background="{StaticResource BrushSurface}" BorderBrush="Transparent" BorderThickness="0" CornerRadius="{StaticResource RadiusLg}">
-        <Grid Margin="22">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto" />
-                <RowDefinition Height="*" />
-                <RowDefinition Height="Auto" />
-            </Grid.RowDefinitions>
 
-            <Grid Grid.Row="0" Margin="0,0,0,16" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
-                <TextBlock Text="选择字体" Style="{StaticResource SectionTitle}" />
-                <Button Click="Cancel_Click" HorizontalAlignment="Right"
-                        Style="{StaticResource MaterialDesignIconButton}" Width="36" Height="36" ToolTip="关闭">
-                    <materialDesign:PackIcon Kind="Close" Width="18" Height="18" />
-                </Button>
-            </Grid>
+  <Border Style="{StaticResource M3DialogSurface}" Margin="16">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="Auto" />
+        <RowDefinition Height="*" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
 
-            <Grid Grid.Row="1">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="1.15*" />
-                    <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
+      <Grid Grid.Row="0" Margin="0,0,0,16" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
+        <TextBlock Text="选择字体" Style="{DynamicResource M3HeadlineSmall}" VerticalAlignment="Center" />
+        <controls:M3Button HorizontalAlignment="Right"
+                           Style="{StaticResource M3IconButton}"
+                           ToolTip="关闭"
+                           AutomationProperties.Name="关闭选择字体"
+                           Click="Cancel_Click">
+          <materialDesign:PackIcon Kind="Close" Width="20" Height="20"
+                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=controls:M3Button}}" />
+        </controls:M3Button>
+      </Grid>
 
-                <Border Grid.Column="0" Background="{StaticResource BrushSurfaceAlt}"
-                        CornerRadius="{StaticResource RadiusSm}" Padding="4" Margin="0,0,16,0">
-                    <ListBox x:Name="FontList" Background="Transparent" Foreground="{StaticResource BrushText}"
-                             BorderThickness="0" local:SmoothScroll.IsEnabled="False"
-                             PreviewMouseWheel="FontList_PreviewMouseWheel">
-                        <ListBox.ItemTemplate>
-                            <DataTemplate>
-                                <TextBlock Text="{Binding DisplayName}" FontFamily="{Binding Source}"
-                                           FontSize="{StaticResource FontSizeSm}" Padding="6,5" />
-                            </DataTemplate>
-                        </ListBox.ItemTemplate>
-                    </ListBox>
-                </Border>
+      <Grid Grid.Row="1">
+        <Grid.ColumnDefinitions>
+          <ColumnDefinition Width="1.15*" />
+          <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="1">
-                    <TextBlock Text="字重" Style="{StaticResource Label}" Margin="0,0,0,6" />
-                    <WrapPanel Margin="0,0,0,14">
-                        <RadioButton x:Name="WeightNormal" Content="常规" GroupName="Weight" Margin="0,0,16,4" />
-                        <RadioButton x:Name="WeightMedium" Content="中等" GroupName="Weight" Margin="0,0,16,4" />
-                        <RadioButton x:Name="WeightSemi" Content="半粗" GroupName="Weight" Margin="0,0,0,4" />
-                    </WrapPanel>
+        <Border Grid.Column="0" Style="{StaticResource M3CardFilled}" Padding="4" Margin="0,0,20,0">
+          <ListBox x:Name="FontList"
+                   Background="Transparent"
+                   BorderThickness="0"
+                   local:SmoothScroll.IsEnabled="False"
+                   PreviewMouseWheel="FontList_PreviewMouseWheel"
+                   AutomationProperties.Name="系统字体列表">
+            <ListBox.ItemTemplate>
+              <DataTemplate>
+                <TextBlock Text="{Binding DisplayName}"
+                           FontFamily="{Binding Source}"
+                           FontSize="{StaticResource TypeBodyMediumSize}"
+                           Padding="8,6" />
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </Border>
 
-                    <TextBlock Text="字号" Style="{StaticResource Label}" Margin="0,0,0,6" />
-                    <TextBox x:Name="SizeBox" Style="{StaticResource InputBox}" Width="80"
-                             HorizontalAlignment="Left" Margin="0,0,0,8" />
+        <StackPanel Grid.Column="1">
+          <TextBlock Text="字重" Style="{StaticResource ItemSupporting}" Margin="0,0,0,6" />
+          <StackPanel Orientation="Horizontal" Margin="0,0,0,12"
+                      AutomationProperties.Name="字重选择">
+            <controls:M3SegmentedButton x:Name="WeightNormal" Content="常规" GroupName="Weight" Position="First" />
+            <controls:M3SegmentedButton x:Name="WeightMedium" Content="中等" GroupName="Weight" Position="Middle" />
+            <controls:M3SegmentedButton x:Name="WeightSemi" Content="半粗" GroupName="Weight" Position="Last" />
+          </StackPanel>
 
-                    <TextBlock Text="预览" Style="{StaticResource Label}" Margin="0,4,0,6" />
-                    <Border x:Name="PreviewBorder" Background="#D9232327" BorderBrush="#8034343A"
-                            BorderThickness="1" CornerRadius="10" Padding="12" Height="112">
-                        <StackPanel>
-                            <TextBlock x:Name="PreviewTitle" Text="demo · 1 人在线 · 专注中"
-                                       Foreground="#9B9BA4" FontSize="10" Margin="0,0,0,6" />
-                            <TextBlock x:Name="PreviewText" Text="朔月 · endfield | 完成 9mRoom 待办"
-                                       Foreground="#ECECF0" TextWrapping="Wrap" />
-                        </StackPanel>
-                    </Border>
-                </StackPanel>
-            </Grid>
+          <TextBlock Text="字号（8–32）" Style="{StaticResource ItemSupporting}" Margin="0,0,0,4" />
+          <TextBox x:Name="SizeBox" Style="{StaticResource M3TextBoxCompact}"
+                   controls:M3Field.Label="字号"
+                   Width="120" HorizontalAlignment="Left" VerticalAlignment="Top"
+                   Margin="0,0,0,16" />
 
-            <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
-                <Button Content="取消" Click="Cancel_Click" Style="{StaticResource ModernButton}" Margin="0,0,8,0" />
-                <Button Content="确定" Click="Ok_Click" Style="{StaticResource ModernPrimaryButton}" />
+          <TextBlock Text="预览" Style="{StaticResource ItemSupporting}" Margin="0,0,0,6" />
+          <Border x:Name="PreviewBorder" Background="#D9232327" BorderBrush="#8034343A"
+                  BorderThickness="1" CornerRadius="10" Padding="12" Height="120">
+            <StackPanel>
+              <TextBlock x:Name="PreviewTitle" Text="demo · 1 人在线 · 专注中"
+                         Foreground="#9B9BA4" FontSize="10" Margin="0,0,0,6" />
+              <TextBlock x:Name="PreviewText" Text="朔月 · endfield | 完成 9mRoom 待办"
+                         Foreground="#ECECF0" TextWrapping="Wrap" />
             </StackPanel>
-        </Grid>
-    </Border>
+          </Border>
+        </StackPanel>
+      </Grid>
+
+      <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+        <controls:M3Button Style="{StaticResource M3TextButtonNeutral}" Content="取消" Click="Cancel_Click" />
+        <controls:M3Button Style="{StaticResource M3TextButton}" Content="确定" Margin="8,0,0,0" Click="Ok_Click" />
+      </StackPanel>
+    </Grid>
+  </Border>
 </Window>

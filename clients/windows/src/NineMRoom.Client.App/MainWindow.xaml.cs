@@ -1,11 +1,17 @@
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
+using MaterialDesignThemes.Wpf;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using ContextMenu = System.Windows.Controls.ContextMenu;
+using MenuItem = System.Windows.Controls.MenuItem;
+using RadioButton = System.Windows.Controls.RadioButton;
+using Separator = System.Windows.Controls.Separator;
 using WpfApplication = System.Windows.Application;
 
 namespace NineMRoom.Client.App;
@@ -31,12 +37,14 @@ public partial class MainWindow : Window
     private const int VkT = 0x54;
     private const int VkH = 0x48;
 
+
     private readonly AppSettings _settings;
     private readonly MainViewModel _viewModel;
     private readonly TrayIcon _tray;
     private readonly OverlayWindow _overlay;
     private HwndSource? _hotkeySource;
     private bool _exiting;
+    private bool _suppressMemberSelection;
 
     public MainWindow(AppSettings settings, bool startMinimized)
     {
@@ -376,26 +384,7 @@ public partial class MainWindow : Window
         WpfApplication.Current.Shutdown();
     }
 
-    private async void Connect_Click(object sender, RoutedEventArgs e)
-    {
-        await _viewModel.ToggleConnectionAsync();
-    }
-
-    private void Mode_Checked(object sender, RoutedEventArgs e)
-    {
-        if (sender is System.Windows.Controls.RadioButton { Tag: string mode } && _viewModel is not null)
-        {
-            _viewModel.SetManualMode(mode);
-        }
-    }
-
-    private void MemberRow_Click(object sender, MouseButtonEventArgs e)
-    {
-        if (sender is FrameworkElement { DataContext: MemberItem member })
-        {
-            _viewModel.OpenMemberDrawer(member);
-        }
-    }
+    // ==================== 应用栏 ====================
 
     private void TitleBar_MouseDown(object sender, MouseButtonEventArgs e)
     {
@@ -441,30 +430,223 @@ public partial class MainWindow : Window
 
     private void Window_StateChanged(object sender, EventArgs e)
     {
-        if (MaximizeButton is not null)
+        if (MaximizeIcon is not null)
         {
-            MaximizeButton.Content = WindowState == WindowState.Maximized ? "❐" : "□";
+            MaximizeIcon.Kind = WindowState == WindowState.Maximized
+                ? PackIconKind.WindowRestore
+                : PackIconKind.WindowMaximize;
         }
     }
 
-    private void CloseDrawer_Click(object sender, RoutedEventArgs e) => _viewModel.CloseMemberDrawer();
+    private void Window_SizeChanged(object sender, SizeChangedEventArgs e)
+    {
+        // 导航栏展开/收起由 rail 顶部的切换按钮控制，不再随窗口宽度自动切换。
+    }
+
+
+
+    private void Overflow_Click(object sender, RoutedEventArgs e)
+    {
+        var menu = new ContextMenu { PlacementTarget = OverflowButton, Placement = System.Windows.Controls.Primitives.PlacementMode.Bottom };
+
+        var hide = new MenuItem
+        {
+            Header = "隐藏到系统托盘",
+            Icon = new PackIcon { Kind = PackIconKind.TrayArrowDown, Width = 20, Height = 20 },
+            IsEnabled = _tray.IsAvailable,
+            InputGestureText = "关闭窗口"
+        };
+        hide.Click += (_, _) => Hide();
+
+        var exit = new MenuItem
+        {
+            Header = "退出 9mRoom",
+            Icon = new PackIcon { Kind = PackIconKind.ExitToApp, Width = 20, Height = 20 }
+        };
+        exit.Click += (_, _) => ExitApplication();
+
+        menu.Items.Add(hide);
+        menu.Items.Add(new Separator());
+        menu.Items.Add(exit);
+        menu.IsOpen = true;
+    }
+
+    // ==================== 导航 ====================
+
+    private void NavRail_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (NavRail.SelectedItem is not Controls.NavDestination destination)
+        {
+            return;
+        }
+
+        ShowPage(destination.Tag switch
+        {
+            "focus" => FocusPage,
+            "todo" => TodoPage,
+            "layout" => LayoutPage,
+            "apps" => AppPage,
+            "settings" => SettingsPage,
+            _ => RoomPage
+        });
+    }
+
+    private void ShowPage(UIElement page)
+    {
+        if (RoomPage is null || FocusPage is null || TodoPage is null ||
+            LayoutPage is null || AppPage is null || SettingsPage is null)
+        {
+            return;
+        }
+
+        RoomPage.Visibility = ReferenceEquals(page, RoomPage) ? Visibility.Visible : Visibility.Collapsed;
+        FocusPage.Visibility = ReferenceEquals(page, FocusPage) ? Visibility.Visible : Visibility.Collapsed;
+        TodoPage.Visibility = ReferenceEquals(page, TodoPage) ? Visibility.Visible : Visibility.Collapsed;
+        LayoutPage.Visibility = ReferenceEquals(page, LayoutPage) ? Visibility.Visible : Visibility.Collapsed;
+        AppPage.Visibility = ReferenceEquals(page, AppPage) ? Visibility.Visible : Visibility.Collapsed;
+        SettingsPage.Visibility = ReferenceEquals(page, SettingsPage) ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    // ==================== 房间页签 ====================
+
+    private void RoomTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (StateTabContent is null || RoomTabContent is null ||
+            LogTabContent is null || ChatTabContent is null)
+        {
+            return;
+        }
+
+        var index = RoomTabs.SelectedIndex;
+        StateTabContent.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
+        RoomTabContent.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
+        LogTabContent.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
+        ChatTabContent.Visibility = index == 3 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    // ==================== 连接与房间 ====================
+
+    private async void Connect_Click(object sender, RoutedEventArgs e)
+    {
+        // 断开服务器会离开房间并停止同步：房间内必须先确认。
+        if (_viewModel.IsServerConnected && _viewModel.IsInRoom)
+        {
+            var confirmed = await DialogHost.ConfirmAsync(
+                "断开服务器？",
+                "你正在房间中。断开后会离开房间并停止同步状态，其他成员将看到你离线。",
+                "断开服务器",
+                "取消",
+                destructive: true);
+
+            if (!confirmed)
+            {
+                return;
+            }
+        }
+
+        await _viewModel.ToggleConnectionAsync();
+    }
+
+    private async void LeaveRoom_Click(object sender, RoutedEventArgs e)
+    {
+        var confirmed = await DialogHost.ConfirmAsync(
+            "离开房间？",
+            "离开后会停止向房间同步状态，房间中的其他成员将看到你离线。你可以随时重新加入。",
+            "离开房间",
+            "取消",
+            destructive: true);
+
+        if (confirmed)
+        {
+            await _viewModel.LeaveRoomAsync();
+        }
+    }
+
+    private void OpenJoin_Click(object sender, RoutedEventArgs e) => _viewModel.OpenJoinDialog();
+
+    private void JoinOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (ReferenceEquals(e.OriginalSource, sender))
+        {
+            _viewModel.CloseJoinDialog();
+        }
+    }
+
+    private void CopyRoomCode_Click(object sender, RoutedEventArgs e)
+    {
+        if (!_viewModel.IsInRoom || string.IsNullOrWhiteSpace(_viewModel.Room))
+        {
+            return;
+        }
+
+        try
+        {
+            System.Windows.Clipboard.SetText(_viewModel.Room);
+            _viewModel.ShowRoomCodeNotice("房间码已复制到剪贴板");
+        }
+        catch
+        {
+            _viewModel.ShowRoomCodeNotice("复制失败：无法访问剪贴板。");
+        }
+    }
+
+    private void Mode_Checked(object sender, RoutedEventArgs e)
+    {
+        if (sender is RadioButton { Tag: string mode } && _viewModel is not null)
+        {
+            _viewModel.SetManualMode(mode);
+        }
+    }
+
+    // ==================== 成员详情 ====================
+
+    private void MemberList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (_suppressMemberSelection || MemberList.SelectedItem is not MemberItem member)
+        {
+            return;
+        }
+
+        _viewModel.OpenMemberDrawer(member);
+    }
+
+    private void CloseDrawer_Click(object sender, RoutedEventArgs e)
+    {
+        _viewModel.CloseMemberDrawer();
+        ClearMemberSelection();
+    }
+
+    private void MemberDrawerOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (!ReferenceEquals(e.OriginalSource, sender))
+        {
+            return;
+        }
+
+        _viewModel.CloseMemberDrawer();
+        ClearMemberSelection();
+    }
+
+    private void ClearMemberSelection()
+    {
+        if (MemberList is null)
+        {
+            return;
+        }
+
+        _suppressMemberSelection = true;
+        MemberList.SelectedIndex = -1;
+        _suppressMemberSelection = false;
+    }
 
     private async void PokeMember_Click(object sender, RoutedEventArgs e)
     {
         await _viewModel.PokeSelectedAsync();
     }
 
-    private void MemberDrawerOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (ReferenceEquals(e.OriginalSource, MemberDrawerOverlay))
-        {
-            _viewModel.CloseMemberDrawer();
-        }
-    }
-
     private void AnimateMemberDrawer(bool open)
     {
-        var duration = TimeSpan.FromMilliseconds(180);
+        var duration = TimeSpan.FromMilliseconds(200);
         var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
 
         if (open)
@@ -522,11 +704,21 @@ public partial class MainWindow : Window
         }
     }
 
+    // ==================== 应用规则面板 ====================
+
     private void ViewModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName == nameof(MainViewModel.IsAppEditorOpen))
+        switch (e.PropertyName)
         {
-            AnimateAppEditor();
+            case nameof(MainViewModel.IsAppEditorOpen):
+                AnimateAppEditor();
+                break;
+            case nameof(MainViewModel.NoticeText) when !string.IsNullOrWhiteSpace(_viewModel.NoticeText):
+                Snackbar.Show(_viewModel.NoticeText);
+                break;
+            case nameof(MainViewModel.RoomCodeNotice) when !string.IsNullOrWhiteSpace(_viewModel.RoomCodeNotice):
+                Snackbar.Show(_viewModel.RoomCodeNotice, seconds: 3);
+                break;
         }
     }
 
@@ -589,36 +781,6 @@ public partial class MainWindow : Window
             });
     }
 
-    private async void LeaveRoom_Click(object sender, RoutedEventArgs e) => await _viewModel.LeaveRoomAsync();
-
-    private void RoomName_Click(object sender, MouseButtonEventArgs e)
-    {
-        if (!_viewModel.IsInRoom || string.IsNullOrWhiteSpace(_viewModel.Room))
-        {
-            return;
-        }
-
-        try
-        {
-            System.Windows.Clipboard.SetText(_viewModel.Room);
-            _viewModel.ShowRoomCodeNotice("房间码复制成功");
-        }
-        catch
-        {
-            _viewModel.ShowRoomCodeNotice("复制失败，请检查剪贴板权限。");
-        }
-    }
-
-    private void OpenJoin_Click(object sender, RoutedEventArgs e) => _viewModel.OpenJoinDialog();
-
-    private void JoinOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
-    {
-        if (ReferenceEquals(e.OriginalSource, sender))
-        {
-            _viewModel.CloseJoinDialog();
-        }
-    }
-
     private void AppEditorOverlay_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
         if (ReferenceEquals(e.OriginalSource, sender))
@@ -626,6 +788,8 @@ public partial class MainWindow : Window
             _viewModel.CloseAppEditor();
         }
     }
+
+    // ==================== 键盘 ====================
 
     private void Window_KeyDown(object sender, KeyEventArgs e)
     {
@@ -646,136 +810,10 @@ public partial class MainWindow : Window
             return;
         }
 
-        _viewModel.CloseMemberDrawer();
-    }
-
-    private void TimerStart_Click(object sender, RoutedEventArgs e) => _viewModel.StartTimer();
-
-    private void TimerPause_Click(object sender, RoutedEventArgs e) => _viewModel.PauseTimer();
-
-    private void TimerReset_Click(object sender, RoutedEventArgs e) => _viewModel.ResetTimer();
-
-    private void TimerMinutes_Click(object sender, RoutedEventArgs e)
-    {
-        if (sender is System.Windows.Controls.Button { Tag: string minutes } &&
-            int.TryParse(minutes, out var value))
+        if (_viewModel.IsMemberDrawerOpen)
         {
-            _viewModel.SetTimerMinutes(value);
+            _viewModel.CloseMemberDrawer();
+            ClearMemberSelection();
         }
-    }
-
-    private void RoomNav_Checked(object sender, RoutedEventArgs e) => ShowPage(RoomPage);
-
-    private void StateTab_Checked(object sender, RoutedEventArgs e)
-    {
-        ShowRoomTab(StateTabContent);
-        MoveTabIndicator(StateTabButton, animate: true);
-    }
-
-    private void RoomTab_Checked(object sender, RoutedEventArgs e)
-    {
-        ShowRoomTab(RoomTabContent);
-        MoveTabIndicator(RoomTabButton, animate: true);
-    }
-
-    private void LogTab_Checked(object sender, RoutedEventArgs e)
-    {
-        ShowRoomTab(LogTabContent);
-        MoveTabIndicator(LogTabButton, animate: true);
-    }
-
-    private void ChatTab_Checked(object sender, RoutedEventArgs e)
-    {
-        ShowRoomTab(ChatTabContent);
-        MoveTabIndicator(ChatTabButton, animate: true);
-    }
-
-    private void TabStrip_Loaded(object sender, RoutedEventArgs e)
-    {
-        Dispatcher.BeginInvoke(() =>
-        {
-            var selected = StateTabButton.IsChecked == true ? StateTabButton
-                : RoomTabButton.IsChecked == true ? RoomTabButton
-                : LogTabButton.IsChecked == true ? LogTabButton
-                : ChatTabButton;
-            MoveTabIndicator(selected, animate: false);
-        });
-    }
-
-    private void MoveTabIndicator(System.Windows.Controls.RadioButton? tab, bool animate)
-    {
-        if (tab is null || !tab.IsLoaded || TabStrip is null || TabIndicator is null)
-        {
-            return;
-        }
-
-        var position = tab.TransformToAncestor(TabStrip).Transform(new System.Windows.Point(0, 0));
-        if (tab.ActualWidth <= 0)
-        {
-            return;
-        }
-
-        if (TabIndicator.RenderTransform is not TranslateTransform translate)
-        {
-            translate = new TranslateTransform();
-            TabIndicator.RenderTransform = translate;
-        }
-
-        if (!animate)
-        {
-            translate.X = position.X;
-            TabIndicator.Width = tab.ActualWidth;
-            return;
-        }
-
-        var duration = TimeSpan.FromMilliseconds(220);
-        var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
-
-        translate.BeginAnimation(
-            TranslateTransform.XProperty,
-            new DoubleAnimation(position.X, duration) { EasingFunction = easing });
-        TabIndicator.BeginAnimation(
-            WidthProperty,
-            new DoubleAnimation(tab.ActualWidth, duration) { EasingFunction = easing });
-    }
-
-    private void ShowRoomTab(UIElement tab)
-    {
-        if (StateTabContent is null || RoomTabContent is null ||
-            LogTabContent is null || ChatTabContent is null)
-        {
-            return;
-        }
-
-        StateTabContent.Visibility = ReferenceEquals(tab, StateTabContent) ? Visibility.Visible : Visibility.Collapsed;
-        RoomTabContent.Visibility = ReferenceEquals(tab, RoomTabContent) ? Visibility.Visible : Visibility.Collapsed;
-        LogTabContent.Visibility = ReferenceEquals(tab, LogTabContent) ? Visibility.Visible : Visibility.Collapsed;
-        ChatTabContent.Visibility = ReferenceEquals(tab, ChatTabContent) ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    private void FocusNav_Checked(object sender, RoutedEventArgs e) => ShowPage(FocusPage);
-
-    private void TodoNav_Checked(object sender, RoutedEventArgs e) => ShowPage(TodoPage);
-
-    private void LayoutNav_Checked(object sender, RoutedEventArgs e) => ShowPage(LayoutPage);
-
-    private void AppNav_Checked(object sender, RoutedEventArgs e) => ShowPage(AppPage);
-
-    private void SettingsNav_Checked(object sender, RoutedEventArgs e) => ShowPage(SettingsPage);
-
-    private void ShowPage(UIElement page)
-    {
-        if (RoomPage is null || FocusPage is null || TodoPage is null ||
-            LayoutPage is null || AppPage is null || SettingsPage is null)
-        {
-            return;
-        }
-
-        RoomPage.Visibility = ReferenceEquals(page, RoomPage) ? Visibility.Visible : Visibility.Collapsed;
-        FocusPage.Visibility = ReferenceEquals(page, FocusPage) ? Visibility.Visible : Visibility.Collapsed;
-        TodoPage.Visibility = ReferenceEquals(page, TodoPage) ? Visibility.Visible : Visibility.Collapsed;
-        LayoutPage.Visibility = ReferenceEquals(page, LayoutPage) ? Visibility.Visible : Visibility.Collapsed;
-        AppPage.Visibility = ReferenceEquals(page, AppPage) ? Visibility.Visible : Visibility.Collapsed;
-        SettingsPage.Visibility = ReferenceEquals(page, SettingsPage) ? Visibility.Visible : Visibility.Collapsed;
     }
 }

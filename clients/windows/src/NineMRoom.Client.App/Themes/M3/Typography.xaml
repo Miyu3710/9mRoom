@@ -1,0 +1,133 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!-- M3 typescale: size / line-height / weight come from design/tokens.json. -->
+  <Style x:Key="M3DisplayLarge" TargetType="TextBlock">
+    <Setter Property="FontFamily" Value="{DynamicResource FontUi}" />
+    <Setter Property="FontSize" Value="{DynamicResource TypeDisplayLargeSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TypeDisplayLargeWeight}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeDisplayLargeLine}" />
+    <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+  </Style>
+
+  <Style x:Key="M3DisplayMedium" TargetType="TextBlock" BasedOn="{StaticResource M3DisplayLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeDisplayMediumSize}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeDisplayMediumLine}" />
+  </Style>
+
+  <Style x:Key="M3DisplaySmall" TargetType="TextBlock" BasedOn="{StaticResource M3DisplayLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeDisplaySmallSize}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeDisplaySmallLine}" />
+  </Style>
+
+  <Style x:Key="M3HeadlineLarge" TargetType="TextBlock" BasedOn="{StaticResource M3DisplayLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeHeadlineLargeSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TypeHeadlineLargeWeight}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeHeadlineLargeLine}" />
+  </Style>
+
+  <Style x:Key="M3HeadlineMedium" TargetType="TextBlock" BasedOn="{StaticResource M3HeadlineLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeHeadlineMediumSize}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeHeadlineMediumLine}" />
+  </Style>
+
+  <Style x:Key="M3HeadlineSmall" TargetType="TextBlock" BasedOn="{StaticResource M3HeadlineLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeHeadlineSmallSize}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeHeadlineSmallLine}" />
+  </Style>
+
+  <Style x:Key="M3TitleLarge" TargetType="TextBlock" BasedOn="{StaticResource M3HeadlineLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeTitleLargeSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TypeTitleLargeWeight}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeTitleLargeLine}" />
+  </Style>
+
+  <Style x:Key="M3TitleMedium" TargetType="TextBlock" BasedOn="{StaticResource M3TitleLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeTitleMediumSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TypeTitleMediumWeight}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeTitleMediumLine}" />
+  </Style>
+
+  <Style x:Key="M3TitleSmall" TargetType="TextBlock" BasedOn="{StaticResource M3TitleLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeTitleSmallSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TypeTitleSmallWeight}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeTitleSmallLine}" />
+  </Style>
+
+  <Style x:Key="M3BodyLarge" TargetType="TextBlock" BasedOn="{StaticResource M3DisplayLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeBodyLargeSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TypeBodyLargeWeight}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeBodyLargeLine}" />
+  </Style>
+
+  <Style x:Key="M3BodyMedium" TargetType="TextBlock" BasedOn="{StaticResource M3BodyLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeBodyMediumSize}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeBodyMediumLine}" />
+  </Style>
+
+  <Style x:Key="M3BodySmall" TargetType="TextBlock" BasedOn="{StaticResource M3BodyLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeBodySmallSize}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeBodySmallLine}" />
+  </Style>
+
+  <Style x:Key="M3LabelLarge" TargetType="TextBlock" BasedOn="{StaticResource M3DisplayLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeLabelLargeSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TypeLabelLargeWeight}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeLabelLargeLine}" />
+  </Style>
+
+  <Style x:Key="M3LabelMedium" TargetType="TextBlock" BasedOn="{StaticResource M3LabelLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeLabelMediumSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TypeLabelMediumWeight}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeLabelMediumLine}" />
+  </Style>
+
+  <Style x:Key="M3LabelSmall" TargetType="TextBlock" BasedOn="{StaticResource M3LabelLarge}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeLabelSmallSize}" />
+    <Setter Property="FontWeight" Value="{DynamicResource TypeLabelSmallWeight}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeLabelSmallLine}" />
+  </Style>
+
+  <!-- Application-level semantic aliases: views use these instead of ad-hoc sizes. -->
+  <Style x:Key="PageTitle" TargetType="TextBlock" BasedOn="{StaticResource M3HeadlineMedium}" />
+  <Style x:Key="PageSupporting" TargetType="TextBlock" BasedOn="{StaticResource M3BodyMedium}">
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnSurfaceVariant}" />
+    <Setter Property="Margin" Value="0,6,0,0" />
+  </Style>
+  <Style x:Key="SectionTitle" TargetType="TextBlock" BasedOn="{StaticResource M3TitleLarge}" />
+  <Style x:Key="SectionSupporting" TargetType="TextBlock" BasedOn="{StaticResource M3BodySmall}">
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnSurfaceVariant}" />
+  </Style>
+  <Style x:Key="ItemTitle" TargetType="TextBlock" BasedOn="{StaticResource M3TitleMedium}" />
+  <Style x:Key="ItemSupporting" TargetType="TextBlock" BasedOn="{StaticResource M3BodySmall}">
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnSurfaceVariant}" />
+  </Style>
+  <Style x:Key="BodyText" TargetType="TextBlock" BasedOn="{StaticResource M3BodyMedium}" />
+  <Style x:Key="BodyStrong" TargetType="TextBlock" BasedOn="{StaticResource M3BodyMedium}">
+    <Setter Property="FontWeight" Value="SemiBold" />
+  </Style>
+  <Style x:Key="ValueText" TargetType="TextBlock" BasedOn="{StaticResource M3BodyLarge}" />
+  <Style x:Key="HintText" TargetType="TextBlock" BasedOn="{StaticResource M3BodySmall}">
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnSurfaceVariant}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+  <Style x:Key="ErrorText" TargetType="TextBlock" BasedOn="{StaticResource M3BodySmall}">
+    <Setter Property="Foreground" Value="{DynamicResource BrushError}" />
+    <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+  <Style x:Key="MonoDisplay" TargetType="TextBlock" BasedOn="{StaticResource M3DisplaySmall}">
+    <Setter Property="FontFamily" Value="{DynamicResource FontMono}" />
+  </Style>
+  <Style x:Key="TimerDisplay" TargetType="TextBlock" BasedOn="{StaticResource MonoDisplay}">
+    <Setter Property="FontSize" Value="{DynamicResource TypeDisplayMediumSize}" />
+    <Setter Property="LineHeight" Value="{DynamicResource TypeDisplayMediumLine}" />
+  </Style>
+
+  <!-- Implicit base: everything is onSurface at bodyMedium unless a role says otherwise. -->
+  <Style TargetType="TextBlock" BasedOn="{StaticResource M3BodyMedium}">
+    <Setter Property="TextWrapping" Value="NoWrap" />
+    <!-- 未显式指定字号时不要继承 typescale 的行高，否则 12px 标签会被撑到 20px。 -->
+    <Setter Property="LineHeight" Value="NaN" />
+  </Style>
+
+</ResourceDictionary>

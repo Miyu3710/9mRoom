@@ -33,6 +33,9 @@ public sealed class AppSettings
     public bool StatsEnabled { get; set; } = true;
     public string StatsHistoryJson { get; set; } = string.Empty;
     public int DailyGoalMinutes { get; set; } = 120;
+    public int TimerFocusMinutes { get; set; } = 25;
+    public int TimerBreakMinutes { get; set; } = 5;
+    public bool TimerCycleEnabled { get; set; }
     public bool CommandEnabled { get; set; }
     public string CommandExpression { get; set; } = string.Empty;
     public bool OverlayEnabled { get; set; } = true;

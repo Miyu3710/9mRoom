@@ -6,7 +6,7 @@ using Brushes = System.Windows.Media.Brushes;
 using Color = System.Windows.Media.Color;
 using ColorConverter = System.Windows.Media.ColorConverter;
 using Colors = System.Windows.Media.Colors;
-using Button = System.Windows.Controls.Button;
+using M3Button = NineMRoom.Client.App.Controls.M3Button;
 using FormsColorDialog = System.Windows.Forms.ColorDialog;
 using UserControl = System.Windows.Controls.UserControl;
 
@@ -94,20 +94,19 @@ public partial class ColorPicker : UserControl
                 Margin = new Thickness(2),
                 CornerRadius = new CornerRadius(4),
                 BorderThickness = new Thickness(1),
-                BorderBrush = (Brush)FindResource("BrushGlassBorder"),
+                BorderBrush = (Brush)FindResource("BrushOutlineVariant"),
                 Background = ParseBrush(hex)
             };
 
-            var button = new Button
+            var button = new M3Button
             {
+                Style = (Style)FindResource("M3IconButton"),
                 Content = swatch,
                 Tag = hex,
                 Width = 30,
                 Height = 30,
                 Padding = new Thickness(0),
                 Margin = new Thickness(0),
-                Background = Brushes.Transparent,
-                BorderThickness = new Thickness(0),
                 Cursor = System.Windows.Input.Cursors.Hand,
                 ToolTip = hex
             };
@@ -119,15 +118,13 @@ public partial class ColorPicker : UserControl
             Palette.Children.Add(button);
         }
 
-        var wheel = new Button
+        var wheel = new M3Button
         {
+            Style = (Style)FindResource("M3TextButton"),
             Content = "颜色画盘…",
             Width = 210,
             Height = 30,
             Margin = new Thickness(2, 6, 2, 2),
-            Background = (Brush)FindResource("BrushControlBg"),
-            Foreground = (Brush)FindResource("BrushText"),
-            BorderThickness = new Thickness(0),
             Cursor = System.Windows.Input.Cursors.Hand
         };
         wheel.Click += (_, _) => OpenColorWheel();

@@ -1,0 +1,38 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+  <!--
+    MaterialDesignThemes 组件的调色板映射：组件库模板通过 DynamicResource 引用
+    MaterialDesign.Brush.*，这里把它们指到项目 M3 语义色，避免出现组件库默认的靛蓝色。
+    必须在 MaterialDesign3.Defaults.xaml 之后合并。
+  -->
+  <SolidColorBrush x:Key="MaterialDesign.Brush.Primary" Color="{DynamicResource ColorPrimary}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.Primary.Foreground" Color="{DynamicResource ColorOnPrimary}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.Primary.Light" Color="{DynamicResource ColorPrimary}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.Primary.Dark" Color="{DynamicResource ColorPrimary}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.Primary.Light.Foreground" Color="{DynamicResource ColorOnPrimary}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.Primary.Dark.Foreground" Color="{DynamicResource ColorOnPrimary}" />
+
+  <SolidColorBrush x:Key="MaterialDesign.Brush.Foreground" Color="{DynamicResource ColorOnSurface}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.ForegroundLight" Color="{DynamicResource ColorOnSurfaceVariant}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.Background" Color="{DynamicResource ColorSurface}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.ValidationError" Color="{DynamicResource ColorError}" />
+
+  <SolidColorBrush x:Key="MaterialDesign.Brush.TextBox.OutlineBorder" Color="{DynamicResource ColorOutline}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.TextBox.OutlineInactiveBorder" Color="{DynamicResource ColorOutline}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.TextBox.HoverBorder" Color="{DynamicResource ColorOnSurfaceVariant}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.TextBox.HoverBackground" Color="{DynamicResource ColorSurface}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.TextBox.DisabledBackground" Color="{DynamicResource ColorSurface}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.TextBox.FilledBackground" Color="{DynamicResource ColorSurfaceContainerHighest}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.TextBox.Border" Color="{DynamicResource ColorOutline}" />
+
+  <SolidColorBrush x:Key="MaterialDesign.Brush.ComboBox.OutlineBorder" Color="{DynamicResource ColorOutline}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.ComboBox.OutlineInactiveBorder" Color="{DynamicResource ColorOutline}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.ComboBox.HoverBorder" Color="{DynamicResource ColorOnSurfaceVariant}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.ComboBox.HoverBackground" Color="{DynamicResource ColorSurface}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.ComboBox.Disabled" Color="{DynamicResource ColorOnSurfaceVariant}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.ComboBox.Border" Color="{DynamicResource ColorOutline}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.ComboBox.DropDown.Background" Color="{DynamicResource ColorSurfaceContainer}" />
+  <SolidColorBrush x:Key="MaterialDesign.Brush.ComboBox.FilledBackground" Color="{DynamicResource ColorSurfaceContainerHighest}" />
+
+</ResourceDictionary>

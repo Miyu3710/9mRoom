@@ -1,0 +1,409 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:NineMRoom.Client.App.Controls"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+                    xmlns:local="clr-namespace:NineMRoom.Client.App">
+
+  <!--
+    Outlined text field：1dp 描边、4dp 圆角、标签浮到顶部缺口、前导图标、尾随清除按钮、
+    支持文本与错误态；只读时保留完整描边。缺口背景由 M3Field.AutoNotch 取最近实色祖先，
+    因此页面、侧边面板、对话框内都能正确遮住边框。
+  -->
+  <BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+  <local:TextToVisibilityConverter x:Key="TextToVisibility" />
+
+  <ControlTemplate x:Key="M3OutlinedTextBoxTemplate" TargetType="TextBox">
+    <Grid>
+      <Grid.RowDefinitions>
+        <RowDefinition Height="68" />
+        <RowDefinition Height="Auto" />
+      </Grid.RowDefinitions>
+
+      <Grid Grid.Row="0">
+        <Border x:Name="Container"
+                Margin="0,12,0,0"
+                Background="Transparent"
+                BorderBrush="{DynamicResource BrushOutline}"
+                BorderThickness="1"
+                CornerRadius="{DynamicResource ShapeExtraSmall}"
+                SnapsToDevicePixels="True">
+          <Grid Margin="16,0,6,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="Auto" />
+              <ColumnDefinition Width="*" />
+              <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+
+            <materialDesign:PackIcon x:Name="LeadingIcon"
+                                     Grid.Column="0"
+                                     Kind="{Binding Path=(controls:M3Field.LeadingIcon), RelativeSource={RelativeSource TemplatedParent}}"
+                                     Width="20" Height="20"
+                                     Margin="0,0,10,0"
+                                     VerticalAlignment="Center"
+                                     Foreground="{DynamicResource BrushOnSurfaceVariant}"
+                                     Visibility="{Binding Path=(controls:M3Field.ShowLeadingIcon), RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource BoolToVisibilityConverter}}" />
+
+            <ScrollViewer x:Name="PART_ContentHost"
+                          Grid.Column="1"
+                          VerticalAlignment="Center"
+                          VerticalScrollBarVisibility="Hidden"
+                          HorizontalScrollBarVisibility="Hidden"
+                          Focusable="False" />
+
+            <Button x:Name="PART_ClearButton"
+                    Grid.Column="2"
+                    Width="28" Height="28"
+                    MinWidth="0" MinHeight="0"
+                    Padding="0"
+                    Margin="2,0,0,0"
+                    VerticalAlignment="Center"
+                    Visibility="Collapsed"
+                    Focusable="False" IsTabStop="False"
+                    Background="Transparent"
+                    BorderThickness="0"
+                    Cursor="Hand"
+                    Foreground="{DynamicResource BrushOnSurfaceVariant}"
+                    ToolTip="清除"
+                    AutomationProperties.Name="清除输入">
+              <Button.Template>
+                <ControlTemplate TargetType="Button">
+                  <Grid>
+                    <Border x:Name="Hover" Background="Transparent" CornerRadius="14" />
+                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                  </Grid>
+                  <ControlTemplate.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                      <Setter TargetName="Hover" Property="Background" Value="{DynamicResource BrushOnSurface}" />
+                      <Setter TargetName="Hover" Property="Opacity" Value="0.08" />
+                    </Trigger>
+                    <Trigger Property="IsPressed" Value="True">
+                      <Setter TargetName="Hover" Property="Opacity" Value="0.12" />
+                    </Trigger>
+                  </ControlTemplate.Triggers>
+                </ControlTemplate>
+              </Button.Template>
+              <materialDesign:PackIcon Kind="CrossCircle" Width="20" Height="20"
+                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=Button}}" />
+            </Button>
+          </Grid>
+        </Border>
+
+        <Border x:Name="FocusOutline"
+                Margin="0,12,0,0"
+                BorderBrush="{DynamicResource BrushPrimary}"
+                BorderThickness="2"
+                CornerRadius="{DynamicResource ShapeExtraSmall}"
+                Visibility="Collapsed"
+                IsHitTestVisible="False" />
+
+        <Border x:Name="ErrorOutline"
+                Margin="0,12,0,0"
+                BorderBrush="{DynamicResource BrushError}"
+                BorderThickness="2"
+                CornerRadius="{DynamicResource ShapeExtraSmall}"
+                Visibility="Collapsed"
+                IsHitTestVisible="False" />
+
+        <Canvas x:Name="LabelLayer" ClipToBounds="False" IsHitTestVisible="False">
+          <TextBlock x:Name="FieldLabel"
+                     Canvas.Left="12"
+                     Canvas.Top="0"
+                     Text="{Binding Path=(controls:M3Field.Label), RelativeSource={RelativeSource TemplatedParent}}"
+                     Foreground="{DynamicResource BrushOnSurfaceVariant}"
+                     Background="{Binding Path=(controls:M3Field.NotchBrush), RelativeSource={RelativeSource TemplatedParent}}"
+                     FontSize="{DynamicResource TypeBodySmallSize}"
+                     Padding="4,0"
+                     IsHitTestVisible="False"
+                     TextTrimming="CharacterEllipsis" />
+        </Canvas>
+      </Grid>
+
+      <StackPanel Grid.Row="1" Margin="16,4,16,0">
+        <TextBlock x:Name="Helper"
+                   Text="{Binding Path=(controls:M3Field.HelperText), RelativeSource={RelativeSource TemplatedParent}}"
+                   Visibility="{Binding Path=(controls:M3Field.HelperText), RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TextToVisibility}}"
+                   Style="{DynamicResource HintText}" />
+        <TextBlock x:Name="Error"
+                   Text="{Binding Path=(Validation.Errors)[0].ErrorContent, RelativeSource={RelativeSource TemplatedParent}}"
+                   Style="{DynamicResource ErrorText}"
+                   Visibility="Collapsed" />
+      </StackPanel>
+    </Grid>
+
+    <ControlTemplate.Triggers>
+
+      <Trigger Property="IsKeyboardFocusWithin" Value="True">
+        <Setter TargetName="FocusOutline" Property="Visibility" Value="Visible" />
+        <Setter TargetName="Container" Property="BorderBrush" Value="{DynamicResource BrushPrimary}" />
+      </Trigger>
+
+      <Trigger Property="Validation.HasError" Value="True">
+        <Setter TargetName="Container" Property="BorderBrush" Value="{DynamicResource BrushError}" />
+        <Setter TargetName="ErrorOutline" Property="Visibility" Value="Visible" />
+        <Setter TargetName="FocusOutline" Property="Visibility" Value="Collapsed" />
+        <Setter TargetName="FieldLabel" Property="Foreground" Value="{DynamicResource BrushError}" />
+        <Setter TargetName="Helper" Property="Visibility" Value="Collapsed" />
+        <Setter TargetName="Error" Property="Visibility" Value="Visible" />
+      </Trigger>
+
+      <Trigger Property="IsEnabled" Value="False">
+        <Setter Property="Opacity" Value="{DynamicResource StateDisabledContent}" />
+      </Trigger>
+    </ControlTemplate.Triggers>
+  </ControlTemplate>
+
+  <Style x:Key="M3TextBox" TargetType="TextBox">
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnSurface}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="CaretBrush" Value="{DynamicResource BrushPrimary}" />
+    <Setter Property="SelectionBrush" Value="{DynamicResource BrushPrimary}" />
+    <Setter Property="SelectionOpacity" Value="0.35" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontUi}" />
+    <Setter Property="FontSize" Value="{DynamicResource TypeBodyLargeSize}" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="VerticalContentAlignment" Value="Center" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Validation.ErrorTemplate" Value="{x:Null}" />
+    <Setter Property="controls:M3Field.AutoNotch" Value="True" />
+    <Setter Property="Template" Value="{StaticResource M3OutlinedTextBoxTemplate}" />
+  </Style>
+
+  <Style TargetType="TextBox" BasedOn="{StaticResource M3TextBox}" />
+
+  <Style x:Key="M3TextBoxCompact" TargetType="TextBox" BasedOn="{StaticResource M3TextBox}" />
+
+  <Style x:Key="M3SearchField" TargetType="TextBox" BasedOn="{StaticResource M3TextBox}">
+    <Setter Property="controls:M3Field.ShowLeadingIcon" Value="True" />
+    <Setter Property="controls:M3Field.HelperText" Value="支持应用名、原应用名、进程名与分类" />
+  </Style>
+
+  <!-- 下拉框：与输入框同一套缺口标签与描边。 -->
+  <Style x:Key="M3ComboBox" TargetType="ComboBox">
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnSurface}" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontUi}" />
+    <Setter Property="FontSize" Value="{DynamicResource TypeBodyLargeSize}" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="controls:M3Field.AutoNotch" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ComboBox">
+          <Grid>
+            <Grid.RowDefinitions>
+              <RowDefinition Height="68" />
+              <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+
+            <Grid Grid.Row="0">
+              <Border x:Name="Container"
+                      Margin="0,12,0,0"
+                      Background="Transparent"
+                      BorderBrush="{DynamicResource BrushOutline}"
+                      BorderThickness="1"
+                      CornerRadius="{DynamicResource ShapeExtraSmall}">
+                <Grid>
+                  <ToggleButton x:Name="DropDownToggle"
+                                Focusable="False"
+                                Width="Auto" Height="Auto"
+                                MinWidth="0" MinHeight="0"
+                                IsTabStop="False"
+                                Padding="0" Background="Transparent" BorderThickness="0"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch"
+                                ClickMode="Press"
+                                IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                    <ToggleButton.Template>
+                      <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="Hover" Background="{DynamicResource BrushOnSurface}" Opacity="0" />
+                        <ControlTemplate.Triggers>
+                          <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Hover" Property="Opacity" Value="{DynamicResource StateHover}" />
+                          </Trigger>
+                          <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Hover" Property="Opacity" Value="{DynamicResource StatePressed}" />
+                          </Trigger>
+                        </ControlTemplate.Triggers>
+                      </ControlTemplate>
+                    </ToggleButton.Template>
+                  </ToggleButton>
+
+                  <ContentPresenter x:Name="SelectedContent"
+                                    Content="{TemplateBinding SelectionBoxItem}"
+                                    ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
+                                    Margin="16,8,40,0"
+                                    VerticalAlignment="Center"
+                                    IsHitTestVisible="False"
+                                    TextElement.Foreground="{TemplateBinding Foreground}">
+                    <ContentPresenter.Resources>
+                      <Style TargetType="TextBlock">
+                        <Setter Property="FontSize" Value="{DynamicResource TypeBodyLargeSize}" />
+                        <Setter Property="LineHeight" Value="{DynamicResource TypeBodyLargeLine}" />
+                        <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+                      </Style>
+                    </ContentPresenter.Resources>
+                  </ContentPresenter>
+
+                  <Path Width="12" Height="8" Stretch="Uniform"
+                        Data="M 0,0 L 6,6 L 12,0"
+                        Stroke="{DynamicResource BrushOnSurfaceVariant}" StrokeThickness="2"
+                        HorizontalAlignment="Right" VerticalAlignment="Center"
+                        Margin="0,8,16,0"
+                        IsHitTestVisible="False" />
+                </Grid>
+              </Border>
+
+              <Border x:Name="FocusOutline"
+                      Margin="0,12,0,0"
+                      BorderBrush="{DynamicResource BrushPrimary}"
+                      BorderThickness="2"
+                      CornerRadius="{DynamicResource ShapeExtraSmall}"
+                      Visibility="Collapsed"
+                      IsHitTestVisible="False" />
+
+              <TextBlock x:Name="FieldLabel"
+                         Text="{Binding Path=(controls:M3Field.Label), RelativeSource={RelativeSource TemplatedParent}}"
+                         Foreground="{DynamicResource BrushOnSurfaceVariant}"
+                         Background="{Binding Path=(controls:M3Field.NotchBrush), RelativeSource={RelativeSource TemplatedParent}}"
+                         FontSize="{DynamicResource TypeBodySmallSize}"
+                         Padding="4,0"
+                         VerticalAlignment="Top"
+                         HorizontalAlignment="Left"
+                         Margin="12,0,0,0"
+                         IsHitTestVisible="False"
+                         TextTrimming="CharacterEllipsis" />
+            </Grid>
+
+            <StackPanel Grid.Row="1" Margin="16,4,16,0">
+              <TextBlock x:Name="Helper"
+                         Text="{Binding Path=(controls:M3Field.HelperText), RelativeSource={RelativeSource TemplatedParent}}"
+                         Visibility="{Binding Path=(controls:M3Field.HelperText), RelativeSource={RelativeSource TemplatedParent}, Converter={StaticResource TextToVisibility}}"
+                         Style="{DynamicResource HintText}" />
+              <TextBlock x:Name="Error"
+                         Text="{Binding Path=(Validation.Errors)[0].ErrorContent, RelativeSource={RelativeSource TemplatedParent}}"
+                         Style="{DynamicResource ErrorText}"
+                         Visibility="Collapsed" />
+            </StackPanel>
+
+            <Popup x:Name="PART_Popup"
+                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                   Placement="Bottom"
+                   AllowsTransparency="True"
+                   Focusable="False"
+                   PopupAnimation="Fade">
+              <Border Background="{DynamicResource BrushSurfaceContainer}"
+                      BorderBrush="{DynamicResource BrushOutlineVariant}"
+                      BorderThickness="1"
+                      CornerRadius="{DynamicResource ShapeExtraSmall}"
+                      MinWidth="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}"
+                      MaxHeight="320"
+                      Padding="0,8"
+                      Margin="0,4,0,0">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                  <ItemsPresenter KeyboardNavigation.DirectionalNavigation="Contained" />
+                </ScrollViewer>
+              </Border>
+            </Popup>
+          </Grid>
+
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                    <Setter TargetName="FocusOutline" Property="Visibility" Value="Visible" />
+              <Setter TargetName="Container" Property="BorderBrush" Value="{DynamicResource BrushPrimary}" />
+            </Trigger>
+            <Trigger Property="Validation.HasError" Value="True">
+              <Setter TargetName="Helper" Property="Visibility" Value="Collapsed" />
+              <Setter TargetName="Error" Property="Visibility" Value="Visible" />
+              <Setter TargetName="FocusOutline" Property="BorderBrush" Value="{DynamicResource BrushError}" />
+              <Setter TargetName="Container" Property="BorderBrush" Value="{DynamicResource BrushError}" />
+              <Setter TargetName="FieldLabel" Property="Foreground" Value="{DynamicResource BrushError}" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="{DynamicResource StateDisabledContent}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style TargetType="ComboBox" BasedOn="{StaticResource M3ComboBox}" />
+
+  <!-- M3 slider: 4dp track, 4x44 handle, primary active range. -->
+  <Style x:Key="M3Slider" TargetType="Slider">
+    <Setter Property="Height" Value="44" />
+    <Setter Property="IsMoveToPointEnabled" Value="True" />
+    <Setter Property="IsSnapToTickEnabled" Value="False" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="Slider">
+          <Grid Background="Transparent" VerticalAlignment="Center">
+            <Border Height="4" CornerRadius="2"
+                    Background="{DynamicResource BrushSecondaryContainer}"
+                    VerticalAlignment="Center" />
+            <Track x:Name="PART_Track" VerticalAlignment="Center" Focusable="False">
+              <Track.DecreaseRepeatButton>
+                <RepeatButton Command="{x:Static Slider.DecreaseLarge}" Focusable="False" IsTabStop="False">
+                  <RepeatButton.Template>
+                    <ControlTemplate TargetType="RepeatButton">
+                      <Border Height="4" CornerRadius="2"
+                              Background="{DynamicResource BrushPrimary}"
+                              VerticalAlignment="Center" />
+                    </ControlTemplate>
+                  </RepeatButton.Template>
+                </RepeatButton>
+              </Track.DecreaseRepeatButton>
+              <Track.Thumb>
+                <Thumb Width="20" Height="44" Focusable="False">
+                  <Thumb.Template>
+                    <ControlTemplate TargetType="Thumb">
+                      <Grid Background="Transparent">
+                        <Border x:Name="Handle" Width="4" Height="44" CornerRadius="2"
+                                Background="{DynamicResource BrushPrimary}"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        <Border x:Name="HandleState" Width="20" Height="20" CornerRadius="10"
+                                Background="{DynamicResource BrushPrimary}" Opacity="0"
+                                HorizontalAlignment="Center" VerticalAlignment="Center" />
+                      </Grid>
+                      <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                          <Setter TargetName="HandleState" Property="Opacity" Value="{DynamicResource StateHover}" />
+                        </Trigger>
+                        <Trigger Property="IsDragging" Value="True">
+                          <Setter TargetName="HandleState" Property="Opacity" Value="{DynamicResource StateDragged}" />
+                        </Trigger>
+                      </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                  </Thumb.Template>
+                </Thumb>
+              </Track.Thumb>
+              <Track.IncreaseRepeatButton>
+                <RepeatButton Command="{x:Static Slider.IncreaseLarge}" Focusable="False" IsTabStop="False">
+                  <RepeatButton.Template>
+                    <ControlTemplate TargetType="RepeatButton">
+                      <Border Background="Transparent" />
+                    </ControlTemplate>
+                  </RepeatButton.Template>
+                </RepeatButton>
+              </Track.IncreaseRepeatButton>
+            </Track>
+            <Border x:Name="FocusRing" Margin="-4" BorderBrush="{DynamicResource BrushPrimary}"
+                    BorderThickness="2" CornerRadius="4" Visibility="Collapsed" IsHitTestVisible="False" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsKeyboardFocused" Value="True">
+              <Setter TargetName="FocusRing" Property="Visibility" Value="Visible" />
+            </Trigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="{DynamicResource StateDisabledContent}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style TargetType="Slider" BasedOn="{StaticResource M3Slider}" />
+
+</ResourceDictionary>

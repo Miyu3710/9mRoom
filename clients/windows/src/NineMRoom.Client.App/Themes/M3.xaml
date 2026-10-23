@@ -1,0 +1,17 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+  <!--
+    M3 component library. Token colors/type/shape come from Tokens.xaml or
+    TokensLight.xaml, which must be merged before this dictionary.
+  -->
+  <ResourceDictionary.MergedDictionaries>
+    <ResourceDictionary Source="pack://application:,,,/Themes/M3/Typography.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/Themes/M3/Buttons.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/Themes/M3/Selection.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/Themes/M3/Inputs.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/Themes/M3/Navigation.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/Themes/M3/Containment.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/Themes/M3/Feedback.xaml" />
+    <ResourceDictionary Source="pack://application:,,,/Themes/M3/MdixPalette.xaml" />
+  </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

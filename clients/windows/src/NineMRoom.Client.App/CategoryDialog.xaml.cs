@@ -4,7 +4,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
 using Brush = System.Windows.Media.Brush;
-using Button = System.Windows.Controls.Button;
+
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Point = System.Windows.Point;
 
@@ -44,7 +44,7 @@ public partial class CategoryDialog : Window
 
     private void Remove_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is Button { Tag: AppCategoryItem item })
+        if (sender is FrameworkElement { Tag: AppCategoryItem item })
         {
             ViewModel?.RemoveAppCategory(item);
         }
@@ -117,13 +117,13 @@ public partial class CategoryDialog : Window
         {
             Text = _dragCategory.Name,
             FontWeight = FontWeights.SemiBold,
-            Foreground = (Brush)FindResource("BrushText")
+            Foreground = (Brush)FindResource("BrushOnSurface")
         };
 
         _ghost = new Border
         {
-            Background = (Brush)FindResource("BrushGlassSurface"),
-            BorderBrush = (Brush)FindResource("BrushAccent"),
+            Background = (Brush)FindResource("BrushSurfaceContainerHigh"),
+            BorderBrush = (Brush)FindResource("BrushPrimary"),
             BorderThickness = new Thickness(1),
             CornerRadius = new CornerRadius(8),
             Padding = new Thickness(12, 8, 12, 8),
@@ -138,7 +138,7 @@ public partial class CategoryDialog : Window
         {
             Height = 2,
             Width = Math.Max(0, CategoryItems.ActualWidth),
-            Background = (Brush)FindResource("BrushAccent"),
+            Background = (Brush)FindResource("BrushPrimary"),
             CornerRadius = new CornerRadius(1),
             IsHitTestVisible = false
         };

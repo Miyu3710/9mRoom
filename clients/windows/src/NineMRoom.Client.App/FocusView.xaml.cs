@@ -1,5 +1,9 @@
 using System.Windows;
-using Button = System.Windows.Controls.Button;
+using System.Windows.Controls;
+using System.Windows.Input;
+using MouseButtonEventArgs = System.Windows.Input.MouseButtonEventArgs;
+using TextCompositionEventArgs = System.Windows.Input.TextCompositionEventArgs;
+using TextBox = System.Windows.Controls.TextBox;
 using UserControl = System.Windows.Controls.UserControl;
 
 namespace NineMRoom.Client.App;
@@ -13,17 +17,34 @@ public partial class FocusView : UserControl
 
     private MainViewModel? ViewModel => DataContext as MainViewModel;
 
-    private void TimerStart_Click(object sender, RoutedEventArgs e) => ViewModel?.StartTimer();
-
-    private void TimerPause_Click(object sender, RoutedEventArgs e) => ViewModel?.PauseTimer();
+    private void TimerToggle_Click(object sender, RoutedEventArgs e) => ViewModel?.ToggleTimer();
 
     private void TimerReset_Click(object sender, RoutedEventArgs e) => ViewModel?.ResetTimer();
 
-    private void TimerMinutes_Click(object sender, RoutedEventArgs e)
+    private void Minutes_PreviewTextInput(object sender, TextCompositionEventArgs e)
     {
-        if (sender is Button { Tag: string minutes } && int.TryParse(minutes, out var value))
+        foreach (var character in e.Text)
         {
-            ViewModel?.SetTimerMinutes(value);
+            if (!char.IsDigit(character))
+            {
+                e.Handled = true;
+                return;
+            }
+        }
+    }
+
+    private void Minutes_LostFocus(object sender, RoutedEventArgs e)
+    {
+        if (sender is not TextBox box ||
+            box.GetBindingExpression(TextBox.TextProperty) is not { } binding)
+        {
+            return;
+        }
+
+        binding.UpdateSource();
+        if (binding.HasError || string.IsNullOrWhiteSpace(box.Text))
+        {
+            binding.UpdateTarget();
         }
     }
 }

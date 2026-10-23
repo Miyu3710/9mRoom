@@ -1,0 +1,357 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:controls="clr-namespace:NineMRoom.Client.App.Controls"
+                    xmlns:local="clr-namespace:NineMRoom.Client.App"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+
+  <!--
+    M3 navigation rail (expanded, collapses to 80dp on narrow windows) and
+    primary tabs. Both drive navigation with native keyboard support
+    (arrows / Home / End) from ListBox and TabControl.
+  -->
+
+  <Style x:Key="M3NavRailItem" TargetType="ListBoxItem">
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnSurfaceVariant}" />
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="controls:Ripple.IsEnabled" Value="True" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="ListBoxItem">
+          <ContentPresenter />
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style.Triggers>
+      <Trigger Property="IsMouseOver" Value="True">
+        <Setter Property="Foreground" Value="{DynamicResource BrushOnSurface}" />
+      </Trigger>
+      <Trigger Property="IsSelected" Value="True">
+        <Setter Property="Foreground" Value="{DynamicResource BrushOnSurface}" />
+      </Trigger>
+    </Style.Triggers>
+  </Style>
+
+  <!-- Expanded: icon + label in a row, 56x32 pill behind the icon. -->
+  <DataTemplate x:Key="M3NavRailExpandedItem">
+    <Grid Height="64" Background="Transparent" ToolTip="{Binding Label}">
+      <Canvas x:Name="RippleHost" IsHitTestVisible="False" ClipToBounds="True" />
+      <Border x:Name="Pill"
+              Height="56"
+              Margin="12,0,0,0"
+              Padding="16,0"
+              HorizontalAlignment="Left"
+              VerticalAlignment="Center"
+              CornerRadius="28"
+              Background="Transparent"
+              RenderTransformOrigin="0.5,0.5">
+        <Border.RenderTransform>
+          <ScaleTransform x:Name="PillScale" />
+        </Border.RenderTransform>
+        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+          <materialDesign:PackIcon x:Name="NavIcon"
+                                    Kind="{Binding Glyph}"
+                                    Width="24" Height="24"
+                                    VerticalAlignment="Center"
+                                    Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+          <TextBlock x:Name="NavLabel"
+                     Text="{Binding Label}"
+                     Margin="12,0,0,0"
+                     VerticalAlignment="Center"
+                     FontSize="{DynamicResource TypeLabelLargeSize}"
+                     FontWeight="Medium"
+                     TextTrimming="CharacterEllipsis"
+                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+        </StackPanel>
+      </Border>
+      <Border x:Name="FocusRing"
+              BorderBrush="{DynamicResource BrushPrimary}"
+              BorderThickness="3"
+              CornerRadius="28"
+              Margin="10,2,10,2"
+              Visibility="Collapsed"
+              IsHitTestVisible="False" />
+    </Grid>
+    <DataTemplate.Triggers>
+      <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+        <Setter TargetName="Pill" Property="Background" Value="{DynamicResource BrushSecondaryContainer}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+        <Setter TargetName="Pill" Property="Background" Value="{DynamicResource BrushPrimaryContainer}" />
+        <Setter TargetName="NavIcon" Property="Foreground" Value="{DynamicResource BrushOnPrimaryContainer}" />
+        <Setter TargetName="NavLabel" Property="Foreground" Value="{DynamicResource BrushOnPrimaryContainer}" />
+        <Setter TargetName="NavLabel" Property="FontWeight" Value="SemiBold" />
+        <DataTrigger.EnterActions>
+          <BeginStoryboard>
+            <Storyboard>
+              <DoubleAnimation Storyboard.TargetName="PillScale" Storyboard.TargetProperty="ScaleX"
+                               From="0.94" To="1" Duration="0:0:0.22">
+                <DoubleAnimation.EasingFunction>
+                  <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+              <DoubleAnimation Storyboard.TargetName="PillScale" Storyboard.TargetProperty="ScaleY"
+                               From="0.94" To="1" Duration="0:0:0.22">
+                <DoubleAnimation.EasingFunction>
+                  <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+            </Storyboard>
+          </BeginStoryboard>
+        </DataTrigger.EnterActions>
+      </DataTrigger>
+      <DataTrigger Binding="{Binding IsCollapsed, RelativeSource={RelativeSource AncestorType={x:Type controls:NavigationRail}}}" Value="True">
+        <Setter TargetName="Pill" Property="Width" Value="48" />
+        <Setter TargetName="Pill" Property="Height" Value="48" />
+        <Setter TargetName="Pill" Property="Padding" Value="12,0,0,0" />
+        <Setter TargetName="Pill" Property="Margin" Value="16,0,0,0" />
+        <Setter TargetName="NavLabel" Property="Opacity" Value="0" />
+        <DataTrigger.EnterActions>
+          <BeginStoryboard>
+            <Storyboard>
+              <DoubleAnimation Storyboard.TargetName="NavLabel" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.1" />
+            </Storyboard>
+          </BeginStoryboard>
+        </DataTrigger.EnterActions>
+        <DataTrigger.ExitActions>
+          <BeginStoryboard>
+            <Storyboard>
+              <DoubleAnimation Storyboard.TargetName="NavLabel" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.18" />
+            </Storyboard>
+          </BeginStoryboard>
+        </DataTrigger.ExitActions>
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True" />
+          <Condition Binding="{Binding Cue, Source={x:Static local:InputMode.Instance}}" Value="True" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="FocusRing" Property="Visibility" Value="Visible" />
+      </MultiDataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+
+  <!-- Collapsed: icon above a 12dp label, 64dp item. -->
+  <DataTemplate x:Key="M3NavRailCollapsedItem">
+    <Grid Height="64" Background="Transparent" ToolTip="{Binding Label}">
+      <Canvas x:Name="RippleHost" IsHitTestVisible="False" ClipToBounds="True" />
+      <Border x:Name="Pill"
+              Width="48" Height="48"
+              HorizontalAlignment="Center"
+              VerticalAlignment="Center"
+              CornerRadius="24"
+              Background="Transparent"
+              RenderTransformOrigin="0.5,0.5">
+        <Border.RenderTransform>
+          <ScaleTransform x:Name="PillScale" />
+        </Border.RenderTransform>
+        <materialDesign:PackIcon x:Name="NavIcon"
+                                  Kind="{Binding Glyph}"
+                                  Width="24" Height="24"
+                                  HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+      </Border>
+      <Border x:Name="FocusRing"
+              BorderBrush="{DynamicResource BrushPrimary}"
+              BorderThickness="3"
+              CornerRadius="24"
+              Margin="14,6,14,6"
+              Visibility="Collapsed"
+              IsHitTestVisible="False" />
+    </Grid>
+    <DataTemplate.Triggers>
+      <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+        <Setter TargetName="Pill" Property="Background" Value="{DynamicResource BrushSecondaryContainer}" />
+      </DataTrigger>
+      <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
+        <Setter TargetName="Pill" Property="Background" Value="{DynamicResource BrushPrimaryContainer}" />
+        <Setter TargetName="NavIcon" Property="Foreground" Value="{DynamicResource BrushOnPrimaryContainer}" />
+        <DataTrigger.EnterActions>
+          <BeginStoryboard>
+            <Storyboard>
+              <DoubleAnimation Storyboard.TargetName="PillScale" Storyboard.TargetProperty="ScaleX"
+                               From="0.9" To="1" Duration="0:0:0.2">
+                <DoubleAnimation.EasingFunction>
+                  <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+              <DoubleAnimation Storyboard.TargetName="PillScale" Storyboard.TargetProperty="ScaleY"
+                               From="0.9" To="1" Duration="0:0:0.2">
+                <DoubleAnimation.EasingFunction>
+                  <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+            </Storyboard>
+          </BeginStoryboard>
+        </DataTrigger.EnterActions>
+      </DataTrigger>
+      <MultiDataTrigger>
+        <MultiDataTrigger.Conditions>
+          <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True" />
+          <Condition Binding="{Binding Cue, Source={x:Static local:InputMode.Instance}}" Value="True" />
+        </MultiDataTrigger.Conditions>
+        <Setter TargetName="FocusRing" Property="Visibility" Value="Visible" />
+      </MultiDataTrigger>
+    </DataTemplate.Triggers>
+  </DataTemplate>
+
+  <Style x:Key="M3NavigationRail" TargetType="{x:Type controls:NavigationRail}">
+    <Setter Property="Background" Value="{DynamicResource BrushSurfaceContainerLow}" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0,8" />
+    <Setter Property="Width" Value="{DynamicResource SizeNavRailExpanded}" />
+    <Setter Property="ItemContainerStyle" Value="{StaticResource M3NavRailItem}" />
+    <Setter Property="ItemTemplate" Value="{StaticResource M3NavRailExpandedItem}" />
+    <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled" />
+    <Setter Property="ScrollViewer.VerticalScrollBarVisibility" Value="Auto" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type controls:NavigationRail}">
+          <Border Background="{TemplateBinding Background}">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+              </Grid.RowDefinitions>
+
+              <controls:M3Button x:Name="PART_ToggleButton"
+                                 Style="{DynamicResource M3IconButton}"
+                                 Width="40" Height="40"
+                                 MinWidth="0" MinHeight="0"
+                                 Padding="0"
+                                 Margin="12,8,0,4"
+                                 HorizontalAlignment="Left"
+                                 ToolTip="收起导航"
+                                 AutomationProperties.Name="收起导航">
+                <materialDesign:PackIcon x:Name="PART_ToggleIcon"
+                                         Kind="ChevronLeft" Width="20" Height="20"
+                                         Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=controls:M3Button}}" />
+              </controls:M3Button>
+
+              <ScrollViewer Grid.Row="1" Focusable="False" VerticalScrollBarVisibility="Auto"
+                            HorizontalScrollBarVisibility="Disabled"
+                            Padding="{TemplateBinding Padding}">
+                <ItemsPresenter />
+              </ScrollViewer>
+            </Grid>
+          </Border>
+          <ControlTemplate.Triggers>
+            <DataTrigger Binding="{Binding IsCollapsed, RelativeSource={RelativeSource TemplatedParent}}" Value="True">
+              <Setter TargetName="PART_ToggleButton" Property="HorizontalAlignment" Value="Center" />
+              <Setter TargetName="PART_ToggleButton" Property="Margin" Value="0,8,0,4" />
+            </DataTrigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+    <Style.Triggers>
+
+    </Style.Triggers>
+  </Style>
+
+  <Style TargetType="{x:Type controls:NavigationRail}" BasedOn="{StaticResource M3NavigationRail}" />
+
+  <!-- Primary tabs: 48dp header, 3dp indicator supplied by M3TabControl. -->
+  <Style x:Key="M3TabItem" TargetType="TabItem">
+    <Setter Property="controls:Ripple.IsEnabled" Value="True" />
+    <Setter Property="Foreground" Value="{DynamicResource BrushOnSurfaceVariant}" />
+    <Setter Property="FontFamily" Value="{DynamicResource FontUi}" />
+    <Setter Property="FontSize" Value="{DynamicResource TypeLabelLargeSize}" />
+    <Setter Property="FontWeight" Value="Medium" />
+    <Setter Property="Height" Value="{DynamicResource SizeTab}" />
+    <Setter Property="MinWidth" Value="88" />
+    <Setter Property="Padding" Value="16,0" />
+    <Setter Property="Cursor" Value="Hand" />
+    <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="TabItem">
+          <Grid Background="Transparent">
+            <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" />
+            <Canvas x:Name="RippleHost" IsHitTestVisible="False" ClipToBounds="True" />
+            <ContentPresenter ContentSource="Header"
+                              Margin="{TemplateBinding Padding}"
+                              HorizontalAlignment="Center"
+                              VerticalAlignment="Center"
+                              TextElement.Foreground="{TemplateBinding Foreground}">
+              <ContentPresenter.Resources>
+                <Style TargetType="TextBlock">
+                  <Setter Property="FontSize" Value="{DynamicResource TypeLabelLargeSize}" />
+                  <Setter Property="FontWeight" Value="{DynamicResource TypeLabelLargeWeight}" />
+                  <Setter Property="LineHeight" Value="{DynamicResource TypeLabelLargeLine}" />
+                  <Setter Property="LineStackingStrategy" Value="BlockLineHeight" />
+                </Style>
+              </ContentPresenter.Resources>
+            </ContentPresenter>
+            <Border x:Name="FocusRing"
+                    BorderBrush="{DynamicResource BrushPrimary}"
+                    BorderThickness="3"
+                    CornerRadius="4"
+                    Margin="2"
+                    Visibility="Collapsed"
+                    IsHitTestVisible="False" />
+          </Grid>
+          <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+              <Setter TargetName="StateLayer" Property="Opacity" Value="{DynamicResource StateHover}" />
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+              <Setter Property="Foreground" Value="{DynamicResource BrushPrimary}" />
+            </Trigger>
+            <MultiDataTrigger>
+              <MultiDataTrigger.Conditions>
+                <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource TemplatedParent}}" Value="True" />
+                <Condition Binding="{Binding Cue, Source={x:Static local:InputMode.Instance}}" Value="True" />
+              </MultiDataTrigger.Conditions>
+              <Setter TargetName="FocusRing" Property="Visibility" Value="Visible" />
+            </MultiDataTrigger>
+            <Trigger Property="IsEnabled" Value="False">
+              <Setter Property="Opacity" Value="{DynamicResource StateDisabledContent}" />
+            </Trigger>
+          </ControlTemplate.Triggers>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style TargetType="TabItem" BasedOn="{StaticResource M3TabItem}" />
+
+  <Style x:Key="M3TabControl" TargetType="{x:Type controls:M3TabControl}">
+    <Setter Property="Background" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
+    <Setter Property="Padding" Value="0" />
+    <Setter Property="Template">
+      <Setter.Value>
+        <ControlTemplate TargetType="{x:Type controls:M3TabControl}">
+          <Grid Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+            <StackPanel x:Name="PART_TabPanel"
+                        Orientation="Horizontal"
+                        IsItemsHost="True"
+                        HorizontalAlignment="Left" />
+            <Border Height="1" VerticalAlignment="Bottom"
+                    Background="{DynamicResource BrushOutlineVariant}" />
+            <Border x:Name="PART_Indicator"
+                    Width="0" Height="3"
+                    CornerRadius="3,3,0,0"
+                    Background="{DynamicResource BrushPrimary}"
+                    HorizontalAlignment="Left"
+                    VerticalAlignment="Bottom"
+                    Visibility="Collapsed"
+                    IsHitTestVisible="False">
+              <Border.RenderTransform>
+                <TranslateTransform X="0" />
+              </Border.RenderTransform>
+            </Border>
+          </Grid>
+        </ControlTemplate>
+      </Setter.Value>
+    </Setter>
+  </Style>
+
+  <Style TargetType="{x:Type controls:M3TabControl}" BasedOn="{StaticResource M3TabControl}" />
+
+</ResourceDictionary>

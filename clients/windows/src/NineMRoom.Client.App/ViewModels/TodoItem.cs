@@ -35,6 +35,7 @@ public sealed class TodoItem : ObservableObject
     private string _endTime;
     private bool _isDone;
     private bool _isPinned;
+    private bool _isEditing;
     private bool _suppressChildChange;
 
     public TodoItem(
@@ -137,6 +138,13 @@ public sealed class TodoItem : ObservableObject
     }
 
     public string PinLabel => _isPinned ? "取消置顶" : "置顶";
+
+    /// <summary>列表默认展示文本；只有进入编辑态才展开输入字段。</summary>
+    public bool IsEditing
+    {
+        get => _isEditing;
+        set => SetProperty(ref _isEditing, value);
+    }
 
     public bool HasSubtasks => Subtasks.Count > 0;
 

@@ -1,38 +1,48 @@
 <UserControl x:Class="NineMRoom.Client.App.FontPicker"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:NineMRoom.Client.App.Controls"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             FontFamily="{StaticResource FontUi}">
-    <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*" />
-            <ColumnDefinition Width="Auto" />
-        </Grid.ColumnDefinitions>
+             FontFamily="{StaticResource FontUi}"
+        TextElement.Foreground="{DynamicResource BrushOnSurface}">
+  <Grid>
+    <Grid.ColumnDefinitions>
+      <ColumnDefinition Width="*" />
+      <ColumnDefinition Width="Auto" />
+    </Grid.ColumnDefinitions>
 
-        <TextBox x:Name="FontBox" Style="{StaticResource InputBox}" FontSize="{StaticResource FontSizeSm}" />
-        <Button Grid.Column="1" Click="OpenList_Click" Width="32" Height="32" Margin="4,0,0,0"
-                Style="{StaticResource MaterialDesignIconButton}" ToolTip="选择字体">
-            <materialDesign:PackIcon Kind="FormatFont" Width="18" Height="18" />
-        </Button>
+    <TextBox x:Name="FontBox" Style="{StaticResource M3TextBoxCompact}"
+             controls:M3Field.Label="字体"
+             FontSize="{StaticResource TypeBodySmallSize}" />
 
-        <Popup x:Name="FontPopup" PlacementTarget="{Binding ElementName=FontBox}"
-               Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
-            <Border Background="{StaticResource BrushSurfaceAlt}"
-                    BorderBrush="{StaticResource BrushBorder}" BorderThickness="0"
-                    CornerRadius="{StaticResource RadiusMd}" Padding="4" Margin="0,4,0,0">
-                <ListBox x:Name="FontList" Width="260" Height="280"
-                         Background="Transparent"
-                         Foreground="{StaticResource BrushText}"
-                         BorderThickness="0"
-                         SelectionChanged="FontList_SelectionChanged">
-                    <ListBox.ItemTemplate>
-                        <DataTemplate>
-                            <TextBlock Text="{Binding}" FontFamily="{Binding}" FontSize="{StaticResource FontSizeSm}"
-                                       Padding="6,4" />
-                        </DataTemplate>
-                    </ListBox.ItemTemplate>
-                </ListBox>
-            </Border>
-        </Popup>
-    </Grid>
+    <controls:M3Button Grid.Column="1"
+                       Style="{StaticResource M3IconButton}"
+                       ToolTip="选择字体"
+                       AutomationProperties.Name="选择字体"
+                       Margin="4,4,0,0"
+                       VerticalAlignment="Top"
+                       Click="OpenList_Click">
+      <materialDesign:PackIcon Kind="FormatFont" Width="18" Height="18"
+                               Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=controls:M3Button}}" />
+    </controls:M3Button>
+
+    <Popup x:Name="FontPopup" PlacementTarget="{Binding ElementName=FontBox}"
+           Placement="Bottom" StaysOpen="False" AllowsTransparency="True">
+      <Border Background="{StaticResource BrushSurfaceContainerHigh}"
+              BorderBrush="{StaticResource BrushOutlineVariant}" BorderThickness="1"
+              CornerRadius="{StaticResource ShapeMedium}" Padding="4" Margin="0,4,0,0">
+        <ListBox x:Name="FontList" Width="260" Height="280"
+                 Background="Transparent"
+                 BorderThickness="0"
+                 SelectionChanged="FontList_SelectionChanged">
+          <ListBox.ItemTemplate>
+            <DataTemplate>
+              <TextBlock Text="{Binding}" FontFamily="{Binding}"
+                         FontSize="{StaticResource TypeBodyMediumSize}" Padding="8,4" />
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </Border>
+    </Popup>
+  </Grid>
 </UserControl>
