@@ -728,6 +728,7 @@
               MouseLeftButtonDown="AppEditorOverlay_MouseLeftButtonDown" />
       <Border x:Name="AppEditorPanel" Width="{StaticResource SizeSideSheet}"
               HorizontalAlignment="Right"
+              Padding="24,24,0,24"
               Style="{StaticResource M3SideSheet}">
         <Border.RenderTransform>
           <TranslateTransform x:Name="AppEditorSlide" X="28" />
