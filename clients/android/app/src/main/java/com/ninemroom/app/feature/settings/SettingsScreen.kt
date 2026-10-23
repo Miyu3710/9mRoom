@@ -268,8 +268,8 @@ fun SettingsScreen(
                     onCheckedChange = onKeepOnlineChange,
                 )
                 SettingSwitch(
-                    title = "专注结束提醒",
-                    description = "计时结束时通过通知提醒",
+                    title = "专注/休息结束提醒",
+                    description = "每轮专注或休息结束时通过通知提醒",
                     checked = notifyFocusDone,
                     onCheckedChange = onNotifyFocusDoneChange,
                 )

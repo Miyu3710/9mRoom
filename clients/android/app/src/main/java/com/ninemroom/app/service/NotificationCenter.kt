@@ -125,7 +125,7 @@ object NotificationCenter {
             .notify(text.hashCode(), notification)
     }
 
-    fun focusDone(context: Context) {
+    fun focusDone(context: Context, text: String = "这一轮完成了，休息一下。") {
         if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
         ensureChannels(context)
         val openIntent = PendingIntent.getActivity(
@@ -137,13 +137,34 @@ object NotificationCenter {
         val notification = NotificationCompat.Builder(context, CHANNEL_FOCUS)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle("专注结束")
-            .setContentText("这一轮完成了，起来活动一下。")
+            .setContentText(text)
             .setContentIntent(openIntent)
             .setAutoCancel(true)
             .setCategory(NotificationCompat.CATEGORY_REMINDER)
             .build()
         NotificationManagerCompat.from(context)
             .notify(2001, notification)
+    }
+
+    fun breakDone(context: Context, text: String = "准备好开始下一轮专注了吗？") {
+        if (!NotificationManagerCompat.from(context).areNotificationsEnabled()) return
+        ensureChannels(context)
+        val openIntent = PendingIntent.getActivity(
+            context,
+            5,
+            Intent(context, MainActivity::class.java),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        val notification = NotificationCompat.Builder(context, CHANNEL_FOCUS)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle("休息结束")
+            .setContentText(text)
+            .setContentIntent(openIntent)
+            .setAutoCancel(true)
+            .setCategory(NotificationCompat.CATEGORY_REMINDER)
+            .build()
+        NotificationManagerCompat.from(context)
+            .notify(2002, notification)
     }
 
     fun poke(context: Context, fromName: String) {

@@ -546,7 +546,7 @@ class RoomController(
                                 .put(
                                     "data",
                                     JSONObject()
-                                        .put("mode", "focus")
+                                        .put("mode", if (focus.isBreak) "break" else "focus")
                                         .put("startedAt", startedAt)
                                         .put("durationMinutes", focus.durationSeconds / 60),
                                 ),
