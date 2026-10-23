@@ -2,7 +2,6 @@ package com.ninemroom.app.feature.apps
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,11 +12,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
@@ -42,30 +40,21 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ninemroom.app.NineRoomApplication
 import com.ninemroom.app.data.AppCategory
 import com.ninemroom.app.data.AppCategoryStore
-import kotlinx.coroutines.launch
-import kotlin.math.roundToInt
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -80,16 +69,10 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
         ?: "📡 {app}"
     var selected by remember { mutableStateOf<AppCategory?>(null) }
     var showAdd by remember { mutableStateOf(false) }
-    var draggedId by remember { mutableStateOf<String?>(null) }
-    var originIndex by remember { mutableStateOf(-1) }
-    var dragY by remember { mutableFloatStateOf(0f) }
-    var dragOriginY by remember { mutableFloatStateOf(0f) }
-    var targetIndex by remember { mutableStateOf(-1) }
     val listState = rememberLazyListState()
-    val scope = rememberCoroutineScope()
-    val density = LocalDensity.current
-    val rowHeightPx = with(density) { 76.dp.toPx() }
-    val stepPx = with(density) { 84.dp.toPx() }
+    val reorderState = rememberReorderableLazyListState(listState) { from, to ->
+        categoryStore.move(from.index, to.index)
+    }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Column(Modifier.fillMaxSize()) {
@@ -117,98 +100,25 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
             }
         }
 
-        Box(
-            Modifier
+        LazyColumn(
+            state = listState,
+            contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 100.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
         ) {
-            LazyColumn(
-                state = listState,
-                contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 100.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier.fillMaxSize(),
-            ) {
-                itemsIndexed(categories, key = { _, category -> category.id }) { index, category ->
-                    val dragging = draggedId == category.id
-                    val shiftSteps = when {
-                        dragging || draggedId == null || originIndex < 0 || targetIndex < 0 -> 0
-                        targetIndex > originIndex && index in (originIndex + 1)..targetIndex -> -1
-                        targetIndex < originIndex && index in targetIndex until originIndex -> 1
-                        else -> 0
-                    }
-                    val shift = shiftSteps * stepPx
+            items(categories, key = { it.id }) { category ->
+                ReorderableItem(
+                    state = reorderState,
+                    key = category.id,
+                ) { _ ->
                     CategoryRow(
                         category = category,
-                        dragging = dragging,
-                        hidden = dragging,
-                        translationY = shift,
                         onClick = { selected = category },
-                        onDragStart = {
-                            val info = listState.layoutInfo.visibleItemsInfo
-                                .firstOrNull { it.key == category.id }
-                            val top = (info?.offset ?: 0) -
-                                listState.layoutInfo.viewportStartOffset
-                            dragOriginY = top.toFloat()
-                            dragY = dragOriginY + rowHeightPx / 2f
-                            originIndex = index
-                            targetIndex = index
-                            draggedId = category.id
-                        },
-                        onDrag = { amount ->
-                            dragY += amount
-                            val movedSlots = ((dragY - dragOriginY) / stepPx).roundToInt()
-                            targetIndex = (originIndex + movedSlots)
-                                .coerceIn(0, categories.lastIndex)
-                        },
-                        onDragEnd = {
-                            val id = draggedId
-                            val target = targetIndex
-                            val anchor = listState.firstVisibleItemIndex
-                            if (id != null && target >= 0) {
-                                val order = categories.toMutableList()
-                                val from = order.indexOfFirst { it.id == id }
-                                if (from >= 0) {
-                                    val item = order.removeAt(from)
-                                    order.add(target.coerceIn(0, order.size), item)
-                                    categoryStore.setOrder(order)
-                                    scope.launch {
-                                        withFrameNanos { }
-                                        listState.scrollToItem(
-                                            anchor.coerceIn(0, order.lastIndex),
-                                        )
-                                    }
-                                }
-                            }
-                            draggedId = null
-                            originIndex = -1
-                            targetIndex = -1
-                            dragY = 0f
-                            dragOriginY = 0f
-                        },
+                        dragHandleModifier = Modifier.longPressDraggableHandle(),
                     )
                 }
-            }
-
-            val preview = draggedId?.let { id ->
-                categories.firstOrNull { it.id == id }
-            }
-            if (preview != null) {
-                CategoryRow(
-                    category = preview,
-                    dragging = true,
-                    hidden = false,
-                    translationY = 0f,
-                    interactive = false,
-                    onClick = {},
-                    onDragStart = {},
-                    onDrag = {},
-                    onDragEnd = {},
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 20.dp)
-                        .offset { IntOffset(0, (dragY - rowHeightPx / 2f).roundToInt()) }
-                        .zIndex(10f),
-                )
             }
         }
     }
@@ -243,39 +153,23 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
 @Composable
 private fun CategoryRow(
     category: AppCategory,
-    dragging: Boolean,
-    hidden: Boolean = false,
-    translationY: Float,
-    interactive: Boolean = true,
     onClick: () -> Unit,
-    onDragStart: () -> Unit,
-    onDrag: (Float) -> Unit,
-    onDragEnd: () -> Unit,
+    dragHandleModifier: Modifier,
     modifier: Modifier = Modifier,
 ) {
     val interactionSource = remember { MutableInteractionSource() }
-    val cardModifier = modifier
-        .fillMaxWidth()
-        .height(76.dp)
-        .zIndex(if (dragging) 10f else 0f)
-        .alpha(if (hidden) 0f else 1f)
-        .graphicsLayer {
-            this.translationY = translationY
-        }
-    val clickableModifier = if (interactive) {
-        cardModifier.clickable(
-            interactionSource = interactionSource,
-            indication = null,
-            onClick = onClick,
-        )
-    } else {
-        cardModifier
-    }
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         shape = MaterialTheme.shapes.large,
         elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
-        modifier = clickableModifier,
+        modifier = modifier
+            .fillMaxWidth()
+            .height(76.dp)
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            ),
     ) {
         Row(
             Modifier
@@ -287,23 +181,9 @@ private fun CategoryRow(
                 Icons.Outlined.DragHandle,
                 contentDescription = "拖拽排序",
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = if (interactive) {
-                    Modifier
-                        .padding(horizontal = 4.dp)
-                        .pointerInput(category.id) {
-                            detectDragGesturesAfterLongPress(
-                                onDragStart = { onDragStart() },
-                                onDragEnd = { onDragEnd() },
-                                onDragCancel = { onDragEnd() },
-                                onDrag = { change, amount ->
-                                    change.consume()
-                                    onDrag(amount.y)
-                                },
-                            )
-                        }
-                } else {
-                    Modifier.padding(horizontal = 4.dp)
-                },
+                modifier = Modifier
+                    .padding(horizontal = 4.dp)
+                    .then(dragHandleModifier),
             )
             Box(
                 Modifier
