@@ -527,7 +527,7 @@
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
                                                 <ColumnDefinition Width="Auto" />
-                                                <ColumnDefinition Width="190" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <materialDesign:PackIcon Kind="Server"
                                                                      Width="18" Height="18"
@@ -541,8 +541,7 @@
                                                      VerticalContentAlignment="Center" />
                                             <Border Grid.Column="2" Width="1" Margin="8,10"
                                                     Background="{StaticResource BrushBorder}" />
-                                            <StackPanel Grid.Column="3" Orientation="Horizontal"
-                                                        HorizontalAlignment="Right">
+                                            <StackPanel Grid.Column="3" Orientation="Horizontal">
                                                 <Button Content="{Binding ConnectButtonText}"
                                                         Click="Connect_Click"
                                                         Style="{StaticResource BarActionButton}" />
