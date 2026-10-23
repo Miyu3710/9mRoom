@@ -467,7 +467,7 @@
                         CornerRadius="18" />
 
                 <Grid x:Name="TabStrip" Grid.Row="1" Height="46" Margin="0"
-                      Loaded="TabStrip_Loaded">
+                      ClipToBounds="True" Loaded="TabStrip_Loaded">
                     <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
                         <RadioButton x:Name="StateTabButton" Content="状态" GroupName="RoomTabs"
                                      Style="{StaticResource RoomTab}" IsChecked="True" Checked="StateTab_Checked" />
