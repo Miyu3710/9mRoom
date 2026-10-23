@@ -103,8 +103,9 @@
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
             <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="Height" Value="38" />
-            <Setter Property="Padding" Value="18,0" />
+            <Setter Property="Padding" Value="20,0" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="20" />
         </Style>
 
         <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
@@ -113,14 +114,19 @@
             <Setter Property="BorderBrush" Value="{StaticResource BrushControlBorder}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
             <Setter Property="Height" Value="38" />
-            <Setter Property="Padding" Value="16,0" />
+            <Setter Property="Padding" Value="18,0" />
             <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="20" />
         </Style>
 
         <local:CategoryMatchConverter x:Key="ModeMatch" />
 
         <Style x:Key="ModeButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Height" Value="32" />
+            <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="16" />
             <Style.Triggers>
                 <DataTrigger Value="True">
                     <DataTrigger.Binding>
@@ -321,6 +327,7 @@
                 </StackPanel>
 
                 <Border Grid.Row="1" Background="{StaticResource BrushSurface}" CornerRadius="12"
+                        BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
                         Padding="12,10">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">

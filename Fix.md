@@ -425,14 +425,16 @@
   - 菜单项：显示、暂停、隐身、叠加层、穿透、退出。
   - **已完成**：编译通过，原生菜单截图已核对；未重新打包 MSI。
 - **FIX-057 主界面 Material Design 3 重构**：
+  - 评估并采用 `skydashnet/material-design-3-ui-skill` 的语义色角色、`hamen/material-3-skill` 的组件状态规范，以及 `materialdesigninxaml-wpf-toolkit` 的 WPF 映射方式。
   - 引入 `MaterialDesignThemes 5.4.0`，加载 `MaterialDesign3.Defaults.xaml` 与深色 BundledTheme。
-  - 参考 `dotnet-wpf-design`、MaterialDesignInXaml WPF toolkit 和 Syncfusion WPF UI Builder 的页面结构建议。
-  - 侧栏改为 MD3 navigation rail 样式，使用 `PackIcon`；活动项使用 tonal pill。
+  - 将 `design/tokens.json` 与 `Tokens.xaml` 改为 MD3 深色角色：primary、primary container、surface container、outline、error。
+  - 侧栏改为 MD3 navigation rail 样式，使用 `PackIcon`；活动项使用 primary container pill。
   - 房间标签改为 MD3 primary tabs，活动项底部 3px 指示条。
-  - 服务器输入使用 `MaterialDesignFilledTextBox`，按钮改用 Raised/Outlined MD3 组件。
+  - 服务器输入使用 `MaterialDesignFilledTextBox`，按钮改用 Raised/Outlined MD3 组件，圆角统一为 pill。
+  - 全局 `ModernButton` 同步为 36px、pill、Medium 字号；模式按钮改为 32px filter chip。
   - 主内容增加未连接/未进房空状态卡片，使用 MD3 图标、typography 与 assist chips。
   - 修复右侧内容溢出：移除内容区错误的右边距叠加，服务器行改为星号列自适应。
-  - **已完成**：编译通过，状态页与房间页截图已核对；未重新打包 MSI。
+  - **已完成**：编译通过，状态页、房间页、MD3 配色截图已核对；未重新打包 MSI。
 
 
 

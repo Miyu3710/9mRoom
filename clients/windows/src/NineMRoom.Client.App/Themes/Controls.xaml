@@ -138,8 +138,10 @@
     <Style x:Key="ModernButton" TargetType="{x:Type Button}">
         <Setter Property="Background" Value="{StaticResource BrushSurfaceAlt}" />
         <Setter Property="Foreground" Value="{StaticResource BrushText}" />
-        <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
-        <Setter Property="Padding" Value="10,5" />
+        <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
+        <Setter Property="FontWeight" Value="Medium" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="Padding" Value="16,0" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="FocusVisualStyle" Value="{x:Null}" />
         <Setter Property="Template">
@@ -147,7 +149,7 @@
                 <ControlTemplate TargetType="{x:Type Button}">
                     <Border x:Name="ButtonBorder"
                             Background="{TemplateBinding Background}"
-                            CornerRadius="{StaticResource RadiusSm}"
+                            CornerRadius="18"
                             Padding="{TemplateBinding Padding}"
                             SnapsToDevicePixels="True">
                         <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
@@ -171,12 +173,12 @@
     <Style x:Key="ModernPrimaryButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ModernButton}">
         <Setter Property="Background" Value="{StaticResource BrushAccent}" />
         <Setter Property="Foreground" Value="{StaticResource BrushOnAccent}" />
-        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="FontWeight" Value="Medium" />
     </Style>
 
     <Style x:Key="ModernDangerButton" TargetType="{x:Type Button}" BasedOn="{StaticResource ModernButton}">
         <Setter Property="Background" Value="{StaticResource BrushDanger}" />
-        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Foreground" Value="#690005" />
     </Style>
 
     <!-- 现代复选框 -->
