@@ -396,13 +396,6 @@ public partial class MainWindow : Window
         {
             MaximizeButton.Content = WindowState == WindowState.Maximized ? "❐" : "□";
         }
-
-        if (ShellBorder is not null)
-        {
-            ShellBorder.BorderThickness = WindowState == WindowState.Maximized
-                ? new Thickness(0)
-                : new Thickness(1);
-        }
     }
 
     private void CloseDrawer_Click(object sender, RoutedEventArgs e) => _viewModel.CloseMemberDrawer();

@@ -459,6 +459,12 @@
   - 内嵌 MiSans Regular/Medium/Semibold/Bold 四个字重，字体族使用 `pack://application:,,,/Assets/Fonts/#MiSans`，以 Microsoft YaHei UI 回退。
   - **验证**：125% 截图与构建通过；100%/150% 需切换系统缩放并重启会话，当前未伪造结果；详见 `docs/font-rendering-audit.md`。
   - **未重新打包 MSI**。
+- **FIX-061 去边框与空状态精简**：
+  - 删除空状态里的“自动同步 / 隐私可控”标签。
+  - 移除主窗口、侧栏、标签面板、服务器条、空状态卡片、成员抽屉、App 编辑器及按钮的所有 1px 描边。
+  - 次按钮改为 tonal 背景，不再使用 outlined 边框。
+  - 标签轨道线、标题栏底边线、服务器/状态分隔线一并移除，仅保留活动指示条。
+  - **已完成**：编译通过，125% 截图已核对；未重新打包 MSI。
 
 
 

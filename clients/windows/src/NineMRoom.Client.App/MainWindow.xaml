@@ -48,9 +48,9 @@
         </Style>
 
         <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource BrushSurface}" />
-            <Setter Property="BorderBrush" Value="#1FFFFFFF" />
-            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#FF232228" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="16" />
             <Setter Property="Padding" Value="20" />
         </Style>
@@ -125,9 +125,10 @@
         </Style>
 
         <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
-            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Background" Value="{StaticResource BrushSurfaceAlt}" />
             <Setter Property="Foreground" Value="{StaticResource BrushText}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BrushControlBorder}" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
             <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
             <Setter Property="Height" Value="38" />
@@ -302,7 +303,7 @@
 
     <Border x:Name="ShellBorder"
             BorderBrush="{StaticResource BrushGlassBorder}"
-            BorderThickness="1"
+            BorderThickness="0"
             ClipToBounds="True"
             RenderOptions.ClearTypeHint="Enabled">
         <Border.Background>
@@ -327,7 +328,7 @@
                     <TextBlock Text="9mRoom" FontSize="{StaticResource FontSizeMd}" FontWeight="SemiBold" />
                 </StackPanel>
 
-                <Border Height="1" VerticalAlignment="Bottom" Background="#1AFFFFFF" IsHitTestVisible="False" />
+
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
                     <Button x:Name="MinimizeButton" Content="—" Style="{StaticResource TitleBarButton}" Click="Minimize_Click" />
@@ -346,7 +347,7 @@
         <Border Grid.Column="0"
                 Background="#FF1B1B21"
                 BorderBrush="{StaticResource BrushGlassBorder}"
-                BorderThickness="0,0,1,0">
+                BorderThickness="0">
             <Grid Margin="12,16,12,16">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*" />
@@ -417,7 +418,7 @@
                 </StackPanel>
 
                 <Border Grid.Row="1" Background="{StaticResource BrushSurface}" CornerRadius="12"
-                        BorderBrush="{StaticResource BrushBorder}" BorderThickness="1"
+                        BorderBrush="{StaticResource BrushBorder}" BorderThickness="0"
                         Padding="12,10">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal">
@@ -478,7 +479,7 @@
                 <Border Grid.Row="1" Grid.RowSpan="2"
                         Background="{StaticResource BrushGlassSurface}"
                         BorderBrush="{StaticResource BrushGlassBorder}"
-                        BorderThickness="1"
+                        BorderThickness="0"
                         CornerRadius="18" />
 
                 <Grid x:Name="TabStrip" Grid.Row="1" Height="46" Margin="0"
@@ -493,8 +494,6 @@
                         <RadioButton x:Name="ChatTabButton" Content="聊天" GroupName="RoomTabs"
                                      Style="{StaticResource RoomTab}" Checked="ChatTab_Checked" />
                     </StackPanel>
-                    <Border Height="1" VerticalAlignment="Bottom"
-                            Background="{StaticResource BrushBorder}" />
                     <Border x:Name="TabIndicator"
                             Width="0"
                             Height="3"
@@ -524,7 +523,7 @@
                                                Margin="4,0,0,6" />
                                     <Border Height="48"
                                             Background="{StaticResource BrushSurfaceAlt}"
-                                            BorderThickness="1"
+                                            BorderThickness="0"
                                             CornerRadius="8"
                                             ClipToBounds="True">
                                         <Border.Style>
@@ -580,8 +579,6 @@
                                                     </Style>
                                                 </TextBlock.Style>
                                             </TextBlock>
-                                            <Border Grid.Column="2" Width="1" Margin="8,10"
-                                                    Background="{StaticResource BrushBorder}" />
                                             <StackPanel Grid.Column="3" Orientation="Horizontal">
                                                 <Button Content="{Binding ConnectButtonText}"
                                                         Click="Connect_Click"
@@ -614,7 +611,7 @@
                             </TextBlock>
                         </StackPanel>
 
-                        <Border Height="1" Background="{StaticResource BrushBorder}" Margin="4,18,4,18" />
+
 
                         <Border Margin="0,0,0,16" Padding="26">
                             <Border.Style>
@@ -666,18 +663,6 @@
                                         </Style>
                                     </TextBlock.Style>
                                 </TextBlock>
-                                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                                    <Border Background="{StaticResource BrushSurfaceAlt}" CornerRadius="999"
-                                            Padding="10,5" Margin="0,0,6,0">
-                                        <TextBlock Text="自动同步" FontSize="11"
-                                                   Foreground="{StaticResource BrushTextMuted}" />
-                                    </Border>
-                                    <Border Background="{StaticResource BrushSurfaceAlt}" CornerRadius="999"
-                                            Padding="10,5">
-                                        <TextBlock Text="隐私可控" FontSize="11"
-                                                   Foreground="{StaticResource BrushTextMuted}" />
-                                    </Border>
-                                </StackPanel>
                                 <Button Content="打开房间" Click="OpenJoin_Click"
                                         Style="{StaticResource SecondaryButton}"
                                         HorizontalAlignment="Center" Margin="0,18,0,0"
@@ -923,7 +908,7 @@
             <Border x:Name="MemberDrawerPanel" Width="400" HorizontalAlignment="Right"
                     Background="{StaticResource BrushSurface}"
                     BorderBrush="{StaticResource BrushBorder}"
-                    BorderThickness="1,0,0,0"
+                    BorderThickness="0"
                     Padding="22"
                     RenderOptions.ClearTypeHint="Enabled">
                 <Border.RenderTransform>
@@ -1001,7 +986,7 @@
             <Border Width="460" HorizontalAlignment="Center" VerticalAlignment="Center"
                     Background="#17171A"
                     BorderBrush="{StaticResource BrushGlassBorder}"
-                    BorderThickness="1"
+                    BorderThickness="0"
                     CornerRadius="{StaticResource RadiusMd}">
                 <local:JoinRoomView />
             </Border>
@@ -1013,7 +998,7 @@
             <Border x:Name="AppEditorPanel" Width="500" HorizontalAlignment="Right"
                     Background="{StaticResource BrushSurface}"
                     BorderBrush="{StaticResource BrushGlassBorder}"
-                    BorderThickness="1,0,0,0"
+                    BorderThickness="0"
                     RenderOptions.ClearTypeHint="Enabled">
                 <Border.RenderTransform>
                     <TranslateTransform x:Name="AppEditorSlide" X="28" />
