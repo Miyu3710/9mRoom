@@ -8,7 +8,11 @@
 - **状态来源**：前台应用类别 + 系统音乐（Windows SMTC / Android MediaSession）+ 自习计时
 - **状态展示**：可编排的「同步列表」——应用、音乐、待办、计时器、自定义文本与脚本，自由排序与模板
 
-> 当前 Windows 客户端与服务端（SQLite 房间 / 管理员、聊天、状态同步）已可用；Android 端尚未开始。
+> 当前 Windows / Android 客户端与服务端（SQLite 房间 / 管理员、聊天、状态同步）均已可用。
+> Windows 1.2.0 已完成 Material Design 3 重构，安装包改为 per-machine / x64。
+> 下载与版本历史：[Windows](https://github.com/Miyu3710/9mRoom/releases/tag/windows-v1.2.0) ·
+> [Linux 服务端](https://github.com/Miyu3710/9mRoom/releases/tag/server-v1.1.0) ·
+> [Android](https://github.com/Miyu3710/9mRoom/releases/tag/android-v1.1.4)
 > 先读 [Structure.md](Structure.md) 了解目录，再看 [docs/development-approach.md](docs/development-approach.md) 了解开发思路。
 > Windows 端待办与功能提议见 [ToDo.md](ToDo.md)，用户提出的问题与需求见 [Fix.md](Fix.md)。
 
@@ -44,8 +48,13 @@ docker compose up -d --build
 
 ## 安装 Windows 客户端
 
-- 安装包：`9mRoom-Setup-1.0.0.msi`
-- 支持选择安装路径、开始菜单与桌面快捷方式
+当前版本：**1.2.0**（`windows-v1.2.0`）
+
+- 安装包：`9mRoom-Setup-1.2.0.msi`
+- per-machine 安装，需要管理员权限（UAC）
+- 默认安装到 `Program Files`，安装向导保留自定义路径页
+- 安装 / 卸载都由 Windows Installer 以管理员令牌执行，不再依赖普通用户修改 `D:\Config.Msi`
+- 仅提供 MSI，不发布便携版
 - 当前为未签名构建，SmartScreen 可能提示“未知发布者”
 - 打包、签名与报毒说明见 [packaging/README.md](packaging/README.md) 和 [docs/installer-antivirus.md](docs/installer-antivirus.md)
 

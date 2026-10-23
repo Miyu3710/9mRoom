@@ -37,4 +37,4 @@ powershell -ExecutionPolicy Bypass -File design\generate-tokens.ps1
 
 ## 状态
 
-Windows 端已完成 M3 token + 组件库 + 全页面重构；Android 端待开始。
+Windows 端已完成 M3 token + 组件库 + 全页面重构（1.2.0）；Android 端已有 Material 3 主题基础，跨端 token 复用待继续统一。

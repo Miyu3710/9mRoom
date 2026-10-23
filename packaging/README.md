@@ -6,9 +6,9 @@
 
 | 文件 | 用途 |
 | --- | --- |
-| `dist/9mRoom-Setup-1.0.0.msi` | Windows 安装包，发布主产物 |
-| `dist/9mRoom-1.0.0-win-x64.zip` | Windows 便携版，解压后运行 `9mRoom.cmd` |
-| `dist/9mRoom-Server-1.0.0-linux-x64.tar.gz` | Linux 服务端，自包含 .NET 运行时 |
+| `dist/9mRoom-Setup-1.2.0.msi` | Windows 安装包，发布主产物 |
+| `dist/9mRoom-1.2.0-win-x64.zip` | Windows 便携版构建产物；1.2.0 Release 未发布该文件 |
+| `dist/9mRoom-Server-1.2.0-linux-x64.tar.gz` | Linux 服务端，自包含 .NET 运行时 |
 | `dist/update-windows.json` | Windows 独立更新清单（SHA256、资产名） |
 | `dist/update-server.json` | 服务端独立更新清单 |
 | `dist/update.json` | 兼容旧客户端的合并清单 |
@@ -18,13 +18,14 @@ Android APK 与 `update-android.json` 由 Android 构建/发布流程单独产�
 
 发布通道、tag 规则与清单更新步骤见 [docs/releases.md](../docs/releases.md)。
 
-**发布只使用 MSI**。不再生成 `setup.exe` 启动器。
+**发布只使用 MSI**。不再生成 `setup.exe` 启动器；1.2.0 只发布 MSI，不发布便携版。
 
 ## 安装行为
 
-- 按用户安装，不需要管理员权限
-- 中文安装向导，可选择安装路径
-- 默认安装到 `%LOCALAPPDATA%\9mRoom`
+- **per-machine 安装，需要管理员权限（UAC）**
+- 64 位 MSI，默认安装到 `Program Files\9mRoom`
+- 中文安装向导，保留自定义安装路径页
+- 安装与卸载都由 Windows Installer 以管理员令牌执行，不再依赖普通用户修改 `D:\Config.Msi`
 - 创建开始菜单快捷方式
 - 创建桌面快捷方式
 - 卸载走“设置 → 应用 → 9mRoom”，或运行 MSI 的卸载
@@ -32,7 +33,7 @@ Android APK 与 `update-android.json` 由 Android 构建/发布流程单独产�
 ## 构建
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.0.0
+powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.2.0
 ```
 
 首次构建需要 WiX 5 和 UI 扩展：
@@ -51,7 +52,7 @@ WiX UI 扩展会缓存到仓库根目录的 `.wix/`（已 gitignore）。
 
 ```powershell
 $env:NINEMROOM_SIGN_PFX_PASSWORD = '...'
-powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.0.0 `
+powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.2.0 `
   -Sign -PfxPath C:\secrets\9mroom.pfx
 ```
 
@@ -76,6 +77,7 @@ powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.0.0 `
 
 ## 已知限制
 
-- 自动更新尚未接入：Windows 通过 GitHub Releases 检查更新并手动下载；Linux 通过 `update-server.sh` 检查
+- 自动更新已完成“检查 GitHub Releases + 应用内下载 + 询问安装”，静默升级尚未接入；Linux 通过 `update-server.sh` 检查
 - 安装向导为 Windows Installer 标准界面；中文文案由 `WixUI_zh-CN.wxl` 提供
 - 首次安装前如果系统 Windows Installer 服务异常，需要重启一次再安装
+- 1.2.0 的 per-machine 安装/卸载仍需在 D 盘实机确认不再出现动态链接库/回滚错误

@@ -35,8 +35,8 @@
 
 | 路径 | 职责 | 不该放什么 | 现状 |
 | --- | --- | --- | --- |
-| `clients/windows/` | 前台窗口识别、SMTC 音乐、空闲检测、托盘与自启、自定义状态脚本、Windows UI | 服务端代码、Android 代码、共享业务规则 | M1 + WPF 壳 |
-| `clients/android/` | UsageStats 前台识别、MediaSession、前台服务、Android UI | 同上 | 占位 |
+| `clients/windows/` | 前台窗口识别、SMTC 音乐、空闲检测、托盘与自启、自定义状态脚本、Windows UI | 服务端代码、Android 代码、共享业务规则 | 1.2.0，M3 全页面 |
+| `clients/android/` | UsageStats 前台识别、MediaSession、前台服务、Android UI | 同上 | 基础版可用 |
 | `server/` | 管理员与房间持久化、实时在场广播、状态块校验、Docker 部署 | 客户端 UI、平台相关代码 | SQLite + 管理页可运行 |
 | `shared/protocol/` | 消息定义、错误码、版本与兼容策略 | 任何一种语言的实现 | M0 子集已实现 |
 | `shared/app-catalog/` | Windows 进程名 / Android 包名 → `appId`、类别、展示名 | 运行时逻辑、图标二进制 | 首批 50 个应用 |

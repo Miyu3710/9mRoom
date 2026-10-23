@@ -5,7 +5,7 @@
 **没有代码签名证书时，无法保证安装包不被杀毒软件或 SmartScreen 拦截。**  
 当前仓库没有可用证书，所以第一个版本是**未签名 MSI**。这不是靠换压缩参数或改文件名能彻底解决的问题。
 
-当前发布形式：只发布 MSI，不再生成 `setup.exe`。
+当前发布形式：1.2.0 只发布 MSI，不再生成 `setup.exe`，也不发布便携版。
 
 已做的降低误报措施：
 
@@ -34,18 +34,18 @@
 
 ```powershell
 $env:NINEMROOM_SIGN_PFX_PASSWORD = '...'
-powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.0.0 `
+powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.2.0 `
   -Sign -PfxPath C:\secrets\9mroom.pfx
 ```
 
 或使用本机证书指纹：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.0.0 `
+powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.2.0 `
   -Sign -Thumbprint <thumbprint>
 ```
 
-签名后再分发 `dist/9mRoom-Setup-1.0.0.msi`，不要分发旧的未签名文件。
+签名后再分发 `dist/9mRoom-Setup-1.2.0.msi`，不要分发旧的未签名文件。
 
 ## 如果仍被某个杀软拦截
 
@@ -56,13 +56,15 @@ powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.0.0 `
 
 ## 分发建议
 
-- 优先分发 `9mRoom-Setup-1.0.0.msi`
+- 优先分发 `9mRoom-Setup-1.2.0.msi`
 - 同时提供 SHA256，方便用户校验
-- 便携版 `9mRoom-1.0.0-win-x64.zip` 只适合不想安装的用户
+- 1.2.0 不发布便携版；旧便携版只适合历史版本对照
 
-## 卸载报错 1926 / D:\Config.Msi
+## 卸载报错 1926 / D:\Config.Msi（1.1.1 及更早的 per-user 安装）
 
-如果 MSI 安装在 **D 盘自定义目录**，卸载时可能连续弹出：
+> 1.2.0 已改为 per-machine，安装/卸载默认以管理员令牌运行，正常情况下不再需要下面的回滚/ACL 手工修复。本节保留给仍在使用旧 per-user 版本的用户。
+
+如果旧 MSI 安装在 **D 盘自定义目录**，卸载时可能连续弹出：
 
 ```text
 错误 1926：无法设置文件 D:\Config.Msi\xxxx.rbf 的文件安全
@@ -100,16 +102,19 @@ icacls "D:\Config.Msi" /grant *S-1-5-32-545:(OI)(CI)F /T /C
 msiexec /x "{ProductCode}" /qn
 ```
 
-### 安装到 C 盘
+### 安装到默认位置
 
-安装到默认 C 盘用户目录不会使用 D:\Config.Msi，卸载不会触发 1926。
+1.2.0 默认安装到 `Program Files\9mRoom`，由 per-machine 安装使用管理员权限，不再依赖普通用户在 D 盘创建 `.rbf`。
 
 ## 当前测试限制
 
-构建机当前的 Windows Installer 服务在安装测试中被卡住，需要重启一次才能继续做完整点击安装验证。
-MSI 本身已完成构建，表已验证：
+1.2.0 MSI 已完成构建，表已验证：
 
-- `ProductLanguage = 2052`
-- 欢迎页文案为中文
-- 包含 `InstallDirDlg` 安装路径页
+- 平台为 x64
+- `ALLUSERS = 1`（per-machine）
+- 默认目录为 `ProgramFiles64Folder`
+- 包含 `InstallDirDlg` 自定义路径页
 - 开始菜单和桌面快捷方式均已写入 Shortcut 表
+- 用户协议版本为 1.2.0
+
+尚未在当前普通权限会话中执行完整的 UAC 安装 / 卸载点击验证；D 盘卸载是否不再出现 1926 需要实机确认。
