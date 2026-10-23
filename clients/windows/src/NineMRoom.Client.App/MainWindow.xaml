@@ -229,7 +229,7 @@
             <TextBlock Text="自习室" Style="{StaticResource PageTitle}" />
           </StackPanel>
 
-          <controls:M3TabControl x:Name="RoomTabs" Grid.Row="1" Margin="0,16,28,0" SelectedIndex="0"
+          <controls:M3TabControl x:Name="RoomTabs" Grid.Row="1" Margin="0,8,28,0" SelectedIndex="0"
                                  SelectionChanged="RoomTabs_SelectionChanged">
             <TabItem Header="状态" />
             <TabItem Header="房间" />
