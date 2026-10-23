@@ -33,7 +33,7 @@
       </controls:M3Button>
     </Grid>
 
-    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+    <ScrollViewer Grid.Row="1" Style="{StaticResource M3PageScroll}">
       <StackPanel Margin="0,8,0,0">
         <Grid Margin="0,0,0,8">
           <Grid.ColumnDefinitions>
@@ -78,14 +78,12 @@
                              Margin="8,0,0,0" Click="ResetIcon_Click" />
         </StackPanel>
 
-        <TextBlock Text="显示名称" Style="{StaticResource ItemSupporting}" Margin="0,16,0,4" />
         <TextBox Text="{Binding AppDraft.DisplayName, UpdateSourceTrigger=PropertyChanged}"
                  Style="{StaticResource M3TextBox}"
                  controls:M3Field.Label="显示名称"
                  controls:M3Field.HelperText="显示在房间同步状态中的应用名。"
                  VerticalAlignment="Top" />
 
-        <TextBlock Text="文件位置" Style="{StaticResource ItemSupporting}" Margin="0,16,0,4" />
         <TextBox Text="{Binding AppDraft.ExecutablePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  Style="{StaticResource M3TextBox}"
                  controls:M3Field.Label="可执行文件路径"
@@ -93,8 +91,6 @@
                  VerticalAlignment="Top" />
 
         <Grid Margin="0,16,0,4">
-          <TextBlock Text="状态模板（留空使用全局模板）" Style="{StaticResource ItemSupporting}"
-                     VerticalAlignment="Center" />
           <controls:M3Button x:Name="TemplateHelpButton"
                              HorizontalAlignment="Right"
                              Style="{StaticResource M3IconButton}"

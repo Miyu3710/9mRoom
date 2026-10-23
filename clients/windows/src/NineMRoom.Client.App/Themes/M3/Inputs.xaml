@@ -231,7 +231,7 @@
                   <ContentPresenter x:Name="SelectedContent"
                                     Content="{TemplateBinding SelectionBoxItem}"
                                     ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
-                                    Margin="16,8,40,0"
+                                    Margin="16,0,40,0"
                                     VerticalAlignment="Center"
                                     IsHitTestVisible="False"
                                     TextElement.Foreground="{TemplateBinding Foreground}">

@@ -4,7 +4,7 @@
         xmlns:controls="clr-namespace:NineMRoom.Client.App.Controls"
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         Title="应用分类"
-        Width="780" Height="620"
+        Width="980" Height="760"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize" ShowInTaskbar="False"
         WindowStartupLocation="CenterOwner"
@@ -72,6 +72,7 @@
                             Cursor="SizeAll" ToolTip="拖动调整分类顺序"
                             AutomationProperties.Name="拖动调整分类顺序"
                             VerticalAlignment="Top"
+                            Margin="0,20,0,0"
                             PreviewMouseLeftButtonDown="Handle_PreviewMouseLeftButtonDown"
                             PreviewMouseMove="Handle_PreviewMouseMove"
                             PreviewMouseLeftButtonUp="Handle_PreviewMouseLeftButtonUp">
@@ -96,6 +97,7 @@
                                        AutomationProperties.Name="删除分类"
                                        Tag="{Binding}"
                                        VerticalAlignment="Top"
+                                       Margin="0,20,0,0"
                                        Click="Remove_Click">
                       <materialDesign:PackIcon Kind="DeleteOutline" Width="18" Height="18"
                                                Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=controls:M3Button}}" />
@@ -129,7 +131,7 @@
                              Style="{StaticResource M3FilledButton}"
                              Content="新增分类"
                              VerticalAlignment="Top"
-                             Margin="0,8,0,0"
+                             Margin="0,20,0,0"
                              Click="Add_Click" />
         </Grid>
         <TextBlock Text="新分类默认模板为空；删除分类后，使用该分类的应用会回到「自动」。"

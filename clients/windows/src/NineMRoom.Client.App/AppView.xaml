@@ -12,9 +12,32 @@
     <local:StringEqualsConverter x:Key="ValueEquals" />
     <local:InverseBooleanConverter x:Key="Not" />
 
-    <Style x:Key="AppListRow" TargetType="ListBoxItem" BasedOn="{StaticResource M3ListItem}">
-      <Setter Property="MinHeight" Value="64" />
-      <Setter Property="Padding" Value="12,8" />
+    <Style x:Key="AppTile" TargetType="ListBoxItem">
+      <Setter Property="Width" Value="248" />
+      <Setter Property="Margin" Value="0,0,12,12" />
+      <Setter Property="Padding" Value="12" />
+      <Setter Property="Cursor" Value="Hand" />
+      <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ListBoxItem">
+            <Border x:Name="Tile"
+                    Background="{DynamicResource BrushSurfaceContainerLow}"
+                    CornerRadius="{DynamicResource ShapeMedium}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter />
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="Tile" Property="Background" Value="{DynamicResource BrushSurfaceContainerHigh}" />
+              </Trigger>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="Tile" Property="Background" Value="{DynamicResource BrushPrimaryContainer}" />
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
     </Style>
   </UserControl.Resources>
 
@@ -52,7 +75,7 @@
                  controls:M3Field.ShowLeadingIcon="True" />
       </Grid>
 
-      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,8,0,0"
+      <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,20,0,0"
                   AutomationProperties.Name="应用排序方式">
         <controls:M3SegmentedButton Content="最近使用" Tag="recent" GroupName="AppSort" Position="First"
                                     Checked="Sort_Checked"
@@ -70,7 +93,7 @@
                          Content="分类管理"
                          AutomationProperties.Name="管理应用分类"
                          VerticalAlignment="Top"
-                         Margin="12,8,0,0"
+                         Margin="12,20,0,0"
                          Click="CategoryManage_Click" />
     </Grid>
 
@@ -89,19 +112,27 @@
         <StackPanel>
           <ListBox x:Name="AppList"
                    ItemsSource="{Binding AppRulesView}"
-                   ItemContainerStyle="{StaticResource AppListRow}"
+                   ItemContainerStyle="{StaticResource AppTile}"
                    SelectionChanged="AppList_SelectionChanged"
-                   AutomationProperties.Name="应用列表">
+                   AutomationProperties.Name="应用列表"
+                   Background="Transparent"
+                   BorderThickness="0"
+                   Padding="0"
+                   ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+            <ListBox.ItemsPanel>
+              <ItemsPanelTemplate>
+                <WrapPanel />
+              </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
             <ListBox.ItemTemplate>
               <DataTemplate>
                 <Grid>
                   <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
                   </Grid.ColumnDefinitions>
 
-                  <Grid Width="36" Height="36" Margin="0,0,12,0" VerticalAlignment="Center">
+                  <Grid Width="40" Height="40" Margin="0,0,12,0" VerticalAlignment="Center">
                     <Border CornerRadius="{StaticResource ShapeSmall}"
                             Background="{StaticResource BrushPrimaryContainer}">
                       <Border.Style>
@@ -115,26 +146,19 @@
                       </Border.Style>
                       <TextBlock Text="{Binding Initial}"
                                  Foreground="{StaticResource BrushOnPrimaryContainer}"
-                                 FontSize="{StaticResource TypeTitleSmallSize}"
+                                 FontSize="{StaticResource TypeTitleMediumSize}"
                                  HorizontalAlignment="Center" VerticalAlignment="Center" />
                     </Border>
-                    <Image Source="{Binding Icon}" Width="36" Height="36"
+                    <Image Source="{Binding Icon}" Width="40" Height="40"
                            Visibility="{Binding HasIcon, Converter={StaticResource BoolToVisibility}}" />
                   </Grid>
 
-                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
+                  <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,4,0">
                     <TextBlock Text="{Binding DisplayName}" Style="{StaticResource ItemTitle}"
                                TextTrimming="CharacterEllipsis" />
                     <TextBlock Text="{Binding CategoryDisplayName}" Style="{StaticResource ItemSupporting}"
                                Margin="0,2,0,0" />
                   </StackPanel>
-
-                  <materialDesign:PackIcon Grid.Column="2" Kind="ChevronRight" Width="20" Height="20"
-                                           Foreground="{StaticResource BrushOnSurfaceVariant}"
-                                           VerticalAlignment="Center" />
-
-                  <Border Grid.ColumnSpan="3" Height="1" VerticalAlignment="Bottom"
-                          Background="{StaticResource BrushOutlineVariant}" Margin="44,0,0,0" />
                 </Grid>
               </DataTemplate>
             </ListBox.ItemTemplate>
@@ -173,3 +197,4 @@
     </Grid>
   </Grid>
 </UserControl>
+
