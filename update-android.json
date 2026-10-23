@@ -1,10 +1,10 @@
 {
   "platform": "android",
-  "version": "1.1.1",
-  "tag": "android-v1.1.1",
-  "release": "https://github.com/Miyu3710/9mRoom/releases/tag/android-v1.1.1",
+  "version": "1.1.2",
+  "tag": "android-v1.1.2",
+  "release": "https://github.com/Miyu3710/9mRoom/releases/tag/android-v1.1.2",
   "android": {
-    "asset": "9mRoom-Android-1.1.1.apk",
-    "sha256": "899296D64F00A2C2C310A65C56FC0CB7A9CF7D0BF83400D5F0E63FA948A0D3F8"
+    "asset": "9mRoom-Android-1.1.2.apk",
+    "sha256": "71BCD184DF1D21D43D8364D18E901E9BD242D3944488A2BD44171868DD5A4306"
   }
 }
