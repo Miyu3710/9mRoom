@@ -277,15 +277,15 @@ fun NineRoomApp(
                     startDestination = Destination.Home.route,
                     modifier = Modifier.weight(1f),
                     enterTransition = {
-                        fadeIn(tween(120)) +
-                            slideInHorizontally(tween(120)) { it / 16 }
+                        fadeIn(tween(160)) +
+                            slideInHorizontally(tween(180)) { it / 16 }
                     },
-                    exitTransition = { fadeOut(tween(90)) },
+                    exitTransition = { fadeOut(tween(130)) },
                     popEnterTransition = {
-                        fadeIn(tween(120)) +
-                            slideInHorizontally(tween(120)) { -it / 16 }
+                        fadeIn(tween(160)) +
+                            slideInHorizontally(tween(180)) { -it / 16 }
                     },
-                    popExitTransition = { fadeOut(tween(90)) },
+                    popExitTransition = { fadeOut(tween(130)) },
                 ) {
                     composable(Destination.Home.route) {
                         HomeScreen(
