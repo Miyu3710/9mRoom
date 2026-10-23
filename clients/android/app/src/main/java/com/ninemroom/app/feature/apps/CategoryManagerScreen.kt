@@ -1,8 +1,5 @@
 package com.ninemroom.app.feature.apps
 
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.snap
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -48,7 +45,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -65,6 +64,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ninemroom.app.NineRoomApplication
 import com.ninemroom.app.data.AppCategory
 import com.ninemroom.app.data.AppCategoryStore
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,6 +86,7 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
     var dragOriginY by remember { mutableFloatStateOf(0f) }
     var targetIndex by remember { mutableStateOf(-1) }
     val listState = rememberLazyListState()
+    val scope = rememberCoroutineScope()
     val density = LocalDensity.current
     val rowHeightPx = with(density) { 76.dp.toPx() }
     val stepPx = with(density) { 84.dp.toPx() }
@@ -135,15 +136,7 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
                         targetIndex < originIndex && index in targetIndex until originIndex -> 1
                         else -> 0
                     }
-                    val shift by animateFloatAsState(
-                        targetValue = shiftSteps * stepPx,
-                        animationSpec = if (draggedId == null || targetIndex == originIndex) {
-                            snap()
-                        } else {
-                            tween(140)
-                        },
-                        label = "category-shift",
-                    )
+                    val shift = shiftSteps * stepPx
                     CategoryRow(
                         category = category,
                         dragging = dragging,
@@ -170,6 +163,7 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
                         onDragEnd = {
                             val id = draggedId
                             val target = targetIndex
+                            val anchor = listState.firstVisibleItemIndex
                             if (id != null && target >= 0) {
                                 val order = categories.toMutableList()
                                 val from = order.indexOfFirst { it.id == id }
@@ -177,6 +171,12 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
                                     val item = order.removeAt(from)
                                     order.add(target.coerceIn(0, order.size), item)
                                     categoryStore.setOrder(order)
+                                    scope.launch {
+                                        withFrameNanos { }
+                                        listState.scrollToItem(
+                                            anchor.coerceIn(0, order.lastIndex),
+                                        )
+                                    }
                                 }
                             }
                             draggedId = null
