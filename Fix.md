@@ -402,9 +402,9 @@
   - **已完成**。
 - **FIX-053 Windows 更新检查与卸载调查**：
   - Windows 独立更新通道当前最新为 `1.1.0`；1.1.1 / 1.1.2 是 Android 版本，不是 Windows 版本。已实测 Windows 检查更新返回“已是最新版本（1.1.0）”。
-  - 卸载报错为 Windows Installer 1926：`D:\Config.Msi` 权限损坏，卸载实际成功但会弹大量非致命错误；已写入 `docs/installer-antivirus.md`。
-  - 实测：删除 `D:\Config.Msi` 后重新安装到 D 盘，Windows Installer 会再次创建受限目录并继续触发 1926；必须给当前普通用户授予该目录写权限，或使用 `/qn` 静默卸载，或安装到 C 盘。
-  - **调查完成**；已保留自定义安装路径。
+  - 卸载报错为 Windows Installer 1926；实测删除目录、授予 ACL 后仍以错误 1307 创建 `.rbf` 回滚文件。
+  - 根因是 Windows Installer 回滚脚本在 D 盘设置所有者失败；最终修复为机器策略 `HKLM\Software\Policies\Microsoft\Windows\Installer\DisableRollback=1`，或 `/qn` 静默卸载。
+  - **已提供** `packaging/repair-config-msi.cmd`；保留自定义安装路径。
 - **FIX-054 Windows 1.1.1 发布**：
   - 打包包含房间页、标签页、专注页与字体修复的 1.1.1 MSI。
   - 保留自定义安装目录（`WixUI_InstallDir`），不强制 C 盘。
