@@ -1,7 +1,6 @@
 package com.ninemroom.app.feature.sync
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -15,7 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -38,25 +37,20 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.graphicsLayer
-import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ninemroom.app.NineRoomApplication
 import com.ninemroom.app.data.StatusBlockRule
 import com.ninemroom.app.data.StatusLayoutStore
 import com.ninemroom.app.data.statusBlockTypes
-import kotlin.math.roundToInt
+import sh.calvin.reorderable.ReorderableItem
+import sh.calvin.reorderable.rememberReorderableLazyListState
 
 @Composable
 fun SyncListScreen(onBack: () -> Unit) {
@@ -64,13 +58,11 @@ fun SyncListScreen(onBack: () -> Unit) {
     val store = (context.applicationContext as NineRoomApplication).statusLayoutStore
     val rules by store.rules.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
-    val density = LocalDensity.current
-    val rowHeightPx = with(density) { 92.dp.toPx() }
+    val reorderState = rememberReorderableLazyListState(listState) { from, to ->
+        store.move(from.index, to.index)
+    }
 
     var expandedId by remember { mutableStateOf<String?>(null) }
-    var draggedIndex by remember { mutableIntStateOf(-1) }
-    var dragStartIndex by remember { mutableIntStateOf(-1) }
-    var dragOffset by remember { mutableFloatStateOf(0f) }
     var addMenuOpen by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize()) {
@@ -99,47 +91,26 @@ fun SyncListScreen(onBack: () -> Unit) {
             verticalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier.weight(1f),
         ) {
-            itemsIndexed(rules, key = { _, rule -> rule.id }) { index, rule ->
-                val isDragging = draggedIndex == index
-                StatusBlockCard(
-                    rule = rule,
-                    expanded = expandedId == rule.id,
-                    dragging = isDragging,
-                    dragOffset = if (isDragging) {
-                        dragOffset - (draggedIndex - dragStartIndex) * rowHeightPx
-                    } else {
-                        0f
-                    },
-                    onToggle = { store.setEnabled(rule.id, it) },
-                    onExpand = {
-                        expandedId = if (expandedId == rule.id) null else rule.id
-                    },
-                    onDelete = {
-                        store.remove(rule.id)
-                        if (expandedId == rule.id) expandedId = null
-                    },
-                    onTemplateChange = { store.updateTemplate(rule.id, it) },
-                    onDragStart = {
-                        expandedId = null
-                        draggedIndex = index
-                        dragStartIndex = index
-                        dragOffset = 0f
-                    },
-                    onDrag = { amount ->
-                        dragOffset += amount
-                        val target = (dragStartIndex + (dragOffset / rowHeightPx).roundToInt())
-                            .coerceIn(0, rules.lastIndex)
-                        if (target != draggedIndex) {
-                            store.move(draggedIndex, target)
-                            draggedIndex = target
-                        }
-                    },
-                    onDragEnd = {
-                        draggedIndex = -1
-                        dragStartIndex = -1
-                        dragOffset = 0f
-                    },
-                )
+            items(rules, key = { it.id }) { rule ->
+                ReorderableItem(
+                    state = reorderState,
+                    key = rule.id,
+                ) { _ ->
+                    StatusBlockCard(
+                        rule = rule,
+                        expanded = expandedId == rule.id,
+                        onToggle = { store.setEnabled(rule.id, it) },
+                        onExpand = {
+                            expandedId = if (expandedId == rule.id) null else rule.id
+                        },
+                        onDelete = {
+                            store.remove(rule.id)
+                            if (expandedId == rule.id) expandedId = null
+                        },
+                        onTemplateChange = { store.updateTemplate(rule.id, it) },
+                        dragHandleModifier = Modifier.longPressDraggableHandle(),
+                    )
+                }
             }
         }
 
@@ -178,28 +149,19 @@ fun SyncListScreen(onBack: () -> Unit) {
 private fun StatusBlockCard(
     rule: StatusBlockRule,
     expanded: Boolean,
-    dragging: Boolean,
-    dragOffset: Float,
     onToggle: (Boolean) -> Unit,
     onExpand: () -> Unit,
     onDelete: () -> Unit,
     onTemplateChange: (String) -> Unit,
-    onDragStart: () -> Unit,
-    onDrag: (Float) -> Unit,
-    onDragEnd: () -> Unit,
+    dragHandleModifier: Modifier,
 ) {
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
         ),
         shape = MaterialTheme.shapes.large,
-        modifier = Modifier
-            .fillMaxWidth()
-            .zIndex(if (dragging) 1f else 0f)
-            .graphicsLayer {
-                translationY = if (dragging) dragOffset else 0f
-                shadowElevation = if (dragging) 12f else 0f
-            },
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        modifier = Modifier.fillMaxWidth(),
     ) {
         Column {
             Row(
@@ -216,17 +178,7 @@ private fun StatusBlockCard(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier
                         .padding(horizontal = 6.dp)
-                        .pointerInput(rule.id) {
-                            detectDragGesturesAfterLongPress(
-                                onDragStart = { onDragStart() },
-                                onDragEnd = { onDragEnd() },
-                                onDragCancel = { onDragEnd() },
-                                onDrag = { change, amount ->
-                                    change.consume()
-                                    onDrag(amount.y)
-                                },
-                            )
-                        },
+                        .then(dragHandleModifier),
                 )
                 Column(Modifier.weight(1f)) {
                     Text(
