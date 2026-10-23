@@ -53,6 +53,7 @@ class PresenceService : Service() {
     private var panelView: View? = null
     private var panelParams: WindowManager.LayoutParams? = null
     private var panelList: LinearLayout? = null
+    private var panelAttached = false
     private var panelExpanded = false
     private var lastState: RoomUiState? = null
     private var waitForConnection = false
@@ -166,7 +167,7 @@ class PresenceService : Service() {
             val width = size
             val height = dp(30)
             val maxX = (screenWidth - width).coerceAtLeast(1)
-            val maxY = (screenHeight - height).coerceAtLeast(1)
+            val maxY = maxOverlayY(height)
             gravity = Gravity.TOP or Gravity.START
             x = if (settings.overlayXFraction >= 0f) {
                 (settings.overlayXFraction * maxX).toInt().coerceIn(0, maxX)
@@ -207,7 +208,7 @@ class PresenceService : Service() {
                 0,
                 (screenWidth - dp(state.overlaySize)).coerceAtLeast(0),
             )
-            params.y = params.y.coerceIn(0, (screenHeight - dp(30)).coerceAtLeast(0))
+            params.y = params.y.coerceIn(0, maxOverlayY(dp(30)))
             try {
                 getSystemService(WindowManager::class.java).updateViewLayout(view, params)
             } catch (_: Exception) {
@@ -236,58 +237,54 @@ class PresenceService : Service() {
 
     private fun showPanel(state: RoomUiState) {
         if (panelExpanded) return
-        val chip = overlayView ?: return
+        overlayView ?: return
         val chipParams = overlayParams ?: return
         val panel = panelView ?: createPanelView(state).also { created ->
-            val width = dp(250)
-            val screenWidth = resources.displayMetrics.widthPixels
-            val x = chipParams.x
-                .coerceAtMost(screenWidth - width - dp(4))
-                .coerceAtLeast(0)
-            val y = chipParams.y + chip.height
-            val params = WindowManager.LayoutParams(
-                width,
-                WindowManager.LayoutParams.WRAP_CONTENT,
-                WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
-                WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
-                    WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
-                PixelFormat.TRANSLUCENT,
-            ).apply {
-                gravity = Gravity.TOP or Gravity.START
-                this.x = x
-                this.y = y
-            }
+            panelList = created.findViewWithTag("member-list")
+            panelView = created
+        }
+        val list = panelList ?: return
+        fillMemberList(list, state)
+        panel.visibility = View.VISIBLE
+        panel.alpha = 0f
+        val panelHeight = measurePanel(panel)
+        val position = panelPosition(chipParams, panelHeight)
+        val params = panelParams ?: WindowManager.LayoutParams(
+            dp(250),
+            WindowManager.LayoutParams.WRAP_CONTENT,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL,
+            PixelFormat.TRANSLUCENT,
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+        }
+        params.width = dp(250)
+        params.height = WindowManager.LayoutParams.WRAP_CONTENT
+        params.x = position.first
+        params.y = position.second
+        panelParams = params
+        if (!panelAttached) {
             try {
-                getSystemService(WindowManager::class.java).addView(created, params)
-                panelView = created
-                panelParams = params
-                panelList = created.findViewWithTag("member-list")
+                getSystemService(WindowManager::class.java).addView(panel, params)
+                panelAttached = true
             } catch (_: Exception) {
                 panelView = null
                 panelParams = null
                 panelList = null
+                panelAttached = false
+                return
+            }
+        } else {
+            setPanelTouchable(true)
+            try {
+                getSystemService(WindowManager::class.java).updateViewLayout(panel, params)
+            } catch (_: Exception) {
                 return
             }
         }
-
-        val list = panelList ?: return
-        fillMemberList(list, state)
-        val panelParams = panelParams ?: return
-        panelParams.width = dp(250)
-        panelParams.height = WindowManager.LayoutParams.WRAP_CONTENT
-        panelParams.x = chipParams.x
-            .coerceAtMost(resources.displayMetrics.widthPixels - panelParams.width - dp(4))
-            .coerceAtLeast(0)
-        panelParams.y = chipParams.y + chip.height
         setPanelTouchable(true)
-        panel.visibility = View.VISIBLE
-        panel.alpha = 0f
         panel.translationY = -dp(6).toFloat()
-        try {
-            getSystemService(WindowManager::class.java).updateViewLayout(panel, panelParams)
-        } catch (_: Exception) {
-            return
-        }
         panelExpanded = true
         panel.animate()
             .alpha(state.overlayOpacity)
@@ -306,10 +303,59 @@ class PresenceService : Service() {
             .withEndAction {
                 if (!panelExpanded) {
                     panel.alpha = 0f
+                    panel.visibility = View.GONE
                     setPanelTouchable(false)
+                    collapsePanelWindow()
                 }
             }
             .start()
+    }
+
+    private fun measurePanel(panel: View): Int {
+        panel.measure(
+            View.MeasureSpec.makeMeasureSpec(dp(250), View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(dp(300), View.MeasureSpec.AT_MOST),
+        )
+        return panel.measuredHeight.coerceAtLeast(dp(40))
+    }
+
+    private fun panelPosition(
+        chipParams: WindowManager.LayoutParams,
+        panelHeight: Int,
+    ): Pair<Int, Int> {
+        val width = dp(250)
+        val screenWidth = resources.displayMetrics.widthPixels
+        val screenHeight = resources.displayMetrics.heightPixels
+        val x = chipParams.x
+            .coerceAtMost(screenWidth - width - dp(4))
+            .coerceAtLeast(0)
+        val chipBottom = chipParams.y + (overlayView?.height ?: dp(30))
+        val fitsBelow = chipBottom + dp(6) + panelHeight <= screenHeight - dp(8)
+        val gap = if (fitsBelow) dp(6) else dp(20)
+        val below = chipBottom + gap
+        val above = chipParams.y - panelHeight - gap
+        val y = if (fitsBelow) {
+            below
+        } else if (above >= dp(8)) {
+            above
+        } else {
+            below
+        }
+        return x to y
+    }
+
+    private fun collapsePanelWindow() {
+        val panel = panelView ?: return
+        val params = panelParams ?: return
+        params.width = 1
+        params.height = 1
+        params.x = 0
+        params.y = 0
+        try {
+            getSystemService(WindowManager::class.java).updateViewLayout(panel, params)
+        } catch (_: Exception) {
+            // 窗口可能已被移除
+        }
     }
 
     private fun setPanelTouchable(touchable: Boolean) {
@@ -353,7 +399,20 @@ class PresenceService : Service() {
         val panel = panelView ?: return
         val list = panelList ?: return
         fillMemberList(list, state)
+        val chipParams = overlayParams ?: return
+        val params = panelParams ?: return
+        val panelHeight = measurePanel(panel)
+        val position = panelPosition(chipParams, panelHeight)
+        params.width = dp(250)
+        params.height = WindowManager.LayoutParams.WRAP_CONTENT
+        params.x = position.first
+        params.y = position.second
         panel.requestLayout()
+        try {
+            getSystemService(WindowManager::class.java).updateViewLayout(panel, params)
+        } catch (_: Exception) {
+            return
+        }
         panel.alpha = state.overlayOpacity
     }
 
@@ -412,6 +471,7 @@ class PresenceService : Service() {
         panelView = null
         panelParams = null
         panelList = null
+        panelAttached = false
     }
 
     private fun removeOverlay() {
@@ -434,9 +494,19 @@ class PresenceService : Service() {
         val view = overlayView ?: return
         val params = overlayParams ?: return
         val maxX = (resources.displayMetrics.widthPixels - view.width).coerceAtLeast(1)
-        val maxY = (resources.displayMetrics.heightPixels - view.height).coerceAtLeast(1)
+        val maxY = maxOverlayY(view.height)
         settings.overlayXFraction = params.x.toFloat() / maxX
         settings.overlayYFraction = params.y.toFloat() / maxY
+    }
+
+    private fun maxOverlayY(chipHeight: Int): Int {
+        val screenHeight = resources.displayMetrics.heightPixels
+        val navBarHeight = runCatching {
+            val id = resources.getIdentifier("navigation_bar_height", "dimen", "android")
+            if (id > 0) resources.getDimensionPixelSize(id) else 0
+        }.getOrDefault(0)
+        val reservedBottom = maxOf(navBarHeight, dp(96))
+        return (screenHeight - reservedBottom - chipHeight - dp(4)).coerceAtLeast(1)
     }
 
     private inner class DragTouchListener : View.OnTouchListener {
@@ -466,7 +536,8 @@ class PresenceService : Service() {
                         if (panelExpanded) hidePanel()
                     }
                     params.x = (startX + dx.toInt()).coerceAtLeast(0)
-                    params.y = (startY + dy.toInt()).coerceAtLeast(0)
+                    params.y = (startY + dy.toInt())
+                        .coerceIn(0, maxOverlayY(overlayView?.height ?: dp(30)))
                     try {
                         getSystemService(WindowManager::class.java).updateViewLayout(overlayView, params)
                     } catch (_: Exception) {

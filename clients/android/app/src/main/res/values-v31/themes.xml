@@ -9,6 +9,7 @@
         <item name="android:windowLightNavigationBar">false</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowSplashScreenBackground">#1A1110</item>
-        <item name="android:windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
+        <item name="android:windowSplashScreenIconBackgroundColor">#1A1110</item>
     </style>
 </resources>

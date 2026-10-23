@@ -74,8 +74,9 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
     var selected by remember { mutableStateOf<AppCategory?>(null) }
     var showAdd by remember { mutableStateOf(false) }
     var draggedIndex by remember { mutableIntStateOf(-1) }
+    var dragStartIndex by remember { mutableIntStateOf(-1) }
     var dragOffset by remember { mutableFloatStateOf(0f) }
-    val rowHeightPx = with(LocalDensity.current) { 76.dp.toPx() }
+    val rowHeightPx = with(LocalDensity.current) { 84.dp.toPx() }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Column(Modifier.fillMaxSize()) {
@@ -112,24 +113,29 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
                 CategoryRow(
                     category = category,
                     dragging = dragging,
-                    dragOffset = if (dragging) dragOffset else 0f,
+                    dragOffset = if (dragging) {
+                        dragOffset - (draggedIndex - dragStartIndex) * rowHeightPx
+                    } else {
+                        0f
+                    },
                     onClick = { selected = category },
                     onDragStart = {
                         draggedIndex = index
+                        dragStartIndex = index
                         dragOffset = 0f
                     },
                     onDrag = { amount ->
                         dragOffset += amount
-                        val target = (draggedIndex + (dragOffset / rowHeightPx).roundToInt())
+                        val target = (dragStartIndex + (dragOffset / rowHeightPx).roundToInt())
                             .coerceIn(0, categories.lastIndex)
                         if (target != draggedIndex) {
                             categoryStore.move(draggedIndex, target)
                             draggedIndex = target
-                            dragOffset = 0f
                         }
                     },
                     onDragEnd = {
                         draggedIndex = -1
+                        dragStartIndex = -1
                         dragOffset = 0f
                     },
                 )

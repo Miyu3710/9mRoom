@@ -46,6 +46,8 @@ private val androidApps = mapOf(
 )
 
 class ForegroundAppReader(private val context: Context) {
+    private var lastApp: ForegroundApp? = null
+
     private val launcherPackage: String? by lazy {
         val intent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_HOME)
         context.packageManager.resolveActivity(intent, 0)?.activityInfo?.packageName
@@ -59,6 +61,7 @@ class ForegroundAppReader(private val context: Context) {
             lower == "com.oplus.launcher" ||
             lower == "com.miui.home"
     }
+
     fun hasPermission(): Boolean {
         val appOps = context.getSystemService(AppOpsManager::class.java)
         val mode = appOps.checkOpNoThrow(
@@ -83,7 +86,26 @@ class ForegroundAppReader(private val context: Context) {
             }
         }
 
-        val name = packageName ?: return null
+        if (packageName == null) {
+            packageName = lastApp?.packageName ?: latestUsedPackage(manager, end)
+        }
+        val name = packageName ?: return lastApp
+        return resolve(name).also { lastApp = it }
+    }
+
+    private fun latestUsedPackage(manager: UsageStatsManager, end: Long): String? {
+        return runCatching {
+            manager.queryUsageStats(
+                UsageStatsManager.INTERVAL_DAILY,
+                end - 24 * 60 * 60 * 1000,
+                end,
+            ).filter { it.lastTimeUsed > 0 }
+                .maxByOrNull { it.lastTimeUsed }
+                ?.packageName
+        }.getOrNull()
+    }
+
+    private fun resolve(name: String): ForegroundApp {
         if (isLauncher(name)) {
             return ForegroundApp(
                 packageName = name,

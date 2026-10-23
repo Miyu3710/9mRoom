@@ -65,10 +65,11 @@ fun SyncListScreen(onBack: () -> Unit) {
     val rules by store.rules.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val density = LocalDensity.current
-    val rowHeightPx = with(density) { 84.dp.toPx() }
+    val rowHeightPx = with(density) { 92.dp.toPx() }
 
     var expandedId by remember { mutableStateOf<String?>(null) }
     var draggedIndex by remember { mutableIntStateOf(-1) }
+    var dragStartIndex by remember { mutableIntStateOf(-1) }
     var dragOffset by remember { mutableFloatStateOf(0f) }
     var addMenuOpen by remember { mutableStateOf(false) }
 
@@ -104,7 +105,11 @@ fun SyncListScreen(onBack: () -> Unit) {
                     rule = rule,
                     expanded = expandedId == rule.id,
                     dragging = isDragging,
-                    dragOffset = if (isDragging) dragOffset else 0f,
+                    dragOffset = if (isDragging) {
+                        dragOffset - (draggedIndex - dragStartIndex) * rowHeightPx
+                    } else {
+                        0f
+                    },
                     onToggle = { store.setEnabled(rule.id, it) },
                     onExpand = {
                         expandedId = if (expandedId == rule.id) null else rule.id
@@ -117,20 +122,21 @@ fun SyncListScreen(onBack: () -> Unit) {
                     onDragStart = {
                         expandedId = null
                         draggedIndex = index
+                        dragStartIndex = index
                         dragOffset = 0f
                     },
                     onDrag = { amount ->
                         dragOffset += amount
-                        val target = (draggedIndex + (dragOffset / rowHeightPx).roundToInt())
+                        val target = (dragStartIndex + (dragOffset / rowHeightPx).roundToInt())
                             .coerceIn(0, rules.lastIndex)
                         if (target != draggedIndex) {
                             store.move(draggedIndex, target)
                             draggedIndex = target
-                            dragOffset = 0f
                         }
                     },
                     onDragEnd = {
                         draggedIndex = -1
+                        dragStartIndex = -1
                         dragOffset = 0f
                     },
                 )

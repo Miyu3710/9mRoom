@@ -230,7 +230,7 @@ fun SettingsScreen(
         item {
             SettingsCard("悬浮窗外观", Icons.Outlined.Wifi) {
                 SettingSlider(
-                    title = "透明度",
+                    title = "不透明度",
                     valueText = "${(overlayOpacity * 100).toInt()}%",
                     value = overlayOpacity,
                     valueRange = 0.3f..1f,
