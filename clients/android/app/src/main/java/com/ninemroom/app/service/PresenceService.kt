@@ -330,8 +330,8 @@ class PresenceService : Service() {
             .coerceAtMost(screenWidth - width - dp(4))
             .coerceAtLeast(0)
         val chipBottom = chipParams.y + (overlayView?.height ?: dp(30))
-        val fitsBelow = chipBottom + dp(6) + panelHeight <= screenHeight - dp(8)
-        val gap = if (fitsBelow) dp(6) else dp(20)
+        val fitsBelow = chipBottom + dp(2) + panelHeight <= screenHeight - dp(8)
+        val gap = if (fitsBelow) dp(2) else dp(6)
         val below = chipBottom + gap
         val above = chipParams.y - panelHeight - gap
         val y = if (fitsBelow) {
