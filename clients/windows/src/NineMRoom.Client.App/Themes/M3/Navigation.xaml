@@ -223,7 +223,7 @@
                                  Width="40" Height="40"
                                  MinWidth="0" MinHeight="0"
                                  Padding="0"
-                                 Margin="12,8,0,4"
+                                 Margin="20,8,0,4"
                                  HorizontalAlignment="Left"
                                  ToolTip="收起导航"
                                  AutomationProperties.Name="收起导航">
