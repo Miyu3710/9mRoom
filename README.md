@@ -40,6 +40,7 @@ docker compose up -d --build
 默认监听 `5080`，管理页 `/admin`，健康检查 `/healthz`。
 数据保存在命名卷 `9mroom-data`，升级用 `docker compose up -d --build` 不会清空数据。
 完整说明（HTTPS 反代、备份恢复、无 Docker 运行）见 [docs/deploy-docker.md](docs/deploy-docker.md)。
+三端版本、tag 与更新清单规则见 [docs/releases.md](docs/releases.md)。
 
 ## 安装 Windows 客户端
 

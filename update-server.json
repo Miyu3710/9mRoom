@@ -1,0 +1,11 @@
+{
+  "platform": "server",
+  "version": "1.1.0",
+  "tag": "server-v1.1.0",
+  "release": "https://github.com/Miyu3710/9mRoom/releases/tag/server-v1.1.0",
+  "linux": {
+    "asset": "9mRoom-Server-1.1.0-linux-x64.tar.gz",
+    "sha256": "6564570468C54755A6AE89A2DC71518939FCC313531D6B9FD3C189BB2D0884F2",
+    "entry": "run-server.sh"
+  }
+}

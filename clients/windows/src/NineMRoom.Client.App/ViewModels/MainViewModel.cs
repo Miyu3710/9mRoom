@@ -2260,7 +2260,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             try
             {
                 using var manifestResponse = await http.GetAsync(
-                    "https://raw.githubusercontent.com/Miyu3710/9mRoom/main/update.json");
+                    "https://raw.githubusercontent.com/Miyu3710/9mRoom/main/update-windows.json");
                 if (manifestResponse.IsSuccessStatusCode)
                 {
                     using var manifest = JsonDocument.Parse(
@@ -2323,10 +2323,20 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
             XNamespace ns = "http://www.w3.org/2005/Atom";
             var document = XDocument.Parse(await response.Content.ReadAsStringAsync());
-            var entry = document.Root?.Elements(ns + "entry").FirstOrDefault();
+            var entries = document.Root?.Elements(ns + "entry").ToList() ?? new List<XElement>();
+            var entry = entries.FirstOrDefault(candidate =>
+            {
+                var link = candidate.Elements(ns + "link")
+                    .FirstOrDefault(item => string.Equals((string?)item.Attribute("rel"), "alternate", StringComparison.Ordinal))
+                    ?.Attribute("href")?.Value ?? string.Empty;
+                var candidateTag = link.Split('/', StringSplitOptions.RemoveEmptyEntries).LastOrDefault() ?? string.Empty;
+                return candidateTag.StartsWith("windows-v", StringComparison.OrdinalIgnoreCase);
+            }) ?? entries.FirstOrDefault(candidate =>
+                (candidate.Element(ns + "title")?.Value ?? string.Empty)
+                .Contains("Windows", StringComparison.OrdinalIgnoreCase));
             if (entry is null)
             {
-                _updateStatusText = "GitHub 上还没有发布版本";
+                _updateStatusText = "GitHub 上还没有 Windows 发布版本";
                 return;
             }
 

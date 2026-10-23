@@ -9,8 +9,14 @@
 | `dist/9mRoom-Setup-1.0.0.msi` | Windows 安装包，发布主产物 |
 | `dist/9mRoom-1.0.0-win-x64.zip` | Windows 便携版，解压后运行 `9mRoom.cmd` |
 | `dist/9mRoom-Server-1.0.0-linux-x64.tar.gz` | Linux 服务端，自包含 .NET 运行时 |
-| `dist/update.json` | 多端更新清单（Windows / Linux 资产与 SHA256） |
+| `dist/update-windows.json` | Windows 独立更新清单（SHA256、资产名） |
+| `dist/update-server.json` | 服务端独立更新清单 |
+| `dist/update.json` | 兼容旧客户端的合并清单 |
 | `dist/SHA256SUMS.txt` | 全部产物的 SHA256 |
+
+Android APK 与 `update-android.json` 由 Android 构建/发布流程单独产出。
+
+发布通道、tag 规则与清单更新步骤见 [docs/releases.md](../docs/releases.md)。
 
 **发布只使用 MSI**。不再生成 `setup.exe` 启动器。
 

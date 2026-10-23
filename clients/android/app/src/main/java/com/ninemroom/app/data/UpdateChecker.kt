@@ -2,6 +2,7 @@ package com.ninemroom.app.data
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
@@ -11,33 +12,72 @@ data class UpdateInfo(
 )
 
 object UpdateChecker {
+    private const val MANIFEST_URL =
+        "https://raw.githubusercontent.com/Miyu3710/9mRoom/main/update-android.json"
     private const val ATOM_URL = "https://github.com/Miyu3710/9mRoom/releases.atom"
 
     suspend fun check(currentVersion: String): UpdateInfo? = withContext(Dispatchers.IO) {
-        val connection = (URL(ATOM_URL).openConnection() as HttpURLConnection).apply {
-            connectTimeout = 10_000
-            readTimeout = 10_000
-            requestMethod = "GET"
-            setRequestProperty("User-Agent", "9mRoom-Android/$currentVersion")
+        fetchManifest()?.let { manifest ->
+            return@withContext manifest.takeIf { compareVersions(it.latestVersion, currentVersion) > 0 }
         }
+        fetchAtom(currentVersion)
+    }
 
-        try {
-            if (connection.responseCode !in 200..299) {
-                throw IllegalStateException("GitHub 返回 ${connection.responseCode}")
-            }
-            val body = connection.inputStream.bufferedReader().use { it.readText() }
-            val firstEntry = body.substringAfter("<entry>", "").substringBefore("</entry>")
-            if (firstEntry.isBlank()) return@withContext null
-            val title = Regex("<title>(.*?)</title>")
-                .find(firstEntry)?.groupValues?.getOrNull(1)?.trim().orEmpty()
+    private fun fetchManifest(): UpdateInfo? {
+        return try {
+            val body = readUrl(MANIFEST_URL) ?: return null
+            val root = JSONObject(body)
+            val version = root.optString("version").trim()
+            val releaseUrl = root.optString("release").trim()
+            if (version.isBlank() || releaseUrl.isBlank()) null
+            else UpdateInfo(version.removePrefix("v"), releaseUrl)
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun fetchAtom(currentVersion: String): UpdateInfo? {
+        val body = readUrl(ATOM_URL) ?: return null
+        val entries = Regex("<entry>(.*?)</entry>", RegexOption.DOT_MATCHES_ALL)
+            .findAll(body)
+            .map { it.groupValues[1] }
+
+        for (entry in entries) {
             val releaseUrl = Regex("href=\"([^\"]+/releases/tag/[^\"]+)\"")
-                .find(firstEntry)?.groupValues?.getOrNull(1).orEmpty()
-            val latest = title.split(' ').lastOrNull()?.trim().orEmpty()
-            if (latest.isBlank() || releaseUrl.isBlank()) return@withContext null
-            if (compareVersions(latest, currentVersion) > 0) {
+                .find(entry)?.groupValues?.getOrNull(1).orEmpty()
+            val tag = releaseUrl.substringAfterLast('/')
+            if (!tag.startsWith("android-v", ignoreCase = true)) {
+                continue
+            }
+
+            val latest = tag.removePrefix("android-v").removePrefix("v").trim()
+            if (latest.isBlank() || releaseUrl.isBlank()) {
+                continue
+            }
+
+            return if (compareVersions(latest, currentVersion) > 0) {
                 UpdateInfo(latest, releaseUrl)
             } else {
                 null
+            }
+        }
+
+        return null
+    }
+
+    private fun readUrl(url: String): String? {
+        val connection = (URL(url).openConnection() as HttpURLConnection).apply {
+            connectTimeout = 10_000
+            readTimeout = 10_000
+            requestMethod = "GET"
+            setRequestProperty("User-Agent", "9mRoom-Android")
+        }
+
+        return try {
+            if (connection.responseCode !in 200..299) {
+                null
+            } else {
+                connection.inputStream.bufferedReader().use { it.readText() }
             }
         } finally {
             connection.disconnect()

@@ -38,7 +38,7 @@ Material You 界面 + 基础房间协议已跑通。
 - 通知使用权读取当前媒体会话，生成音乐状态块
 - 待办本地持久化（SharedPreferences）
 - 专注计时器持久化，计时块上报，完成通知
-- GitHub Releases 检查更新，发现新版本打开 Release 页面
+- GitHub Releases 检查更新：读取 `update-android.json`，只匹配 `android-v*` 通道
 - 开机自启：`BOOT_COMPLETED` 后恢复上次房间
 - 通知权限、悬浮窗权限、使用情况访问、通知使用权入口
 - 设置中的常驻通知、悬浮窗、共享当前应用、共享音乐开关

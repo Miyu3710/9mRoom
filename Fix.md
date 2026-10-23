@@ -392,6 +392,9 @@
   - 打包 Windows 1.1.0 MSI，合并进现有 1.1.0 Release。
   - 更新检查改用仓库根目录 `update.json` 作为稳定清单，避免 GitHub Release 排序把 1.0.0 当成最新。
   - **已完成**：MSI、便携版、SHA256、多端清单已上传到 `android-v1.1.0` Release；Windows 客户端版本 1.1.0。
+- **FIX-051 三端 Release 拆分与独立更新通道**：
+  - Release 混用多端资产，Android 的 `Latest` 会干扰 Windows / 服务端更新检查。
+  - **已完成**：建立 `windows-v*` / `android-v*` / `server-v*` 三个通道；Windows 读取 `update-windows.json`，Android 读取 `update-android.json`，服务端读取 `update-server.json`；Atom 回退只匹配各自前缀；旧合并包保留 tag 并归档为草稿；发布规则见 `docs/releases.md`。
 
 
 

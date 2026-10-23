@@ -148,24 +148,56 @@ foreach ($file in @($zip, $msi, $serverArchive)) {
     $hashes += "$hash  $([System.IO.Path]::GetFileName($file))"
 }
 
+$windowsSha = (Get-FileHash $msi -Algorithm SHA256).Hash
+$serverSha = (Get-FileHash $serverArchive -Algorithm SHA256).Hash
+
+$windowsManifest = Join-Path $dist 'update-windows.json'
+[ordered]@{
+    platform = 'windows'
+    version = $Version
+    tag = "windows-v$Version"
+    release = "https://github.com/Miyu3710/9mRoom/releases/tag/windows-v$Version"
+    windows = [ordered]@{
+        asset = [System.IO.Path]::GetFileName($msi)
+        sha256 = $windowsSha
+        portable = [System.IO.Path]::GetFileName($zip)
+        portableSha256 = (Get-FileHash $zip -Algorithm SHA256).Hash
+    }
+} | ConvertTo-Json -Depth 5 | Set-Content $windowsManifest -Encoding UTF8
+
+$serverManifest = Join-Path $dist 'update-server.json'
+[ordered]@{
+    platform = 'server'
+    version = $Version
+    tag = "server-v$Version"
+    release = "https://github.com/Miyu3710/9mRoom/releases/tag/server-v$Version"
+    linux = [ordered]@{
+        asset = [System.IO.Path]::GetFileName($serverArchive)
+        sha256 = $serverSha
+        entry = 'run-server.sh'
+    }
+} | ConvertTo-Json -Depth 5 | Set-Content $serverManifest -Encoding UTF8
+
+# 兼容仍读取旧清单的客户端；新客户端使用各自平台的清单。
 $manifest = Join-Path $dist 'update.json'
 [ordered]@{
     version = $Version
-    tag = "v$Version"
-    release = "https://github.com/Miyu3710/9mRoom/releases/tag/v$Version"
+    tag = "windows-v$Version"
+    release = "https://github.com/Miyu3710/9mRoom/releases/tag/windows-v$Version"
     windows = [ordered]@{
         asset = [System.IO.Path]::GetFileName($msi)
-        sha256 = (Get-FileHash $msi -Algorithm SHA256).Hash
+        sha256 = $windowsSha
     }
     linux = [ordered]@{
         asset = [System.IO.Path]::GetFileName($serverArchive)
-        sha256 = (Get-FileHash $serverArchive -Algorithm SHA256).Hash
+        sha256 = $serverSha
         entry = 'run-server.sh'
     }
 } | ConvertTo-Json -Depth 5 | Set-Content $manifest -Encoding UTF8
 
-$manifestHash = (Get-FileHash $manifest -Algorithm SHA256).Hash
-$hashes += "$manifestHash  update.json"
+$hashes += "$(Get-FileHash $windowsManifest -Algorithm SHA256).Hash  update-windows.json"
+$hashes += "$(Get-FileHash $serverManifest -Algorithm SHA256).Hash  update-server.json"
+$hashes += "$(Get-FileHash $manifest -Algorithm SHA256).Hash  update.json"
 $hashes | Set-Content (Join-Path $dist 'SHA256SUMS.txt') -Encoding ASCII
 
 Get-ChildItem $dist | Select-Object Name, Length
