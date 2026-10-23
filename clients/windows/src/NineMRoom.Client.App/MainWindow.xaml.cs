@@ -14,6 +14,13 @@ public partial class MainWindow : Window
 {
     private const int WmHotkey = 0x0312;
     private const int WmGetMinMaxInfo = 0x0024;
+    private const int GwlStyle = -16;
+    private const int WsCaption = 0x00C00000;
+    private const uint SwpNoMove = 0x0002;
+    private const uint SwpNoSize = 0x0001;
+    private const uint SwpNoZOrder = 0x0004;
+    private const uint SwpNoActivate = 0x0010;
+    private const uint SwpFrameChanged = 0x0020;
     private const uint MonitorDefaultToNearest = 2;
     private const int ModAlt = 0x0001;
     private const int ModControl = 0x0002;
@@ -107,6 +114,7 @@ public partial class MainWindow : Window
         {
             RegisterHotKeys();
             WindowBackdrop.Apply(this);
+            EnsureCaptionStyle();
         };
 
         if (startMinimized)
@@ -242,6 +250,31 @@ public partial class MainWindow : Window
         return IntPtr.Zero;
     }
 
+    private void EnsureCaptionStyle()
+    {
+        var handle = new WindowInteropHelper(this).Handle;
+        if (handle == IntPtr.Zero)
+        {
+            return;
+        }
+
+        var style = GetWindowLong(handle, GwlStyle);
+        if ((style & WsCaption) == WsCaption)
+        {
+            return;
+        }
+
+        SetWindowLong(handle, GwlStyle, style | WsCaption);
+        SetWindowPos(
+            handle,
+            IntPtr.Zero,
+            0,
+            0,
+            0,
+            0,
+            SwpNoMove | SwpNoSize | SwpNoZOrder | SwpNoActivate | SwpFrameChanged);
+    }
+
     private void ApplyMaximizeBounds(IntPtr lParam)
     {
         var handle = new WindowInteropHelper(this).Handle;
@@ -273,6 +306,22 @@ public partial class MainWindow : Window
 
     [DllImport("user32.dll")]
     private static extern IntPtr MonitorFromWindow(IntPtr hwnd, uint flags);
+
+    [DllImport("user32.dll")]
+    private static extern int GetWindowLong(IntPtr hwnd, int index);
+
+    [DllImport("user32.dll")]
+    private static extern int SetWindowLong(IntPtr hwnd, int index, int value);
+
+    [DllImport("user32.dll")]
+    private static extern bool SetWindowPos(
+        IntPtr hwnd,
+        IntPtr insertAfter,
+        int x,
+        int y,
+        int width,
+        int height,
+        uint flags);
 
     [DllImport("user32.dll", EntryPoint = "GetMonitorInfoW")]
     private static extern bool GetMonitorInfo(IntPtr monitor, ref MonitorInfo info);

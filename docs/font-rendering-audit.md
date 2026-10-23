@@ -26,19 +26,20 @@ DPI 适配本身是正确的，没有发现 Windows 对应用窗口进行位图�
 
 | 位置 | TextFormattingMode | TextRenderingMode | 说明 |
 | --- | --- | --- | --- |
-| MainWindow 根 | Ideal | ClearType | 大标题、正文、动态内容保持 Ideal |
-| Label / NavItem / RoomTab | Display | 继承 ClearType | 11–14px 静态 UI 文字 |
-| 小按钮 / 输入框 | Display | 继承 ClearType | 避免小字号亚像素发软 |
+| MainWindow 根 | Ideal | ClearType | 大标题、正文、动态内容 |
+| Label / NavItem / RoomTab | Display | Grayscale | 11–14px 静态 UI 文字，去掉彩色边缘 |
+| 小按钮 / 输入框 | Display | Grayscale | 小字号文字，Label 使用 MiSans Medium |
 | 对话框 | Ideal | ClearType | 保持原有设置 |
 | OverlayWindow | 默认/Ideal | 未强制 ClearType | 透明叠加层不使用强制 ClearType |
 
 未发现 `Aliased` 渲染模式，也没有 `BitmapCache`。
 
+ClearType 的蓝青色/橙红色细线来自 RGB 子像素抗锯齿，是 ClearType 的正常副产物。小字号在暗色背景下尤其明显，因此小字号静态 UI 改为 Grayscale；大标题保留 ClearType，不做全局强制。
+
 ## 透明度与合成层
 
 - 主窗口背景由 `#01000000` 改为不透明 `BrushBg`
-- `ShellBorder` 增加 `RenderOptions.ClearTypeHint="Enabled"`
-- `MemberDrawerPanel`、`AppEditorPanel` 增加 `ClearTypeHint`
+- 不再对主窗口强制 `ClearTypeHint`，避免透明/玻璃合成时强制子像素渲染
 - 成员详情抽屉和 App 编辑器打开动画完成后：
   - 清除 `Opacity` 动画
   - 清除 `TranslateTransform.X` 动画
@@ -62,7 +63,7 @@ WPF 字体 token：
 pack://application:,,,/Assets/Fonts/#MiSans, Microsoft YaHei UI
 ```
 
-字体文件作为 `Resource` 编译进应用，不依赖用户系统安装。MiSans 是面向屏幕显示设计的字体，笔画在小字号下比当前回退字体更紧凑、边缘更清楚。
+字体文件作为 `Resource` 编译进应用，不依赖用户系统安装。MiSans 是面向屏幕显示设计的字体，笔画在小字号下比当前回退字体更紧凑、边缘更清楚。小字号 Label 使用 Medium 字重，避免 Regular 在 12px 时笔画过细。
 
 来源：
 
