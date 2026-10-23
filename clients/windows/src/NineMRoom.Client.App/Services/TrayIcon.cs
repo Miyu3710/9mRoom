@@ -23,106 +23,26 @@ public sealed class TrayIcon : IDisposable
     private const int WmLButtonDblClk = 0x0203;
     private const int WmRButtonUp = 0x0205;
 
-    [DllImport("gdi32.dll")]
-    private static extern IntPtr CreateRoundRectRgn(int left, int top, int right, int bottom, int width, int height);
-
-    [DllImport("user32.dll")]
-    private static extern int SetWindowRgn(IntPtr hWnd, IntPtr region, bool redraw);
-
     [DllImport("user32.dll")]
     private static extern bool SetForegroundWindow(IntPtr hWnd);
 
     private readonly Icon _icon;
     private readonly IntPtr _iconHandle;
     private readonly HwndSource _source;
-    private readonly ContextMenuStrip _menu;
-    private readonly ToolStripMenuItem _overlayItem;
-    private readonly ToolStripMenuItem _clickThroughItem;
-    private readonly ToolStripMenuItem _pauseItem;
-    private readonly ToolStripMenuItem _invisibleItem;
     private readonly uint _id = 1;
 
-    private bool _suppressEvents;
+    private TrayMenuWindow? _menu;
+    private string _statusText = "正在运行";
+    private bool _pauseChecked;
+    private bool _invisibleChecked;
+    private bool _overlayChecked;
+    private bool _clickThroughChecked;
     private bool _added;
     private bool _disposed;
 
     public TrayIcon()
     {
         _icon = CreateIcon(out _iconHandle);
-
-        _menu = new ContextMenuStrip
-        {
-            Renderer = new DarkMenuRenderer(),
-            BackColor = Color.FromArgb(29, 29, 35),
-            ForeColor = Color.FromArgb(243, 243, 246),
-            Font = new Font("Noto Sans SC", 9.5f, FontStyle.Regular, GraphicsUnit.Point),
-            ShowImageMargin = false,
-            ShowCheckMargin = true,
-            Padding = new Padding(7, 7, 7, 7),
-            ImageScalingSize = new Size(16, 16),
-            MinimumSize = new Size(220, 0)
-        };
-        _menu.Opened += (_, _) => ApplyRoundedRegion();
-
-        var showItem = new ToolStripMenuItem("显示主窗");
-        showItem.Click += (_, _) => ShowRequested?.Invoke();
-
-        _overlayItem = new ToolStripMenuItem("显示叠加层") { CheckOnClick = true };
-        _overlayItem.CheckedChanged += (_, _) =>
-        {
-            if (!_suppressEvents)
-            {
-                OverlayToggled?.Invoke(_overlayItem.Checked);
-            }
-        };
-
-        _clickThroughItem = new ToolStripMenuItem("叠加层点击穿透") { CheckOnClick = true };
-        _clickThroughItem.CheckedChanged += (_, _) =>
-        {
-            if (!_suppressEvents)
-            {
-                ClickThroughToggled?.Invoke(_clickThroughItem.Checked);
-            }
-        };
-
-        _pauseItem = new ToolStripMenuItem("暂停上报") { CheckOnClick = true };
-        _pauseItem.CheckedChanged += (_, _) =>
-        {
-            if (!_suppressEvents)
-            {
-                PauseToggled?.Invoke(_pauseItem.Checked);
-            }
-        };
-
-        _invisibleItem = new ToolStripMenuItem("隐身") { CheckOnClick = true };
-        _invisibleItem.CheckedChanged += (_, _) =>
-        {
-            if (!_suppressEvents)
-            {
-                InvisibleToggled?.Invoke(_invisibleItem.Checked);
-            }
-        };
-
-        var exitItem = new ToolStripMenuItem("退出");
-        exitItem.Click += (_, _) => ExitRequested?.Invoke();
-
-        foreach (var item in new[]
-                 {
-                     showItem, _pauseItem, _invisibleItem, _overlayItem, _clickThroughItem, exitItem
-                 })
-        {
-            item.Padding = new Padding(10, 7, 12, 7);
-        }
-
-        _menu.Items.Add(showItem);
-        _menu.Items.Add(CreateSeparator());
-        _menu.Items.Add(_pauseItem);
-        _menu.Items.Add(_invisibleItem);
-        _menu.Items.Add(CreateSeparator());
-        _menu.Items.Add(_overlayItem);
-        _menu.Items.Add(_clickThroughItem);
-        _menu.Items.Add(CreateSeparator());
-        _menu.Items.Add(exitItem);
 
         var parameters = new HwndSourceParameters("9mRoomTray")
         {
@@ -152,60 +72,88 @@ public sealed class TrayIcon : IDisposable
 
     public bool IsAvailable => _added;
 
-    private static ToolStripSeparator CreateSeparator() => new()
-    {
-        AutoSize = false,
-        Height = 9,
-        Margin = new Padding(0, 2, 0, 2)
-    };
-
-    private void ApplyRoundedRegion()
-    {
-        if (_menu.Width <= 0 || _menu.Height <= 0)
-        {
-            return;
-        }
-
-        var region = CreateRoundRectRgn(0, 0, _menu.Width + 1, _menu.Height + 1, 12, 12);
-        if (region != IntPtr.Zero)
-        {
-            SetWindowRgn(_menu.Handle, region, true);
-        }
-    }
-
     public void SetOverlayChecked(bool value)
     {
-        _suppressEvents = true;
-        _overlayItem.Checked = value;
-        _suppressEvents = false;
+        _overlayChecked = value;
+        if (_menu is not null)
+        {
+            _menu.SetState(_pauseChecked, _invisibleChecked, _overlayChecked, _clickThroughChecked);
+        }
     }
 
     public void SetClickThroughChecked(bool value)
     {
-        _suppressEvents = true;
-        _clickThroughItem.Checked = value;
-        _suppressEvents = false;
+        _clickThroughChecked = value;
+        if (_menu is not null)
+        {
+            _menu.SetState(_pauseChecked, _invisibleChecked, _overlayChecked, _clickThroughChecked);
+        }
     }
 
     public void SetPauseChecked(bool value)
     {
-        _suppressEvents = true;
-        _pauseItem.Checked = value;
-        _suppressEvents = false;
+        _pauseChecked = value;
+        if (_menu is not null)
+        {
+            _menu.SetState(_pauseChecked, _invisibleChecked, _overlayChecked, _clickThroughChecked);
+        }
     }
 
     public void SetInvisibleChecked(bool value)
     {
-        _suppressEvents = true;
-        _invisibleItem.Checked = value;
-        _suppressEvents = false;
+        _invisibleChecked = value;
+        if (_menu is not null)
+        {
+            _menu.SetState(_pauseChecked, _invisibleChecked, _overlayChecked, _clickThroughChecked);
+        }
     }
 
     public void UpdateTooltip(string text)
     {
+        _statusText = string.IsNullOrWhiteSpace(text) ? "正在运行" : text;
+        _menu?.SetStatus(_statusText);
+
         var data = CreateData(NifTip);
         data.szTip = Truncate(text, 127);
         Shell_NotifyIcon(NimModify, ref data);
+    }
+
+    private void ShowMenu()
+    {
+        SetForegroundWindow(_source.Handle);
+
+        _menu ??= CreateMenu();
+        _menu.SetState(_pauseChecked, _invisibleChecked, _overlayChecked, _clickThroughChecked);
+        _menu.SetStatus(_statusText);
+        _menu.ShowAt(Cursor.Position);
+    }
+
+    private TrayMenuWindow CreateMenu()
+    {
+        var menu = new TrayMenuWindow();
+        menu.ShowRequested += () => ShowRequested?.Invoke();
+        menu.ExitRequested += () => ExitRequested?.Invoke();
+        menu.PauseToggled += value =>
+        {
+            _pauseChecked = value;
+            PauseToggled?.Invoke(value);
+        };
+        menu.InvisibleToggled += value =>
+        {
+            _invisibleChecked = value;
+            InvisibleToggled?.Invoke(value);
+        };
+        menu.OverlayToggled += value =>
+        {
+            _overlayChecked = value;
+            OverlayToggled?.Invoke(value);
+        };
+        menu.ClickThroughToggled += value =>
+        {
+            _clickThroughChecked = value;
+            ClickThroughToggled?.Invoke(value);
+        };
+        return menu;
     }
 
     public void ShowBalloon(string title, string text)
@@ -251,14 +199,13 @@ public sealed class TrayIcon : IDisposable
                 ShowRequested?.Invoke();
                 break;
             case WmRButtonUp:
-                if (_menu.Visible)
+                if (_menu is { IsVisible: true })
                 {
                     _menu.Close();
                     break;
                 }
 
-                SetForegroundWindow(_source.Handle);
-                _menu.Show(Cursor.Position);
+                ShowMenu();
                 break;
         }
 
@@ -363,7 +310,7 @@ public sealed class TrayIcon : IDisposable
 
         _source.RemoveHook(WndProc);
         _source.Dispose();
-        _menu.Dispose();
+        _menu?.Close();
         _icon.Dispose();
 
         if (_iconHandle != IntPtr.Zero)

@@ -1,0 +1,289 @@
+<Window x:Class="NineMRoom.Client.App.TrayMenuWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="9mRoom 托盘菜单"
+        Width="272"
+        SizeToContent="Height"
+        WindowStyle="None"
+        AllowsTransparency="True"
+        Background="Transparent"
+        ShowInTaskbar="False"
+        ResizeMode="NoResize"
+        Topmost="True"
+        Focusable="True"
+        WindowStartupLocation="Manual"
+        FontFamily="{StaticResource FontUi}"
+        Foreground="{StaticResource BrushText}">
+    <Window.Resources>
+        <Style x:Key="TrayIcon" TargetType="Path">
+            <Setter Property="Width" Value="16" />
+            <Setter Property="Height" Value="16" />
+            <Setter Property="Stretch" Value="Uniform" />
+            <Setter Property="Fill" Value="{StaticResource BrushTextMuted}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+
+        <Style x:Key="TrayItem" TargetType="Button">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Padding" Value="9,0" />
+            <Setter Property="Foreground" Value="{StaticResource BrushText}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="ItemBackground"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBackground" Property="Background" Value="#14FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ItemBackground" Property="Background" Value="#22FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="ItemBackground" Property="Background" Value="#1FFFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TrayDangerItem" TargetType="Button" BasedOn="{StaticResource TrayItem}">
+            <Setter Property="Foreground" Value="{StaticResource BrushDanger}" />
+        </Style>
+
+        <Style x:Key="TrayToggle" TargetType="ToggleButton">
+            <Setter Property="Height" Value="38" />
+            <Setter Property="Padding" Value="9,0" />
+            <Setter Property="Foreground" Value="{StaticResource BrushText}" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="ItemBackground"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="8"
+                                Padding="{TemplateBinding Padding}">
+                            <Grid>
+                                <ContentPresenter Margin="0,0,44,0"
+                                                  HorizontalAlignment="Left"
+                                                  VerticalAlignment="Center" />
+                                <Border x:Name="SwitchTrack"
+                                        Width="31"
+                                        Height="17"
+                                        CornerRadius="8.5"
+                                        Background="#26FFFFFF"
+                                        HorizontalAlignment="Right"
+                                        VerticalAlignment="Center">
+                                    <Ellipse x:Name="SwitchThumb"
+                                             Width="13"
+                                             Height="13"
+                                             Fill="#A8A8B2"
+                                             HorizontalAlignment="Left"
+                                             Margin="2,0,0,0" />
+                                </Border>
+                            </Grid>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="ItemBackground" Property="Background" Value="#14FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="ItemBackground" Property="Background" Value="#22FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="True">
+                                <Setter TargetName="ItemBackground" Property="Background" Value="#1FFFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="SwitchTrack" Property="Background" Value="{StaticResource BrushAccent}" />
+                                <Setter TargetName="SwitchThumb" Property="HorizontalAlignment" Value="Right" />
+                                <Setter TargetName="SwitchThumb" Property="Margin" Value="0,0,2,0" />
+                                <Setter TargetName="SwitchThumb" Property="Fill" Value="{StaticResource BrushOnAccent}" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="TrayText" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        </Style>
+    </Window.Resources>
+
+    <Border x:Name="RootBorder"
+            Margin="14"
+            CornerRadius="14"
+            BorderThickness="1"
+            BorderBrush="#2EFFFFFF"
+            SnapsToDevicePixels="True"
+            RenderTransformOrigin="0.5,0.1">
+        <Border.Background>
+            <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                <GradientStop Color="#F21F1F24" Offset="0" />
+                <GradientStop Color="#F218181C" Offset="1" />
+            </LinearGradientBrush>
+        </Border.Background>
+        <Border.Effect>
+            <DropShadowEffect BlurRadius="26"
+                              ShadowDepth="7"
+                              Direction="270"
+                              Opacity="0.55"
+                              Color="#000000" />
+        </Border.Effect>
+        <Border.RenderTransform>
+            <ScaleTransform x:Name="RootScale" ScaleX="1" ScaleY="1" />
+        </Border.RenderTransform>
+
+        <StackPanel>
+            <Grid Margin="13,12,12,7">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="30" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <Border Width="28"
+                        Height="28"
+                        CornerRadius="8"
+                        VerticalAlignment="Center">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                            <GradientStop Color="#9DB5FF" Offset="0" />
+                            <GradientStop Color="#6F86E8" Offset="1" />
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <TextBlock Text="9"
+                               FontSize="15"
+                               FontWeight="Bold"
+                               Foreground="#0F1115"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center" />
+                </Border>
+
+                <StackPanel Grid.Column="1" Margin="9,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Text="9mRoom"
+                               FontSize="13"
+                               FontWeight="SemiBold" />
+                    <TextBlock x:Name="StatusTextBlock"
+                               Text="正在运行"
+                               Margin="0,2,0,0"
+                               FontSize="10.5"
+                               Foreground="{StaticResource BrushTextMuted}"
+                               TextTrimming="CharacterEllipsis" />
+                </StackPanel>
+
+                <TextBlock x:Name="VersionTextBlock"
+                           Grid.Column="2"
+                           Text="1.2.0"
+                           VerticalAlignment="Center"
+                           FontSize="10"
+                           Foreground="{StaticResource BrushTextFaint}" />
+            </Grid>
+
+            <Border Height="1" Background="#14FFFFFF" Margin="11,0,11,5" />
+
+            <StackPanel Margin="6,0,6,4">
+                <Button x:Name="ShowButton"
+                        Style="{StaticResource TrayItem}"
+                        Click="ShowButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource TrayIcon}"
+                              Data="M4,4 H20 V20 H4 Z M6,6 V18 H18 V6 Z" />
+                        <TextBlock Text="显示主窗" Style="{StaticResource TrayText}" Margin="10,0,0,0" />
+                    </StackPanel>
+                </Button>
+
+                <Border Height="1" Background="#12FFFFFF" Margin="9,4,9,4" />
+
+                <ToggleButton x:Name="PauseToggle"
+                              Style="{StaticResource TrayToggle}"
+                              Checked="PauseToggle_Changed"
+                              Unchecked="PauseToggle_Changed">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource TrayIcon}"
+                              Data="M6,4 H9 V20 H6 Z M15,4 H18 V20 H15 Z" />
+                        <TextBlock Text="暂停上报" Style="{StaticResource TrayText}" Margin="10,0,0,0" />
+                    </StackPanel>
+                </ToggleButton>
+
+                <ToggleButton x:Name="InvisibleToggle"
+                              Style="{StaticResource TrayToggle}"
+                              Checked="InvisibleToggle_Changed"
+                              Unchecked="InvisibleToggle_Changed">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource TrayIcon}"
+                              Data="M12,5 C17.5,5 21,9.5 22,12 C21,14.5 17.5,19 12,19 C6.5,19 3,14.5 2,12 C3,9.5 6.5,5 12,5 Z M12,8 A4,4 0 1 0 12,16 A4,4 0 1 0 12,8 Z" />
+                        <TextBlock Text="隐身" Style="{StaticResource TrayText}" Margin="10,0,0,0" />
+                    </StackPanel>
+                </ToggleButton>
+
+                <Border Height="1" Background="#12FFFFFF" Margin="9,4,9,4" />
+
+                <ToggleButton x:Name="OverlayToggle"
+                              Style="{StaticResource TrayToggle}"
+                              Checked="OverlayToggle_Changed"
+                              Unchecked="OverlayToggle_Changed">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource TrayIcon}"
+                              Data="M12,3 L21,8 L12,13 L3,8 Z M3,12 L12,17 L21,12 M3,16 L12,21 L21,16" />
+                        <TextBlock Text="显示叠加层" Style="{StaticResource TrayText}" Margin="10,0,0,0" />
+                    </StackPanel>
+                </ToggleButton>
+
+                <ToggleButton x:Name="ClickThroughToggle"
+                              Style="{StaticResource TrayToggle}"
+                              Checked="ClickThroughToggle_Changed"
+                              Unchecked="ClickThroughToggle_Changed">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource TrayIcon}"
+                              Data="M5,3 L19,12 L12.5,13.2 L9.2,20 Z M12,15 L17,22 L19,21 L14,14 Z" />
+                        <TextBlock Text="叠加层点击穿透" Style="{StaticResource TrayText}" Margin="10,0,0,0" />
+                    </StackPanel>
+                </ToggleButton>
+
+                <Border Height="1" Background="#12FFFFFF" Margin="9,4,9,4" />
+
+                <Button x:Name="ExitButton"
+                        Style="{StaticResource TrayDangerItem}"
+                        Click="ExitButton_Click">
+                    <StackPanel Orientation="Horizontal">
+                        <Path Style="{StaticResource TrayIcon}"
+                              Fill="Transparent"
+                              Stroke="{StaticResource BrushDanger}"
+                              StrokeThickness="1.8"
+                              StrokeStartLineCap="Round"
+                              StrokeEndLineCap="Round"
+                              Data="M12,3 V11 M6.8,5.5 A7.5,7.5 0 1 0 17.2,5.5" />
+                        <TextBlock Text="退出 9mRoom"
+                                   Style="{StaticResource TrayText}"
+                                   Foreground="{StaticResource BrushDanger}"
+                                   Margin="10,0,0,0" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</Window>
