@@ -494,6 +494,7 @@
   - 服务器连接/离开按钮、聊天发送按钮改为基于库的 `MaterialDesignFlatButton`，删除手写 ControlTemplate。
   - 使用库的 `ButtonAssist.CornerRadius="0,8,8,0"` 让按钮左侧直角、右侧跟随父容器圆角；两个按钮时连接按钮改为直角。
   - 按钮内容用居中 TextBlock，不再依赖手写 ContentPresenter 对齐。
+  - 状态/房间/日志/聊天标签改为库的 `MaterialDesignTabRadioButton`，hover、选中和指示条都由库绘制；隐藏原先手写的 `TabIndicator`。
   - **已完成**：编译通过；未重新打包 MSI。
 
 
