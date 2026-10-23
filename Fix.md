@@ -411,6 +411,12 @@
   - 修复 `package.ps1` 的旧兼容清单变量与跨平台清单生成。
   - 建立 `windows-v1.1.1` 独立通道，根目录 `update-windows.json` 指向 1.1.1。
   - **已完成**：Windows Release 已发布；MSI SHA256 `563BB6A5B001E63E12C40C8BD45E0DE08B7A23AEE13B4B59209F4B9C3AD3C850`。
+- **FIX-055 Windows 1.2.0 改为 per-machine**：
+  - 1.1.1 是 perUser，卸载以普通权限运行，在 D 盘设置 `.rbf` 所有者时报 1307。
+  - 1.2.0 改为 `Scope="perMachine"`，默认 `ProgramFiles64Folder`，保留 `WixUI_InstallDir` 自定义目录。
+  - 安装和卸载都会弹 UAC，以管理员权限运行，避免 1307。
+  - 副作用：非管理员用户不能安装；旧 perUser 1.1.1 需先卸载。
+  - **待验证**：1.2.0 安装到 D 盘后卸载是否不再出现 1926。
 
 
 

@@ -11,7 +11,7 @@
     <RootNamespace>NineMRoom.Client.App</RootNamespace>
     <PlatformTarget>x64</PlatformTarget>
     <ApplicationIcon>..\..\..\..\packaging\9mRoom.ico</ApplicationIcon>
-    <Version>1.1.1</Version>
+    <Version>1.2.0</Version>
     <Company>朔月</Company>
     <Product>9mRoom</Product>
     <AssemblyTitle>9mRoom</AssemblyTitle>

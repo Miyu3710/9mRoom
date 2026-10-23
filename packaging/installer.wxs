@@ -6,7 +6,7 @@
            UpgradeCode="8F3B6D2A-6C1E-4A7B-9D2F-3E5A1C7B4D90"
            Language="2052"
            Codepage="936"
-           Scope="perUser">
+           Scope="perMachine">
 
     <MajorUpgrade DowngradeErrorMessage="已安装更高版本的 9mRoom。" />
     <MediaTemplate EmbedCab="yes" />
@@ -17,7 +17,7 @@
     <WixVariable Id="WixUILicenseRtf" Value="$(var.LicensePath)" />
     <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" />
 
-    <StandardDirectory Id="LocalAppDataFolder">
+    <StandardDirectory Id="ProgramFiles64Folder">
       <Directory Id="INSTALLFOLDER" Name="9mRoom">
         <Files Include="$(var.PublishDir)\**" />
       </Directory>
@@ -36,7 +36,7 @@
                 WorkingDirectory="INSTALLFOLDER"
                 Icon="AppIcon" />
       <RemoveFolder Id="RemoveProgramMenuDir" On="uninstall" />
-      <RegistryValue Root="HKCU" Key="Software\9mRoom" Name="startMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
+      <RegistryValue Root="HKMU" Key="Software\9mRoom" Name="startMenuShortcut" Type="integer" Value="1" KeyPath="yes" />
     </Component>
 
     <Component Id="DesktopShortcut" Directory="DesktopFolder" Guid="7B4E2A19-8C3D-4F60-A2E7-5D9C1B8F6A23">
@@ -45,7 +45,7 @@
                 Target="[INSTALLFOLDER]NineMRoom.Client.App.exe"
                 WorkingDirectory="INSTALLFOLDER"
                 Icon="AppIcon" />
-      <RegistryValue Root="HKCU" Key="Software\9mRoom" Name="desktopShortcut" Type="integer" Value="1" KeyPath="yes" />
+      <RegistryValue Root="HKMU" Key="Software\9mRoom" Name="desktopShortcut" Type="integer" Value="1" KeyPath="yes" />
     </Component>
   </Package>
 </Wix>
