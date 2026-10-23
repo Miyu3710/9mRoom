@@ -183,7 +183,7 @@
                                  AutomationProperties.Name="主导航">
           <controls:NavigationRail.ItemsSource>
             <x:Array Type="{x:Type controls:NavDestination}">
-              <controls:NavDestination Label="自习室" Tag="room" Glyph="HomeOutline" AutomationName="自习室" />
+              <controls:NavDestination Label="自习" Tag="room" Glyph="HomeOutline" AutomationName="自习" />
               <controls:NavDestination Label="专注" Tag="focus" Glyph="TimerOutline" AutomationName="专注" />
               <controls:NavDestination Label="待办" Tag="todo" Glyph="FormatListChecks" AutomationName="待办" />
               <controls:NavDestination Label="状态" Tag="layout" Glyph="ViewDashboardOutline" AutomationName="状态" />
@@ -435,14 +435,6 @@
                         <TextBlock Text="{Binding RoomDisplayName}" Style="{DynamicResource M3TitleLarge}"
                                  Cursor="Hand" ToolTip="点击复制房间码"
                                  MouseLeftButtonUp="CopyRoomCode_Click" />
-                        <controls:M3Button Style="{StaticResource M3IconButton}"
-                                           ToolTip="复制房间码"
-                                           AutomationProperties.Name="复制房间码"
-                                           Margin="4,0,0,0"
-                                           Click="CopyRoomCode_Click">
-                          <materialDesign:PackIcon Kind="ContentCopy" Width="18" Height="18"
-                                                   Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=controls:M3Button}}" />
-                        </controls:M3Button>
                       </StackPanel>
                       <TextBlock Text="{Binding RoomCodeDisplayText}" Style="{StaticResource ItemSupporting}"
                                  Margin="0,2,0,0" TextWrapping="Wrap" />

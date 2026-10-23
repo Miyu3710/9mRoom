@@ -37,8 +37,16 @@
 
   <!-- Expanded: icon + label in a row, 56x32 pill behind the icon. -->
   <DataTemplate x:Key="M3NavRailExpandedItem">
-    <Grid Height="64" Background="Transparent" ToolTip="{Binding Label}">
+    <Grid Height="64" Background="Transparent" ClipToBounds="True" ToolTip="{Binding Label}">
       <Canvas x:Name="RippleHost" IsHitTestVisible="False" ClipToBounds="True" />
+      <Ellipse x:Name="HoverRipple" Width="200" Height="80"
+               HorizontalAlignment="Center" VerticalAlignment="Center"
+               Fill="{DynamicResource BrushOnSurface}" Opacity="0" IsHitTestVisible="False"
+               RenderTransformOrigin="0.5,0.5">
+        <Ellipse.RenderTransform>
+          <ScaleTransform x:Name="HoverRippleScale" ScaleX="0.25" ScaleY="0.25" />
+        </Ellipse.RenderTransform>
+      </Ellipse>
       <Border x:Name="Pill"
               Height="56"
               Margin="12,0,0,0"
@@ -78,6 +86,30 @@
     <DataTemplate.Triggers>
       <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
         <Setter TargetName="Pill" Property="Background" Value="{DynamicResource BrushSecondaryContainer}" />
+        <DataTrigger.EnterActions>
+          <BeginStoryboard>
+            <Storyboard>
+              <DoubleAnimation Storyboard.TargetName="HoverRipple" Storyboard.TargetProperty="Opacity"
+                               From="0.1" To="0" Duration="0:0:0.45">
+                <DoubleAnimation.EasingFunction>
+                  <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+              <DoubleAnimation Storyboard.TargetName="HoverRippleScale" Storyboard.TargetProperty="ScaleX"
+                               From="0.25" To="1" Duration="0:0:0.45">
+                <DoubleAnimation.EasingFunction>
+                  <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+              <DoubleAnimation Storyboard.TargetName="HoverRippleScale" Storyboard.TargetProperty="ScaleY"
+                               From="0.25" To="1" Duration="0:0:0.45">
+                <DoubleAnimation.EasingFunction>
+                  <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+            </Storyboard>
+          </BeginStoryboard>
+        </DataTrigger.EnterActions>
       </DataTrigger>
       <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
         <Setter TargetName="Pill" Property="Background" Value="{DynamicResource BrushPrimaryContainer}" />
@@ -136,8 +168,16 @@
 
   <!-- Collapsed: icon above a 12dp label, 64dp item. -->
   <DataTemplate x:Key="M3NavRailCollapsedItem">
-    <Grid Height="64" Background="Transparent" ToolTip="{Binding Label}">
+    <Grid Height="64" Background="Transparent" ClipToBounds="True" ToolTip="{Binding Label}">
       <Canvas x:Name="RippleHost" IsHitTestVisible="False" ClipToBounds="True" />
+      <Ellipse x:Name="HoverRipple" Width="200" Height="80"
+               HorizontalAlignment="Center" VerticalAlignment="Center"
+               Fill="{DynamicResource BrushOnSurface}" Opacity="0" IsHitTestVisible="False"
+               RenderTransformOrigin="0.5,0.5">
+        <Ellipse.RenderTransform>
+          <ScaleTransform x:Name="HoverRippleScale" ScaleX="0.25" ScaleY="0.25" />
+        </Ellipse.RenderTransform>
+      </Ellipse>
       <Border x:Name="Pill"
               Width="48" Height="48"
               HorizontalAlignment="Center"
@@ -165,6 +205,30 @@
     <DataTemplate.Triggers>
       <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
         <Setter TargetName="Pill" Property="Background" Value="{DynamicResource BrushSecondaryContainer}" />
+        <DataTrigger.EnterActions>
+          <BeginStoryboard>
+            <Storyboard>
+              <DoubleAnimation Storyboard.TargetName="HoverRipple" Storyboard.TargetProperty="Opacity"
+                               From="0.1" To="0" Duration="0:0:0.45">
+                <DoubleAnimation.EasingFunction>
+                  <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+              <DoubleAnimation Storyboard.TargetName="HoverRippleScale" Storyboard.TargetProperty="ScaleX"
+                               From="0.25" To="1" Duration="0:0:0.45">
+                <DoubleAnimation.EasingFunction>
+                  <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+              <DoubleAnimation Storyboard.TargetName="HoverRippleScale" Storyboard.TargetProperty="ScaleY"
+                               From="0.25" To="1" Duration="0:0:0.45">
+                <DoubleAnimation.EasingFunction>
+                  <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+            </Storyboard>
+          </BeginStoryboard>
+        </DataTrigger.EnterActions>
       </DataTrigger>
       <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
         <Setter TargetName="Pill" Property="Background" Value="{DynamicResource BrushPrimaryContainer}" />
@@ -273,6 +337,14 @@
           <Grid Background="Transparent">
             <Border x:Name="StateLayer" Background="{TemplateBinding Foreground}" Opacity="0" />
             <Canvas x:Name="RippleHost" IsHitTestVisible="False" ClipToBounds="True" />
+      <Ellipse x:Name="HoverRipple" Width="200" Height="80"
+               HorizontalAlignment="Center" VerticalAlignment="Center"
+               Fill="{DynamicResource BrushOnSurface}" Opacity="0" IsHitTestVisible="False"
+               RenderTransformOrigin="0.5,0.5">
+        <Ellipse.RenderTransform>
+          <ScaleTransform x:Name="HoverRippleScale" ScaleX="0.25" ScaleY="0.25" />
+        </Ellipse.RenderTransform>
+      </Ellipse>
             <ContentPresenter ContentSource="Header"
                               Margin="{TemplateBinding Padding}"
                               HorizontalAlignment="Center"
