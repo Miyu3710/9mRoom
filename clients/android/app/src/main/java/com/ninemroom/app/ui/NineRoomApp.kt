@@ -288,28 +288,28 @@ fun NineRoomApp(
                             initialState.destination.route,
                             targetState.destination.route,
                         )
-                        slideInHorizontally(tween(300)) { direction * it / 6 }
+                        slideInHorizontally(tween(300)) { direction * it }
                     },
                     exitTransition = {
                         val direction = navDirection(
                             initialState.destination.route,
                             targetState.destination.route,
                         )
-                        slideOutHorizontally(tween(260)) { -direction * it / 6 }
+                        slideOutHorizontally(tween(260)) { -direction * it }
                     },
                     popEnterTransition = {
                         val direction = navDirection(
                             initialState.destination.route,
                             targetState.destination.route,
                         )
-                        slideInHorizontally(tween(300)) { direction * it / 6 }
+                        slideInHorizontally(tween(300)) { direction * it }
                     },
                     popExitTransition = {
                         val direction = navDirection(
                             initialState.destination.route,
                             targetState.destination.route,
                         )
-                        slideOutHorizontally(tween(260)) { -direction * it / 6 }
+                        slideOutHorizontally(tween(260)) { -direction * it }
                     },
                 ) {
                     composable(Destination.Home.route) {
