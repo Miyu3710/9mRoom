@@ -456,7 +456,7 @@
   - 主窗口背景从近透明改为不透明，ShellBorder、成员抽屉、App 编辑器启用 `ClearTypeHint`。
   - 仅对小字号静态 UI（Label、导航、标签、小按钮、输入框）使用 `TextFormattingMode=Display`；大标题、正文和透明叠加层保留 Ideal。
   - 成员详情和 App 编辑器打开动画结束后清除 Opacity/TranslateTransform 动画，避免残留合成层。
-  - 字体族改为 WPF 可解析的 `Source Han Sans CN`，保留 Noto Sans SC / Microsoft YaHei UI 回退。
+  - 内嵌 MiSans Regular/Medium/Semibold/Bold 四个字重，字体族使用 `pack://application:,,,/Assets/Fonts/#MiSans`，以 Microsoft YaHei UI 回退。
   - **验证**：125% 截图与构建通过；100%/150% 需切换系统缩放并重启会话，当前未伪造结果；详见 `docs/font-rendering-audit.md`。
   - **未重新打包 MSI**。
 

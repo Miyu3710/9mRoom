@@ -45,15 +45,30 @@ DPI 适配本身是正确的，没有发现 Windows 对应用窗口进行位图�
   - 把最终值固定为 `Opacity=1`、`X=0`
 - 没有移除现有动画，只移除动画结束后的残留合成层
 
-## 字体回退
+## 字体与回退
 
-原字体族字符串使用中文族名和 `Medium` 子族名，WPF 枚举中实际可解析的族是 `Source Han Sans CN`。已改为：
+原字体族字符串使用中文族名和 `Medium` 子族名，WPF 实际解析会回退到 Noto Sans SC，导致字体和字重不完全可控。
+
+现已下载并内嵌 **MiSans**，使用四个字重：
+
+- `MiSans-Regular.ttf`
+- `MiSans-Medium.ttf`
+- `MiSans-Semibold.ttf`
+- `MiSans-Bold.ttf`
+
+WPF 字体 token：
 
 ```text
-Source Han Sans CN, Noto Sans SC, Microsoft YaHei UI
+pack://application:,,,/Assets/Fonts/#MiSans, Microsoft YaHei UI
 ```
 
-仍然使用思源黑体，不更换视觉字体；`Microsoft YaHei UI` 只作为最终回退。
+字体文件作为 `Resource` 编译进应用，不依赖用户系统安装。MiSans 是面向屏幕显示设计的字体，笔画在小字号下比当前回退字体更紧凑、边缘更清楚。
+
+来源：
+
+- 官方字体页：<https://hyperos.mi.com/font/zh/>
+- 字体文件镜像：<https://github.com/boyan01/mi_sans_font>
+- 许可证：MiSans 官方允许免费商用；仓库内附 `LICENSE-MiSans-Repo.txt`
 
 ## 布局舍入
 
@@ -63,7 +78,7 @@ Source Han Sans CN, Noto Sans SC, Microsoft YaHei UI
 
 ## 测试结果
 
-- 125%：通过截图核对主界面、连接/断开态、标签区；布局未退化。
+- 125%：已用 MiSans 截图核对主界面、连接/断开态、标签区；字体正常加载，无缺字，布局未退化。
 - 100% / 150%：当前会话无法切换系统显示缩放（需要注销/重启会话）。没有伪造 100%/150% 的截图结论。
 - 合成 `WM_DPICHANGED` 的测试没有让 WPF 接受模拟 DPI，因此不作为验证依据。
 - 构建：`dotnet build -c Release` 通过，0 错误。
@@ -74,4 +89,4 @@ Source Han Sans CN, Noto Sans SC, Microsoft YaHei UI
 - 没有把全局字号放大
 - 没有全局加粗
 - 没有移除动画
-- 没有更换整套字体
+- 只为小字号静态 UI 增加了 Display 渲染模式，大标题和动态内容仍使用 Ideal
