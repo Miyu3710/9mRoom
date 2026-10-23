@@ -489,6 +489,12 @@
   - 右侧操作区使用 `Auto` 自适应：只有“连接服务器”时不再保留空位；两个按钮时紧贴分隔线，不再离得太远。
   - 服务器说明与输入条间距微调。
   - **已完成**：编译通过，125% 截图已核对；未重新打包 MSI。
+- **FIX-066 改用 MaterialDesignInXamlToolkit MD3 按钮**：
+  - 确认项目已使用 `MaterialDesignThemes 5.4.0`，对应 MaterialDesignInXamlToolkit 的 MD3 主题。
+  - 服务器连接/离开按钮、聊天发送按钮改为基于库的 `MaterialDesignFlatButton`，删除手写 ControlTemplate。
+  - 使用库的 `ButtonAssist.CornerRadius="0,8,8,0"` 让按钮左侧直角、右侧跟随父容器圆角；两个按钮时连接按钮改为直角。
+  - 按钮内容用居中 TextBlock，不再依赖手写 ContentPresenter 对齐。
+  - **已完成**：编译通过；未重新打包 MSI。
 
 
 
