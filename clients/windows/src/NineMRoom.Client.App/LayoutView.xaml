@@ -70,6 +70,7 @@
                             ToolTip="拖动排序"
                             AutomationProperties.Name="拖动排序"
                             VerticalAlignment="Top"
+                            Margin="0,20,0,0"
                             PreviewMouseLeftButtonDown="DragHandle_PreviewMouseLeftButtonDown"
                             MouseMove="DragHandle_MouseMove"
                             MouseLeftButtonUp="DragHandle_MouseLeftButtonUp">
@@ -84,7 +85,7 @@
                               ToolTip="启用此块"
                               AutomationProperties.Name="启用此同步块"
                               VerticalAlignment="Top"
-                              Margin="0,0,8,0" />
+                              Margin="0,20,8,0" />
 
                     <TextBox Grid.Column="2"
                              Text="{Binding Template, UpdateSourceTrigger=PropertyChanged}"
@@ -99,6 +100,7 @@
                                        AutomationProperties.Name="删除此同步块"
                                        Tag="{Binding}"
                                        VerticalAlignment="Top"
+                                       Margin="0,20,0,0"
                                        Click="Remove_Click">
                       <materialDesign:PackIcon Kind="DeleteOutline" Width="18" Height="18"
                                                Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=controls:M3Button}}" />
