@@ -81,13 +81,11 @@
         <TextBox Text="{Binding AppDraft.DisplayName, UpdateSourceTrigger=PropertyChanged}"
                  Style="{StaticResource M3TextBox}"
                  controls:M3Field.Label="显示名称"
-                 controls:M3Field.HelperText="显示在房间同步状态中的应用名。"
                  VerticalAlignment="Top" />
 
         <TextBox Text="{Binding AppDraft.ExecutablePath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                  Style="{StaticResource M3TextBox}"
                  controls:M3Field.Label="可执行文件路径"
-                 controls:M3Field.HelperText="用于定位图标；留空表示自动探测。"
                  VerticalAlignment="Top" />
 
         <TextBox Text="{Binding AppDraft.Template, UpdateSourceTrigger=PropertyChanged}"
@@ -134,7 +132,6 @@
         <ComboBox x:Name="CategoryBox"
                   Style="{StaticResource M3ComboBox}"
                   controls:M3Field.Label="应用分类"
-                  controls:M3Field.HelperText="「自动」表示按应用名与进程推断；选择其它分类会覆盖推断结果。"
                   SelectionChanged="CategoryBox_SelectionChanged"
                   AutomationProperties.Name="应用分类"
                   Margin="0,16,0,0"
@@ -154,8 +151,6 @@
                   Content="隐藏此应用的窗口标题"
                   IsChecked="{Binding AppDraft.HideTitle}"
                   Margin="0,4,0,0" />
-        <TextBlock Text="这两项属于表单条件，点击「保存」后才生效。"
-                   Style="{StaticResource HintText}" Margin="0,4,0,0" />
       </StackPanel>
     </ScrollViewer>
 

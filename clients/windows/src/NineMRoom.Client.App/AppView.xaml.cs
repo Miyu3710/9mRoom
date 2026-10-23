@@ -1,5 +1,4 @@
 using System.Windows;
-using MouseButtonEventArgs = System.Windows.Input.MouseButtonEventArgs;
 using RadioButton = System.Windows.Controls.RadioButton;
 using SelectionChangedEventArgs = System.Windows.Controls.SelectionChangedEventArgs;
 using UserControl = System.Windows.Controls.UserControl;
@@ -21,21 +20,16 @@ public partial class AppView : UserControl
         if (AppList.SelectedItem is AppRuleItem item && ViewModel is not null)
         {
             ViewModel.OpenAppEditor(item);
-        }
-    }
-
-    private void AppList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
-    {
-        if (AppList.SelectedItem is not AppRuleItem item || ViewModel is null)
-        {
-            return;
-        }
-
-        var source = e.OriginalSource as DependencyObject;
-        var container = source is null ? null : System.Windows.Controls.ItemsControl.ContainerFromElement(AppList, source) as System.Windows.Controls.ListBoxItem;
-        if (container?.DataContext is AppRuleItem clicked && ReferenceEquals(clicked, item))
-        {
-            ViewModel.OpenAppEditor(item);
+            // 清掉选中态，保证再次点击同一磁贴仍能触发 SelectionChanged 重新打开抽屉。
+            Dispatcher.BeginInvoke(
+                new Action(() =>
+                {
+                    if (ReferenceEquals(AppList.SelectedItem, item))
+                    {
+                        AppList.SelectedItem = null;
+                    }
+                }),
+                System.Windows.Threading.DispatcherPriority.Background);
         }
     }
 
