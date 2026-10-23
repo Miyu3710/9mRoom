@@ -588,13 +588,78 @@ public partial class MainWindow : Window
 
     private void RoomNav_Checked(object sender, RoutedEventArgs e) => ShowPage(RoomPage);
 
-    private void StateTab_Checked(object sender, RoutedEventArgs e) => ShowRoomTab(StateTabContent);
+    private void StateTab_Checked(object sender, RoutedEventArgs e)
+    {
+        ShowRoomTab(StateTabContent);
+        MoveTabIndicator(StateTabButton, animate: true);
+    }
 
-    private void RoomTab_Checked(object sender, RoutedEventArgs e) => ShowRoomTab(RoomTabContent);
+    private void RoomTab_Checked(object sender, RoutedEventArgs e)
+    {
+        ShowRoomTab(RoomTabContent);
+        MoveTabIndicator(RoomTabButton, animate: true);
+    }
 
-    private void LogTab_Checked(object sender, RoutedEventArgs e) => ShowRoomTab(LogTabContent);
+    private void LogTab_Checked(object sender, RoutedEventArgs e)
+    {
+        ShowRoomTab(LogTabContent);
+        MoveTabIndicator(LogTabButton, animate: true);
+    }
 
-    private void ChatTab_Checked(object sender, RoutedEventArgs e) => ShowRoomTab(ChatTabContent);
+    private void ChatTab_Checked(object sender, RoutedEventArgs e)
+    {
+        ShowRoomTab(ChatTabContent);
+        MoveTabIndicator(ChatTabButton, animate: true);
+    }
+
+    private void TabStrip_Loaded(object sender, RoutedEventArgs e)
+    {
+        Dispatcher.BeginInvoke(() =>
+        {
+            var selected = StateTabButton.IsChecked == true ? StateTabButton
+                : RoomTabButton.IsChecked == true ? RoomTabButton
+                : LogTabButton.IsChecked == true ? LogTabButton
+                : ChatTabButton;
+            MoveTabIndicator(selected, animate: false);
+        });
+    }
+
+    private void MoveTabIndicator(System.Windows.Controls.RadioButton? tab, bool animate)
+    {
+        if (tab is null || !tab.IsLoaded || TabStrip is null || TabIndicator is null)
+        {
+            return;
+        }
+
+        var position = tab.TransformToAncestor(TabStrip).Transform(new System.Windows.Point(0, 0));
+        if (tab.ActualWidth <= 0)
+        {
+            return;
+        }
+
+        if (TabIndicator.RenderTransform is not TranslateTransform translate)
+        {
+            translate = new TranslateTransform();
+            TabIndicator.RenderTransform = translate;
+        }
+
+        if (!animate)
+        {
+            translate.X = position.X;
+            TabIndicator.Width = tab.ActualWidth;
+            return;
+        }
+
+        var duration = TimeSpan.FromMilliseconds(220);
+        var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
+
+        translate.BeginAnimation(
+            TranslateTransform.XProperty,
+            new DoubleAnimation(position.X, duration) { EasingFunction = easing });
+        TabIndicator.BeginAnimation(
+            WidthProperty,
+            new DoubleAnimation(tab.ActualWidth, duration) { EasingFunction = easing });
+    }
 
     private void ShowRoomTab(UIElement tab)
     {

@@ -188,21 +188,25 @@
         </Style>
         <Style x:Key="RoomTab" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
+            <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Margin" Value="0" />
-            <Setter Property="MinWidth" Value="72" />
-            <Setter Property="Height" Value="42" />
+            <Setter Property="MinWidth" Value="76" />
+            <Setter Property="Height" Value="46" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
                         <Border x:Name="TabBg" Background="Transparent"
-                                BorderBrush="Transparent" BorderThickness="0,0,0,2"
-                                Padding="14,0">
+                                BorderBrush="Transparent"
+                                BorderThickness="1,1,1,0"
+                                CornerRadius="12,12,0,0"
+                                Padding="16,0">
                             <ContentPresenter TextElement.Foreground="{TemplateBinding Foreground}"
-                                              VerticalAlignment="Center" />
+                                              HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                              VerticalAlignment="{TemplateBinding VerticalContentAlignment}" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
@@ -210,7 +214,8 @@
                                 <Setter Property="Foreground" Value="{StaticResource BrushText}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="TabBg" Property="BorderBrush" Value="{StaticResource BrushAccent}" />
+                                <Setter TargetName="TabBg" Property="Background" Value="{StaticResource BrushGlassSurface}" />
+                                <Setter TargetName="TabBg" Property="BorderBrush" Value="{StaticResource BrushGlassBorder}" />
                                 <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
                                 <Setter Property="FontWeight" Value="Medium" />
                             </Trigger>
@@ -395,16 +400,15 @@
                     </StackPanel>
                 </DockPanel>
 
-                <Border Grid.Row="1" Grid.RowSpan="2"
+                <Border Grid.Row="2"
                         Background="{StaticResource BrushGlassSurface}"
                         BorderBrush="{StaticResource BrushGlassBorder}"
                         BorderThickness="1"
                         CornerRadius="18" />
 
-                <Grid Grid.Row="1" Margin="12,8,12,0">
-                    <Border Height="1" VerticalAlignment="Bottom"
-                            Background="{StaticResource BrushGlassBorder}" />
-                    <StackPanel Orientation="Horizontal">
+                <Grid x:Name="TabStrip" Grid.Row="1" Height="46" Margin="0"
+                      Loaded="TabStrip_Loaded">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Top">
                         <RadioButton x:Name="StateTabButton" Content="状态" GroupName="RoomTabs"
                                      Style="{StaticResource RoomTab}" IsChecked="True" Checked="StateTab_Checked" />
                         <RadioButton x:Name="RoomTabButton" Content="房间" GroupName="RoomTabs"
@@ -414,6 +418,20 @@
                         <RadioButton x:Name="ChatTabButton" Content="聊天" GroupName="RoomTabs"
                                      Style="{StaticResource RoomTab}" Checked="ChatTab_Checked" />
                     </StackPanel>
+                    <Border Height="1" VerticalAlignment="Bottom"
+                            Background="{StaticResource BrushBorder}" />
+                    <Border x:Name="TabIndicator"
+                            Width="0"
+                            Height="3"
+                            HorizontalAlignment="Left"
+                            VerticalAlignment="Bottom"
+                            Background="{StaticResource BrushAccent}"
+                            CornerRadius="2,2,0,0"
+                            IsHitTestVisible="False">
+                        <Border.RenderTransform>
+                            <TranslateTransform X="0" />
+                        </Border.RenderTransform>
+                    </Border>
                 </Grid>
 
                 <ScrollViewer Grid.Row="2" x:Name="StateTabContent"
