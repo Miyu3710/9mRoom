@@ -66,42 +66,41 @@ powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.0.0 `
 
 ```text
 错误 1926：无法设置文件 D:\Config.Msi\xxxx.rbf 的文件安全
-错误 5：请确认你有足够的权限修改此文件的安全权限
+错误: 1307
 ```
 
-这是 Windows Installer 的 **D:\Config.Msi 权限损坏**，不是 9mRoom 文件本身的问题。MSI 仍会返回成功并完成卸载，但会弹出大量非致命错误。
+错误 1307 是“不能把该安全 ID 指派为对象所有者”，常见于 **非管理员用户 + 用户配置/安装目录在 D 盘 + Windows Installer 回滚脚本**。ACL 看起来正常也可能继续出现，因为问题不在普通文件权限，而在 Installer 创建 `.rbf` 回滚文件时设置所有者失败。
 
-仅删除目录不够：Windows Installer 会重新创建该目录，并再次继承 D 盘根目录的受限 ACL。需要让**当前普通用户**拥有该目录的写权限，或者使用静默卸载。
+### 根本处理：关闭 MSI 回滚
 
-### 方法一：修复目录 ACL
+在**管理员 cmd** 中执行：
 
-直接双击 `packaging\repair-config-msi.cmd`，在 UAC 弹窗中选择“是”。脚本会自动提权、授予 Users 写权限并测试。
+```cmd
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer" /v DisableRollback /t REG_DWORD /d 1 /f
+```
 
-也可以手动在管理员 **cmd** 中执行：
+这会禁止 Windows Installer 生成 `.rbf` 回滚文件，直接绕开 1307。它是机器级设置，会影响该机器上所有 MSI 的回滚能力。
+
+也可以直接运行 `packaging\repair-config-msi.cmd`，脚本会自动提权并同时设置该策略和目录权限。
+
+### 辅助：修复目录 ACL
+
+管理员 cmd：
 
 ```cmd
 takeown /f "D:\Config.Msi" /r /d y
 icacls "D:\Config.Msi" /grant *S-1-5-32-545:(OI)(CI)F /T /C
 ```
 
-然后重新安装 9mRoom 到 D 盘，并在**普通** PowerShell 中验证：
+### 静默卸载
 
-```powershell
-Set-Content D:\Config.Msi\write-test.txt "ok"
-Remove-Item D:\Config.Msi\write-test.txt
-```
-
-能写入后再正常卸载。`takeown` 只改所有者，单独执行它不够。
-
-### 方法二：静默卸载
-
-如果不想修 ACL，可以直接静默卸载，错误仍会记录但不会弹窗：
+不想改策略时，可以静默卸载，错误仍会记录但不会弹窗：
 
 ```powershell
 msiexec /x "{ProductCode}" /qn
 ```
 
-### 方法三：安装到 C 盘
+### 安装到 C 盘
 
 安装到默认 C 盘用户目录不会使用 D:\Config.Msi，卸载不会触发 1926。
 

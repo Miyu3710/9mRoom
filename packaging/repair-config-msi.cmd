@@ -6,6 +6,10 @@ if errorlevel 1 (
     exit /b
 )
 
+echo Repairing Windows Installer rollback policy...
+reg add "HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer" /v DisableRollback /t REG_DWORD /d 1 /f >nul
+reg query "HKLM\SOFTWARE\Policies\Microsoft\Windows\Installer" /v DisableRollback
+
 echo Repairing D:\Config.Msi permissions...
 if not exist "D:\Config.Msi" mkdir "D:\Config.Msi"
 takeown /f "D:\Config.Msi" /r /d y
