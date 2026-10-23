@@ -395,6 +395,15 @@
 - **FIX-051 三端 Release 拆分与独立更新通道**：
   - Release 混用多端资产，Android 的 `Latest` 会干扰 Windows / 服务端更新检查。
   - **已完成**：建立 `windows-v*` / `android-v*` / `server-v*` 三个通道；Windows 读取 `update-windows.json`，Android 读取 `update-android.json`，服务端读取 `update-server.json`；Atom 回退只匹配各自前缀；旧合并包保留 tag 并归档为草稿；发布规则见 `docs/releases.md`。
+- **FIX-052 房间页空白、复制提示与专注副标题**：
+  - 房间页提示与复制结果合并为一行：默认“点击房间名复制房间码”，复制成功后改为“房间码复制成功”。
+  - 房间页、日志页移除内层卡片边框，直接使用外层标签页面板。
+  - 专注页删除“今日目标、番茄计时与近 7 天统计”副标题。
+  - **已完成**。
+- **FIX-053 Windows 更新检查与卸载调查**：
+  - Windows 独立更新通道当前最新为 `1.1.0`；1.1.1 / 1.1.2 是 Android 版本，不是 Windows 版本。已实测 Windows 检查更新返回“已是最新版本（1.1.0）”。
+  - 卸载报错为 Windows Installer 1926：`D:\Config.Msi` 权限损坏，卸载实际成功但会弹大量非致命错误；已写入 `docs/installer-antivirus.md`，安装到 C 盘或管理员修复该目录即可。
+  - **调查完成**；本轮未重打 MSI。
 
 
 

@@ -561,7 +561,7 @@
                             </Style>
                         </ScrollViewer.Style>
                     <StackPanel Margin="14,6,42,16">
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,0">
+                    <Border Background="Transparent" BorderThickness="0" Padding="0" Margin="0,0,0,0">
                         <DockPanel>
                             <Grid DockPanel.Dock="Top" Margin="0,0,0,12">
                                 <StackPanel>
@@ -569,11 +569,19 @@
                                                FontSize="{StaticResource FontSizeLg}" FontWeight="SemiBold"
                                                Cursor="Hand" ToolTip="点击复制房间码"
                                                MouseLeftButtonUp="RoomName_Click" />
-                                    <TextBlock Text="点击房间名复制房间码"
-                                               Style="{StaticResource Label}" Margin="0,2,0,0" />
-                                    <TextBlock Text="{Binding RoomCodeNotice}" Style="{StaticResource Label}"
-                                               Foreground="{StaticResource BrushAccent}"
-                                               TextWrapping="Wrap" Margin="0,4,0,0" />
+                                    <TextBlock Text="{Binding RoomCodeDisplayText}" FontSize="{StaticResource FontSizeSm}"
+                                               TextWrapping="Wrap" Margin="0,3,0,0">
+                                        <TextBlock.Style>
+                                            <Style TargetType="TextBlock">
+                                                <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding HasRoomCodeNotice}" Value="True">
+                                                        <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </TextBlock.Style>
+                                    </TextBlock>
                                 </StackPanel>
                                 <TextBlock Text="{Binding MemberCountText}" Style="{StaticResource Label}"
                                            HorizontalAlignment="Right" VerticalAlignment="Top" />
@@ -659,7 +667,7 @@
                 </Grid>
 
                 <Grid Grid.Row="2" x:Name="LogTabContent" Visibility="Collapsed">
-                    <Border Style="{StaticResource Card}" Padding="14" Margin="14,6,42,16">
+                    <Border Background="Transparent" BorderThickness="0" Padding="0" Margin="14,6,42,16">
                         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                             <ItemsControl ItemsSource="{Binding RoomLogs}">
                                 <ItemsControl.ItemTemplate>

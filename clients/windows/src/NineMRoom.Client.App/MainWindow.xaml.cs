@@ -523,7 +523,7 @@ public partial class MainWindow : Window
         try
         {
             System.Windows.Clipboard.SetText(_viewModel.Room);
-            _viewModel.ShowRoomCodeNotice("房间码已复制：" + _viewModel.Room);
+            _viewModel.ShowRoomCodeNotice("房间码复制成功");
         }
         catch
         {

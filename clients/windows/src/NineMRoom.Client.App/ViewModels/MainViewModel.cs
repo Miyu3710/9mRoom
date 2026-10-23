@@ -330,6 +330,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public string RoomCodeNotice => _roomCodeNotice;
 
+    public bool HasRoomCodeNotice => !string.IsNullOrWhiteSpace(_roomCodeNotice);
+
+    public string RoomCodeDisplayText =>
+        HasRoomCodeNotice ? _roomCodeNotice : "点击房间名复制房间码";
+
     public void ShowRoomCodeNotice(string text)
     {
         var value = text ?? string.Empty;
@@ -340,6 +345,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
         _roomCodeNotice = value;
         OnPropertyChanged(nameof(RoomCodeNotice));
+        OnPropertyChanged(nameof(HasRoomCodeNotice));
+        OnPropertyChanged(nameof(RoomCodeDisplayText));
     }
 
     private void SetRoomName(string name)

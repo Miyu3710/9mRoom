@@ -68,7 +68,6 @@
 
         <StackPanel Grid.Row="0" Margin="0,0,24,16">
             <TextBlock Text="专注" FontSize="{StaticResource FontSizeTitle}" FontWeight="SemiBold" />
-            <TextBlock Text="今日目标、番茄计时与近 7 天统计" Style="{StaticResource Label}" Margin="0,4,0,0" />
         </StackPanel>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">

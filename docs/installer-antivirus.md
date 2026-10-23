@@ -60,6 +60,29 @@ powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.0.0 `
 - 同时提供 SHA256，方便用户校验
 - 便携版 `9mRoom-1.0.0-win-x64.zip` 只适合不想安装的用户
 
+## 卸载报错 1926 / D:\Config.Msi
+
+如果 MSI 安装在 **D 盘自定义目录**，卸载时可能连续弹出：
+
+```text
+错误 1926：无法设置文件 D:\Config.Msi\xxxx.rbf 的文件安全
+错误 5：请确认你有足够的权限修改此文件的安全权限
+```
+
+这是 Windows Installer 的 **D:\Config.Msi 权限损坏**，不是 9mRoom 文件本身的问题。MSI 仍会返回成功并完成卸载，但会弹出大量非致命错误。
+
+处理方式（任选其一）：
+
+1. **安装到默认的 C 盘用户目录**，卸载时不会使用 D:\Config.Msi；这是最稳妥的方式。
+2. 以管理员身份修复 D 盘安装器缓存：
+
+```powershell
+takeown /f D:\Config.Msi /r /d y
+icacls D:\Config.Msi /reset /t /c
+```
+
+如果修复仍失败，可在管理员权限下删除 `D:\Config.Msi`，Windows Installer 会重新创建。
+
 ## 当前测试限制
 
 构建机当前的 Windows Installer 服务在安装测试中被卡住，需要重启一次才能继续做完整点击安装验证。
