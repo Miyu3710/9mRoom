@@ -200,9 +200,8 @@
                 <Setter.Value>
                     <ControlTemplate TargetType="RadioButton">
                         <Border x:Name="TabBg" Background="Transparent"
-                                BorderBrush="Transparent"
-                                BorderThickness="1,1,1,0"
-                                CornerRadius="12,12,0,0"
+                                BorderThickness="0"
+                                CornerRadius="8"
                                 Padding="16,0">
                             <ContentPresenter TextElement.Foreground="{TemplateBinding Foreground}"
                                               HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
@@ -214,8 +213,6 @@
                                 <Setter Property="Foreground" Value="{StaticResource BrushText}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="TabBg" Property="Background" Value="{StaticResource BrushGlassSurface}" />
-                                <Setter TargetName="TabBg" Property="BorderBrush" Value="{StaticResource BrushGlassBorder}" />
                                 <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
                                 <Setter Property="FontWeight" Value="Medium" />
                             </Trigger>
@@ -400,7 +397,7 @@
                     </StackPanel>
                 </DockPanel>
 
-                <Border Grid.Row="2"
+                <Border Grid.Row="1" Grid.RowSpan="2"
                         Background="{StaticResource BrushGlassSurface}"
                         BorderBrush="{StaticResource BrushGlassBorder}"
                         BorderThickness="1"
@@ -436,7 +433,7 @@
 
                 <ScrollViewer Grid.Row="2" x:Name="StateTabContent"
                               VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
-                    <StackPanel Margin="14,8,14,20">
+                    <StackPanel Margin="18,18,18,24">
                         <StackPanel Margin="4,4,4,0">
                             <Grid>
                                 <Grid.ColumnDefinitions>
