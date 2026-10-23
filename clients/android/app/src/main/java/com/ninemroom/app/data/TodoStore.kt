@@ -22,16 +22,18 @@ class TodoStore(context: Context) {
     val items: StateFlow<List<TodoItem>> = _items.asStateFlow()
 
     init {
-        if (!preferences.getBoolean("seeded", false)) {
-            preferences.edit().putBoolean("seeded", true).apply()
-            if (_items.value.isEmpty()) {
-                _items.value = listOf(
-                    TodoItem(1, "完善 Android 首页", listOf("房间卡片", "成员横条"), pinned = true),
-                    TodoItem(2, "整理同步列表模板"),
-                    TodoItem(3, "阅读 Material You 指南"),
-                )
-                persist()
-            }
+        val sampleIds = setOf(1L, 2L, 3L)
+        val sampleTitles = setOf(
+            "完善 Android 首页",
+            "整理同步列表模板",
+            "阅读 Material You 指南",
+        )
+        val remaining = _items.value.filterNot {
+            it.id in sampleIds && it.title in sampleTitles
+        }
+        if (remaining.size != _items.value.size) {
+            _items.value = remaining
+            persist()
         }
     }
 

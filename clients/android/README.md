@@ -67,15 +67,38 @@ com.ninemroom.app
 
 本地环境：JDK 17、Android SDK 35、Gradle 8.11.1。
 
+调试包与正式包已经是两个独立安装：
+
+- 调试包：`com.ninemroom.app.debug`，桌面显示 `9mRoom Debug`
+- 正式包：`com.ninemroom.app`，桌面显示 `9mRoom`
+
+调试构建：
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\build.ps1
 ```
 
-APK：
+调试 APK：
 
 ```text
 app/build/outputs/apk/debug/app-debug.apk
 ```
+
+发布构建：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\build.ps1 assembleRelease --offline --no-daemon -x lintVitalAnalyzeRelease -x lintVitalReportRelease -x lintVitalRelease
+```
+
+发布 APK：
+
+```text
+app/build/outputs/apk/release/app-release.apk
+```
+
+当前发布包暂时沿用调试签名，以便覆盖安装现有主包并保留配置；后续切换正式签名时需要重新安装。
+
+调试包不会覆盖 `com.ninemroom.app`，也不会读写主包的 SharedPreferences。测试和清理只允许操作 `com.ninemroom.app.debug`。
 
 首次构建会下载 Compose / AndroidX / OkHttp 依赖。如果本机代理不可用，Gradle 可能连接超时，需要先恢复代理或临时直连。
 
