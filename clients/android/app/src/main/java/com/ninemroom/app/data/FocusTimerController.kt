@@ -55,6 +55,19 @@ class FocusTimerController(private val context: Context) {
         startTicker()
     }
 
+    fun setDuration(minutes: Int) {
+        ticker?.cancel()
+        ticker = null
+        val duration = (minutes.coerceIn(1, 180) * 60)
+        _state.value = _state.value.copy(
+            durationSeconds = duration,
+            remainingSeconds = duration,
+            running = false,
+            startedAt = 0,
+        )
+        persist()
+    }
+
     fun pause() {
         if (!_state.value.running) return
         ticker?.cancel()
