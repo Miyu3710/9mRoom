@@ -121,9 +121,6 @@
                         <Trigger Property="IsKeyboardFocused" Value="True">
                             <Setter TargetName="InputBorder" Property="BorderBrush" Value="{StaticResource BrushAccent}" />
                         </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="InputBorder" Property="Background" Value="{StaticResource BrushControlHover}" />
-                        </Trigger>
                         <Trigger Property="IsEnabled" Value="False">
                             <Setter TargetName="InputBorder" Property="Opacity" Value="0.45" />
                         </Trigger>

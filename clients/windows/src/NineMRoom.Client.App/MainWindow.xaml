@@ -154,10 +154,10 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="ActionBackground" Property="Background" Value="#14FFFFFF" />
+                                <Setter Property="Foreground" Value="{StaticResource BrushText}" />
                             </Trigger>
                             <Trigger Property="IsPressed" Value="True">
-                                <Setter TargetName="ActionBackground" Property="Background" Value="#22FFFFFF" />
+                                <Setter Property="Foreground" Value="{StaticResource BrushText}" />
                             </Trigger>
                             <Trigger Property="IsEnabled" Value="False">
                                 <Setter Property="Opacity" Value="0.4" />
@@ -279,7 +279,6 @@
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter TargetName="TabBg" Property="Background" Value="{StaticResource BrushControlHover}" />
                                 <Setter Property="Foreground" Value="{StaticResource BrushText}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">

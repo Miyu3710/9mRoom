@@ -478,6 +478,11 @@
   - 移除 MainWindow 上所有 `TextOptions` 自定义渲染设置、小字号 Grayscale/Display 设置和 Medium 字重覆盖。
   - 恢复 WPF 默认的 `Ideal + ClearType` 文本渲染，不再做字体层面的特殊修复。
   - **已完成**：编译通过；未重新打包 MSI。
+- **FIX-064 hover 高亮收敛**：
+  - 标签 hover 不再出现整块圆角背景，只改变文字颜色。
+  - 输入框 hover 不再改变整个背景。
+  - 聊天“发送”、服务器“断开/离开”按钮 hover 不再盖一层矩形高亮，只改变文字颜色。
+  - **已完成**：编译通过；未重新打包 MSI。
 
 
 
