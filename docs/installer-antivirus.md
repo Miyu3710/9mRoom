@@ -75,12 +75,13 @@ powershell -ExecutionPolicy Bypass -File packaging\package.ps1 -Version 1.0.0 `
 
 ### 方法一：修复目录 ACL
 
-在**管理员** PowerShell 中：
+直接双击 `packaging\repair-config-msi.cmd`，在 UAC 弹窗中选择“是”。脚本会自动提权、授予 Users 写权限并测试。
 
-```powershell
-Remove-Item D:\Config.Msi -Recurse -Force -ErrorAction SilentlyContinue
-New-Item D:\Config.Msi -ItemType Directory -Force | Out-Null
-icacls D:\Config.Msi /grant "$env:USERNAME:(OI)(CI)F" /T /C
+也可以手动在管理员 **cmd** 中执行：
+
+```cmd
+takeown /f "D:\Config.Msi" /r /d y
+icacls "D:\Config.Msi" /grant *S-1-5-32-545:(OI)(CI)F /T /C
 ```
 
 然后重新安装 9mRoom 到 D 盘，并在**普通** PowerShell 中验证：
