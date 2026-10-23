@@ -107,14 +107,19 @@
         </Style>
 
         <Style x:Key="BarConnectButton" TargetType="Button" BasedOn="{StaticResource BarActionButton}">
+            <Setter Property="Background" Value="{StaticResource BrushPrimary}" />
+            <Setter Property="Foreground" Value="{StaticResource BrushOnPrimary}" />
             <Style.Triggers>
                 <DataTrigger Binding="{Binding IsInRoom}" Value="True">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
                     <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="0" />
                 </DataTrigger>
             </Style.Triggers>
         </Style>
 
         <Style x:Key="BarSecondaryActionButton" TargetType="Button" BasedOn="{StaticResource BarActionButton}">
+            <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
         </Style>
 
@@ -145,27 +150,7 @@
             </Setter>
         </Style>
 
-        <local:CategoryMatchConverter x:Key="ModeMatch" />
-
-        <Style x:Key="ModeButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-            <Setter Property="Height" Value="32" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
-            <Setter Property="Padding" Value="14,0" />
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="16" />
-            <Style.Triggers>
-                <DataTrigger Value="True">
-                    <DataTrigger.Binding>
-                        <MultiBinding Converter="{StaticResource ModeMatch}">
-                            <Binding Path="ManualMode" />
-                            <Binding Path="Tag" RelativeSource="{RelativeSource Self}" />
-                        </MultiBinding>
-                    </DataTrigger.Binding>
-                    <Setter Property="Background" Value="{StaticResource BrushAccent}" />
-                    <Setter Property="Foreground" Value="{StaticResource BrushOnAccent}" />
-                </DataTrigger>
-            </Style.Triggers>
-        </Style>
+        <local:StringEqualsConverter x:Key="ModeEquals" />
 
         <Style x:Key="NavIcon" TargetType="TextBlock">
             <Setter Property="FontFamily" Value="Segoe Fluent Icons, Segoe MDL2 Assets" />
@@ -195,8 +180,8 @@
                                 <Setter Property="Foreground" Value="{StaticResource BrushText}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
-                                <Setter TargetName="Bg" Property="Background" Value="{StaticResource BrushAccentSoft}" />
-                                <Setter Property="Foreground" Value="{StaticResource BrushText}" />
+                                <Setter TargetName="Bg" Property="Background" Value="{StaticResource BrushPrimaryContainer}" />
+                                <Setter Property="Foreground" Value="{StaticResource BrushOnPrimaryContainer}" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -463,7 +448,18 @@
                                                         <TextBlock Text="{Binding ConnectButtonText}"
                                                                    HorizontalAlignment="Center"
                                                                    TextAlignment="Center"
-                                                                   VerticalAlignment="Center" />
+                                                                   VerticalAlignment="Center">
+                                                            <TextBlock.Style>
+                                                                <Style TargetType="TextBlock">
+                                                                    <Setter Property="Foreground" Value="{StaticResource BrushOnPrimary}" />
+                                                                    <Style.Triggers>
+                                                                        <DataTrigger Binding="{Binding IsInRoom}" Value="True">
+                                                                            <Setter Property="Foreground" Value="{StaticResource BrushPrimary}" />
+                                                                        </DataTrigger>
+                                                                    </Style.Triggers>
+                                                                </Style>
+                                                            </TextBlock.Style>
+                                                        </TextBlock>
                                                     </Grid>
                                                 </Button>
                                                 <Button Click="LeaveRoom_Click"
@@ -473,7 +469,8 @@
                                                         <TextBlock Text="离开房间"
                                                                    HorizontalAlignment="Center"
                                                                    TextAlignment="Center"
-                                                                   VerticalAlignment="Center" />
+                                                                   VerticalAlignment="Center"
+                                                                   Foreground="{StaticResource BrushTextMuted}" />
                                                     </Grid>
                                                 </Button>
                                             </StackPanel>
@@ -502,7 +499,7 @@
 
 
 
-                        <Border Margin="0,0,0,16" Padding="26">
+                        <Border Margin="0,0,0,16" Padding="26" MinHeight="360">
                             <Border.Style>
                                 <Style TargetType="Border" BasedOn="{StaticResource Card}">
                                     <Setter Property="Visibility" Value="Visible" />
@@ -567,11 +564,21 @@
                                 <TextBlock Text="{Binding MyStatusText}" Style="{StaticResource Body}" Margin="0,10,0,0" />
 
                                 <WrapPanel Margin="0,10,0,0">
-                                    <Button Content="自动" Tag="auto" Click="Mode_Click" Style="{StaticResource ModeButton}" Margin="0,0,4,4" />
-                                    <Button Content="专注" Tag="focusing" Click="Mode_Click" Style="{StaticResource ModeButton}" Margin="0,0,4,4" />
-                                    <Button Content="休息" Tag="break" Click="Mode_Click" Style="{StaticResource ModeButton}" Margin="0,0,4,4" />
-                                    <Button Content="离开" Tag="away" Click="Mode_Click" Style="{StaticResource ModeButton}" Margin="0,0,4,4" />
-                                    <Button Content="隐身" Tag="invisible" Click="Mode_Click" Style="{StaticResource ModeButton}" Margin="0,0,4,4" />
+                                    <RadioButton Content="自动" Tag="auto" GroupName="Mode"
+                                                 Style="{StaticResource ModeChip}" Checked="Mode_Checked"
+                                                 IsChecked="{Binding ManualMode, Converter={StaticResource ModeEquals}, ConverterParameter=auto, Mode=OneWay}" />
+                                    <RadioButton Content="专注" Tag="focusing" GroupName="Mode"
+                                                 Style="{StaticResource ModeChip}" Checked="Mode_Checked"
+                                                 IsChecked="{Binding ManualMode, Converter={StaticResource ModeEquals}, ConverterParameter=focusing, Mode=OneWay}" />
+                                    <RadioButton Content="休息" Tag="break" GroupName="Mode"
+                                                 Style="{StaticResource ModeChip}" Checked="Mode_Checked"
+                                                 IsChecked="{Binding ManualMode, Converter={StaticResource ModeEquals}, ConverterParameter=break, Mode=OneWay}" />
+                                    <RadioButton Content="离开" Tag="away" GroupName="Mode"
+                                                 Style="{StaticResource ModeChip}" Checked="Mode_Checked"
+                                                 IsChecked="{Binding ManualMode, Converter={StaticResource ModeEquals}, ConverterParameter=away, Mode=OneWay}" />
+                                    <RadioButton Content="隐身" Tag="invisible" GroupName="Mode"
+                                                 Style="{StaticResource ModeChip}" Checked="Mode_Checked"
+                                                 IsChecked="{Binding ManualMode, Converter={StaticResource ModeEquals}, ConverterParameter=invisible, Mode=OneWay}" />
                                 </WrapPanel>
 
                                 <Grid Margin="0,12,0,0">

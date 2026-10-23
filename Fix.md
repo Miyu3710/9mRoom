@@ -561,3 +561,12 @@
   - 三个子窗口、颜色/字体选择器和叠加层统一表面、图标按钮与字体。
   - 详细清单与限制见 `docs/m3-refactor.md`。
   - **验证**：Release 构建 0 错误；125% 深色/浅色主界面、专注、待办、设置截图；100%/150% 未验证。
+- **FIX-068 M3 第二轮定向审查**：
+  - 新增 M3 语义别名：Primary / OnPrimary / PrimaryContainer / OnPrimaryContainer / SurfaceContainer / Outline / Error。
+  - 导航选中态、状态选择 chip 统一使用 PrimaryContainer / OnPrimaryContainer；标签指示线继续使用 Primary。
+  - “自动/专注/休息/离开/隐身”从 Button 改为 RadioButton + 共享 `ModeChip` 样式，支持互斥、Tab/方向键焦点、hover、checked、focus 状态。
+  - 服务器连接按钮改为填充 Primary；连接后断开按钮改为文本操作；离开房间保持次级文本；保留原事件与绑定。
+  - 状态空态使用最小高度，减少主内容区下方空洞；标签与内容列恢复对齐。
+  - 状态 chip 选中态增加 Check 图标，避免仅靠低对比背景区分选中。
+  - 输入框统一显式可编辑、可 Tab 聚焦并启用输入法；服务器地址在已连接时仍按原需求只读。
+  - **验证**：Release 构建 0 错误；125% 深色/浅色均实际启动并截图；未重新打包 MSI。

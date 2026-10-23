@@ -61,3 +61,12 @@
 - `OverlayWindow` 保留用户自定义颜色/字体，不强制应用主题
 - 现有 `Compact`/`Expanded` 状态切换仍在页面代码后置中，后续可迁移到 VisualState
 - 仍需在不同窗口尺寸和 100%/150% DPI 下做一轮人工验收
+
+## 第二轮定向审查
+
+- 语义角色：Primary / OnPrimary / PrimaryContainer / OnPrimaryContainer / SurfaceContainer / Outline / Error。
+- 导航与状态 chip 共用 PrimaryContainer；标签页指示线使用 Primary。
+- 状态选择：`RadioButton` + 共享 `ModeChip`，使用 `GroupName="Mode"`，支持 Tab、方向键、hover、键盘焦点边框和选中 Check 图标。
+- 服务器操作：连接为主操作（填充 Primary），连接后断开为文本操作，离开房间为次级文本操作。
+- 主内容空态增加最小高度，减少大面积无意义空白。
+- 输入框显式 `IsReadOnly=False`、`IsTabStop=True`、`InputMethod.IsInputMethodEnabled=True`；服务器地址连接态按原需求只读。\n- 最终浅色/深色均在 125% 下实际启动检查；深色主界面和浅色已连接状态见 `tmp/round2-final2.png`、`tmp/round2-light2.png`。

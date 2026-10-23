@@ -46,9 +46,19 @@
     <SolidColorBrush x:Key="BrushControlHover" Color="{StaticResource ColorControlHover}" />
     <Color x:Key="ColorControlBorder">#74777F</Color>
     <SolidColorBrush x:Key="BrushControlBorder" Color="{StaticResource ColorControlBorder}" />
-    <Color x:Key="ColorAccentSoft">#DDE1FF</Color>
+    <Color x:Key="ColorOnAccentSoft">#1B1B24</Color>
+  <SolidColorBrush x:Key="BrushOnAccentSoft" Color="{StaticResource ColorOnAccentSoft}" />
+  <Color x:Key="ColorAccentSoft">#DDE1FF</Color>
     <SolidColorBrush x:Key="BrushAccentSoft" Color="{StaticResource ColorAccentSoft}" />
-    <FontFamily x:Key="FontUi">Noto Sans SC, Microsoft YaHei UI</FontFamily>
+    <!-- M3 semantic aliases -->
+  <SolidColorBrush x:Key="BrushPrimary" Color="{StaticResource ColorAccent}" />
+  <SolidColorBrush x:Key="BrushOnPrimary" Color="{StaticResource ColorOnAccent}" />
+  <SolidColorBrush x:Key="BrushPrimaryContainer" Color="{StaticResource ColorAccentSoft}" />
+  <SolidColorBrush x:Key="BrushOnPrimaryContainer" Color="{StaticResource ColorOnAccentSoft}" />
+  <SolidColorBrush x:Key="BrushSurfaceContainer" Color="{StaticResource ColorGlassSurface}" />
+  <SolidColorBrush x:Key="BrushOutline" Color="{StaticResource ColorBorder}" />
+  <SolidColorBrush x:Key="BrushError" Color="{StaticResource ColorDanger}" />
+  <FontFamily x:Key="FontUi">Noto Sans SC, Microsoft YaHei UI</FontFamily>
     <FontFamily x:Key="FontMono">Cascadia Mono</FontFamily>
     <sys:Double x:Key="FontSizeXs">11</sys:Double>
     <sys:Double x:Key="FontSizeSm">12</sys:Double>

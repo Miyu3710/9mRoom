@@ -381,9 +381,9 @@ public partial class MainWindow : Window
         await _viewModel.ToggleConnectionAsync();
     }
 
-    private void Mode_Click(object sender, RoutedEventArgs e)
+    private void Mode_Checked(object sender, RoutedEventArgs e)
     {
-        if (sender is System.Windows.Controls.Button { Tag: string mode })
+        if (sender is System.Windows.Controls.RadioButton { Tag: string mode } && _viewModel is not null)
         {
             _viewModel.SetManualMode(mode);
         }

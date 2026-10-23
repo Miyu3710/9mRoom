@@ -102,6 +102,10 @@
         <Setter Property="SelectionBrush" Value="{DynamicResource BrushAccent}" />
         <Setter Property="FontSize" Value="{DynamicResource FontSizeMd}" />
         <Setter Property="MinHeight" Value="44" />
+        <Setter Property="IsReadOnly" Value="False" />
+        <Setter Property="InputMethod.IsInputMethodEnabled" Value="True" />
+        <Setter Property="Focusable" Value="True" />
+        <Setter Property="IsTabStop" Value="True" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
     </Style>
 
