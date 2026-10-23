@@ -9,6 +9,7 @@ import android.graphics.PixelFormat
 import android.graphics.drawable.GradientDrawable
 import android.os.Build
 import android.os.IBinder
+import android.os.PowerManager
 import android.provider.Settings
 import android.text.TextUtils
 import android.util.TypedValue
@@ -57,6 +58,7 @@ class PresenceService : Service() {
     private var panelExpanded = false
     private var lastState: RoomUiState? = null
     private var waitForConnection = false
+    private var wakeLock: PowerManager.WakeLock? = null
     private var appliedMargin = Int.MIN_VALUE
     private var appliedSize = -1
 
@@ -100,6 +102,7 @@ class PresenceService : Service() {
                 }
 
                 NotificationCenter.updatePresence(this@PresenceService, state)
+                setWakeLock(state.keepOnline)
                 updateOverlay(state)
             }
         }
@@ -110,9 +113,27 @@ class PresenceService : Service() {
     override fun onDestroy() {
         collectJob?.cancel()
         scope.cancel()
+        setWakeLock(false)
         saveOverlayPosition()
         removeOverlay()
         super.onDestroy()
+    }
+
+    private fun setWakeLock(enabled: Boolean) {
+        if (enabled && wakeLock == null) {
+            wakeLock = getSystemService(PowerManager::class.java)
+                .newWakeLock(
+                    PowerManager.PARTIAL_WAKE_LOCK,
+                    "9mRoom:presence",
+                )
+                .apply {
+                    setReferenceCounted(false)
+                    acquire()
+                }
+        } else if (!enabled) {
+            wakeLock?.let { if (it.isHeld) it.release() }
+            wakeLock = null
+        }
     }
 
     private fun updateOverlay(state: RoomUiState) {

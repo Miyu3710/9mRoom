@@ -5,6 +5,8 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.ConnectivityManager
+import android.net.Network
 import androidx.core.content.ContextCompat
 import com.ninemroom.app.data.AppCategoryStore
 import com.ninemroom.app.data.AppRuleStore
@@ -37,6 +39,12 @@ class NineRoomApplication : Application() {
         }
     }
 
+    private val networkCallback = object : ConnectivityManager.NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            roomController.onNetworkAvailable()
+        }
+    }
+
     override fun onCreate() {
         super.onCreate()
         todoStore = TodoStore(this)
@@ -62,5 +70,9 @@ class NineRoomApplication : Application() {
             },
             ContextCompat.RECEIVER_NOT_EXPORTED,
         )
+        runCatching {
+            getSystemService(ConnectivityManager::class.java)
+                .registerDefaultNetworkCallback(networkCallback)
+        }
     }
 }

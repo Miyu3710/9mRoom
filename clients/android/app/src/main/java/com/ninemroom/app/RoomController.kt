@@ -3,6 +3,7 @@ package com.ninemroom.app
 import android.app.KeyguardManager
 import android.content.Context
 import android.os.PowerManager
+import android.os.SystemClock
 import androidx.core.content.ContextCompat
 import com.ninemroom.app.data.AppSettings
 import com.ninemroom.app.data.AppCategoryStore
@@ -95,7 +96,7 @@ class RoomController(
     private val api = RoomApi()
     private val foregroundAppReader = ForegroundAppReader(appContext)
     private val mediaReader = MediaReader(appContext)
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val initialRoom = if (settings.autoConnect && settings.homeRoomCode.isNotBlank()) {
         settings.homeRoomCode
     } else {
@@ -135,9 +136,14 @@ class RoomController(
     private var socket: PresenceSocket? = null
     private var heartbeatJob: Job? = null
     private var reconnectJob: Job? = null
+    private var networkProbeJob: Job? = null
+    private var socketGeneration = 0
     private var connecting = false
     private var intentionalClose = false
     private var opened = false
+    private var reconnectAttempts = 0
+    @Volatile
+    private var lastPongAt = 0L
 
     init {
         scope.launch {
@@ -246,25 +252,40 @@ class RoomController(
                 openSocket(base, info)
             } catch (error: Exception) {
                 connecting = false
+                val showMain = _state.value.showMain
                 _state.update {
                     it.copy(
-                        status = ConnectionStatus.Error,
+                        status = if (showMain) {
+                            ConnectionStatus.Reconnecting
+                        } else {
+                            ConnectionStatus.Error
+                        },
                         error = error.message ?: "连接失败",
                     )
+                }
+                if (settings.autoConnect || _state.value.keepOnline) {
+                    scheduleReconnect()
                 }
             }
         }
     }
 
     private fun openSocket(base: String, info: RoomInfo) {
+        val generation = ++socketGeneration
         socket?.close()
         opened = false
         val snapshot = _state.value
-        socket = PresenceSocket(api.httpClient, object : PresenceSocket.Listener {
+        socket = PresenceSocket(api.webSocketClient, object : PresenceSocket.Listener {
             override fun onOpen() {
+                if (generation != socketGeneration) return
                 connecting = false
                 opened = true
                 intentionalClose = false
+                reconnectAttempts = 0
+                reconnectJob?.cancel()
+                reconnectJob = null
+                networkProbeJob?.cancel()
+                lastPongAt = SystemClock.elapsedRealtime()
                 _state.update {
                     it.copy(
                         status = ConnectionStatus.Connected,
@@ -280,14 +301,17 @@ class RoomController(
             }
 
             override fun onMessage(message: JSONObject) {
+                if (generation != socketGeneration) return
                 handleMessage(message)
             }
 
             override fun onFailure(message: String) {
+                if (generation != socketGeneration) return
                 handleDisconnected(message)
             }
 
             override fun onClosed() {
+                if (generation != socketGeneration) return
                 handleDisconnected("连接已断开")
             }
         })
@@ -307,7 +331,7 @@ class RoomController(
         heartbeatJob?.cancel()
         heartbeatJob = null
         val current = _state.value
-        if (current.showMain && opened) {
+        if (current.showMain || current.keepOnline || settings.autoConnect) {
             _state.update {
                 it.copy(status = ConnectionStatus.Reconnecting, error = message)
             }
@@ -320,10 +344,68 @@ class RoomController(
     }
 
     private fun scheduleReconnect() {
+        if (intentionalClose) return
+        val current = _state.value
+        if (current.serverUrl.isBlank() ||
+            current.roomCode.isBlank() ||
+            current.displayName.isBlank()
+        ) {
+            return
+        }
         reconnectJob?.cancel()
+        val delayMs = (3_000L * (1 shl reconnectAttempts.coerceAtMost(4)))
+            .coerceAtMost(30_000L)
+        reconnectAttempts++
         reconnectJob = scope.launch {
-            delay(3000)
-            beginConnect()
+            delay(delayMs)
+            if (!intentionalClose) {
+                beginConnect()
+            }
+        }
+    }
+
+    fun onNetworkAvailable() {
+        if (intentionalClose) return
+        val current = _state.value
+        if (current.serverUrl.isBlank() ||
+            current.roomCode.isBlank() ||
+            current.displayName.isBlank()
+        ) {
+            return
+        }
+        if (current.status == ConnectionStatus.Connected) {
+            probeCurrentNetwork()
+            return
+        }
+        reconnectAttempts = 0
+        reconnectJob?.cancel()
+        if (!connecting) beginConnect()
+    }
+
+    private fun probeCurrentNetwork() {
+        networkProbeJob?.cancel()
+        networkProbeJob = scope.launch {
+            delay(1_200)
+            if (_state.value.status != ConnectionStatus.Connected || intentionalClose) return@launch
+            val before = lastPongAt
+            socket?.sendPing()
+            delay(1_500)
+            if (_state.value.status != ConnectionStatus.Connected || intentionalClose) return@launch
+            if (lastPongAt == before) {
+                _state.update {
+                    it.copy(
+                        status = ConnectionStatus.Reconnecting,
+                        error = "网络已切换，正在重连",
+                    )
+                }
+                heartbeatJob?.cancel()
+                heartbeatJob = null
+                opened = false
+                socketGeneration++
+                socket?.close()
+                socket = null
+                scheduleReconnect()
+            }
         }
     }
 
@@ -331,6 +413,12 @@ class RoomController(
         heartbeatJob?.cancel()
         heartbeatJob = scope.launch {
             while (isActive) {
+                val now = SystemClock.elapsedRealtime()
+                if (lastPongAt > 0 && now - lastPongAt > 35_000) {
+                    handleDisconnected("连接超时")
+                    return@launch
+                }
+                socket?.sendPing()
                 sendPresence()
                 delay(10_000)
             }
@@ -663,7 +751,9 @@ class RoomController(
     fun disconnect() {
         intentionalClose = true
         connecting = false
+        socketGeneration++
         reconnectJob?.cancel()
+        networkProbeJob?.cancel()
         heartbeatJob?.cancel()
         heartbeatJob = null
         socket?.close()
@@ -685,6 +775,10 @@ class RoomController(
 
     private fun handleMessage(message: JSONObject) {
         when (message.optString("type")) {
+            "pong" -> {
+                lastPongAt = SystemClock.elapsedRealtime()
+            }
+
             "welcome" -> {
                 val id = message.optJSONObject("payload")?.optString("userId").orEmpty()
                 if (id.isNotBlank()) {

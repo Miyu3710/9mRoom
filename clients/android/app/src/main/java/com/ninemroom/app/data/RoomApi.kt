@@ -33,6 +33,10 @@ class RoomApi(
         .build(),
 ) {
     val httpClient: OkHttpClient = client
+    val webSocketClient: OkHttpClient = client.newBuilder()
+        .readTimeout(0, TimeUnit.MILLISECONDS)
+        .pingInterval(20, TimeUnit.SECONDS)
+        .build()
 
     suspend fun checkHealth(base: String): Boolean = withContext(Dispatchers.IO) {
         val request = Request.Builder()
