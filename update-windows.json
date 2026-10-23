@@ -1,12 +1,12 @@
-{
-  "platform": "windows",
-  "version": "1.1.0",
-  "tag": "windows-v1.1.0",
-  "release": "https://github.com/Miyu3710/9mRoom/releases/tag/windows-v1.1.0",
-  "windows": {
-    "asset": "9mRoom-Setup-1.1.0.msi",
-    "sha256": "48AB4ADD63071974C72E26A7D6F8C2EAF83628A34CC4A729B8FF61BC05B10CED",
-    "portable": "9mRoom-1.1.0-win-x64.zip",
-    "portableSha256": "9DDE556E2BC04AC49E883FE7CC356A7A4BFFABAA9C430F9F3C1D467DA2F79EBB"
-  }
+﻿{
+    "platform":  "windows",
+    "version":  "1.1.1",
+    "tag":  "windows-v1.1.1",
+    "release":  "https://github.com/Miyu3710/9mRoom/releases/tag/windows-v1.1.1",
+    "windows":  {
+                    "asset":  "9mRoom-Setup-1.1.1.msi",
+                    "sha256":  "563BB6A5B001E63E12C40C8BD45E0DE08B7A23AEE13B4B59209F4B9C3AD3C850",
+                    "portable":  "9mRoom-1.1.1-win-x64.zip",
+                    "portableSha256":  "9BC4A66CA01BBA28B2F1C17BE9558D37C027EA176848BF2FF8562FCD1D93D541"
+                }
 }

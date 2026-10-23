@@ -179,7 +179,7 @@ $serverManifest = Join-Path $dist 'update-server.json'
 } | ConvertTo-Json -Depth 5 | Set-Content $serverManifest -Encoding UTF8
 
 # 兼容仍读取旧清单的客户端；新客户端使用各自平台的清单。
-$manifest = Join-Path $dist 'update.json'
+
 [ordered]@{
     version = $Version
     tag = "windows-v$Version"
@@ -193,11 +193,13 @@ $manifest = Join-Path $dist 'update.json'
         sha256 = $serverSha
         entry = 'run-server.sh'
     }
-} | ConvertTo-Json -Depth 5 | Set-Content $manifest -Encoding UTF8
-
-$hashes += "$(Get-FileHash $windowsManifest -Algorithm SHA256).Hash  update-windows.json"
-$hashes += "$(Get-FileHash $serverManifest -Algorithm SHA256).Hash  update-server.json"
-$hashes += "$(Get-FileHash $manifest -Algorithm SHA256).Hash  update.json"
+} | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $dist 'update.json') -Encoding UTF8
+$windowsManifestHash = (Get-FileHash $windowsManifest -Algorithm SHA256).Hash
+$serverManifestHash = (Get-FileHash $serverManifest -Algorithm SHA256).Hash
+$manifestHash = (Get-FileHash (Join-Path $dist 'update.json') -Algorithm SHA256).Hash
+$hashes += "$windowsManifestHash  update-windows.json"
+$hashes += "$serverManifestHash  update-server.json"
+$hashes += "$manifestHash  update.json"
 $hashes | Set-Content (Join-Path $dist 'SHA256SUMS.txt') -Encoding ASCII
 
 Get-ChildItem $dist | Select-Object Name, Length
