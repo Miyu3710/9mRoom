@@ -103,6 +103,11 @@ class AppCategoryStore(context: Context) {
         persist()
     }
 
+    fun setOrder(categories: List<AppCategory>) {
+        _categories.value = categories
+        persist()
+    }
+
     private fun persist() {
         val array = JSONArray()
         _categories.value.forEach { category ->

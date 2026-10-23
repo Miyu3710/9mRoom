@@ -3,6 +3,7 @@ package com.ninemroom.app.feature.apps
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -40,7 +41,6 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -73,11 +73,12 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
         ?: "📡 {app}"
     var selected by remember { mutableStateOf<AppCategory?>(null) }
     var showAdd by remember { mutableStateOf(false) }
-    var draggedIndex by remember { mutableIntStateOf(-1) }
-    var dragStartIndex by remember { mutableIntStateOf(-1) }
+    var draggedId by remember { mutableStateOf<String?>(null) }
+    var localOrder by remember { mutableStateOf<List<AppCategory>?>(null) }
     var dragOffset by remember { mutableFloatStateOf(0f) }
     val rowHeightPx = with(LocalDensity.current) { 84.dp.toPx() }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val displayedCategories = localOrder ?: categories
 
     Column(Modifier.fillMaxSize()) {
         Row(
@@ -108,34 +109,38 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
             contentPadding = PaddingValues(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 100.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            itemsIndexed(categories, key = { _, category -> category.id }) { index, category ->
-                val dragging = draggedIndex == index
+            itemsIndexed(displayedCategories, key = { _, category -> category.id }) { index, category ->
+                val dragging = draggedId == category.id
                 CategoryRow(
                     category = category,
                     dragging = dragging,
-                    dragOffset = if (dragging) {
-                        dragOffset - (draggedIndex - dragStartIndex) * rowHeightPx
-                    } else {
-                        0f
-                    },
+                    dragOffset = if (dragging) dragOffset else 0f,
                     onClick = { selected = category },
                     onDragStart = {
-                        draggedIndex = index
-                        dragStartIndex = index
+                        localOrder = categories.toList()
+                        draggedId = category.id
                         dragOffset = 0f
                     },
                     onDrag = { amount ->
-                        dragOffset += amount
-                        val target = (dragStartIndex + (dragOffset / rowHeightPx).roundToInt())
-                            .coerceIn(0, categories.lastIndex)
-                        if (target != draggedIndex) {
-                            categoryStore.move(draggedIndex, target)
-                            draggedIndex = target
+                        val current = localOrder ?: categories
+                        val currentIndex = current.indexOfFirst { it.id == draggedId }
+                        if (currentIndex >= 0) {
+                            dragOffset += amount
+                            val target = (currentIndex + (dragOffset / rowHeightPx).roundToInt())
+                                .coerceIn(0, current.lastIndex)
+                            if (target != currentIndex) {
+                                val reordered = current.toMutableList()
+                                val item = reordered.removeAt(currentIndex)
+                                reordered.add(target, item)
+                                localOrder = reordered
+                                dragOffset -= (target - currentIndex) * rowHeightPx
+                            }
                         }
                     },
                     onDragEnd = {
-                        draggedIndex = -1
-                        dragStartIndex = -1
+                        localOrder?.let { categoryStore.setOrder(it) }
+                        localOrder = null
+                        draggedId = null
                         dragOffset = 0f
                     },
                 )
@@ -180,6 +185,7 @@ private fun CategoryRow(
     onDrag: (Float) -> Unit,
     onDragEnd: () -> Unit,
 ) {
+    val interactionSource = remember { MutableInteractionSource() }
     Card(
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainer),
         shape = MaterialTheme.shapes.large,
@@ -191,7 +197,11 @@ private fun CategoryRow(
                 translationY = if (dragging) dragOffset else 0f
                 shadowElevation = if (dragging) 12f else 0f
             }
-            .clickable(onClick = onClick),
+            .clickable(
+                interactionSource = interactionSource,
+                indication = null,
+                onClick = onClick,
+            ),
     ) {
         Row(
             Modifier
