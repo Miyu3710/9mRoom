@@ -275,10 +275,10 @@ fun NineRoomApp(
                     navController = navController,
                     startDestination = Destination.Home.route,
                     modifier = Modifier.weight(1f),
-                    enterTransition = { fadeIn(tween(140)) },
-                    exitTransition = { fadeOut(tween(100)) },
-                    popEnterTransition = { fadeIn(tween(140)) },
-                    popExitTransition = { fadeOut(tween(100)) },
+                    enterTransition = { fadeIn(tween(80)) },
+                    exitTransition = { fadeOut(tween(60)) },
+                    popEnterTransition = { fadeIn(tween(80)) },
+                    popExitTransition = { fadeOut(tween(60)) },
                 ) {
                     composable(Destination.Home.route) {
                         HomeScreen(
