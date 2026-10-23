@@ -13,14 +13,6 @@
         <Style TargetType="RadioButton" BasedOn="{StaticResource ModernRadioButton}">
             <Setter Property="Margin" Value="0,0,18,8" />
         </Style>
-<Style x:Key="PresetCombo" TargetType="ComboBox">
-            <Setter Property="Background" Value="{StaticResource BrushSurfaceAlt}" />
-            <Setter Property="Foreground" Value="{StaticResource BrushText}" />
-            <Setter Property="Padding" Value="8,6" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
-            <Setter Property="Width" Value="180" />
-            <Setter Property="HorizontalAlignment" Value="Left" />
-        </Style>
 </UserControl.Resources>
 
     <Grid>

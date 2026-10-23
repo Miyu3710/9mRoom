@@ -29,25 +29,21 @@ public static class ThemeService
         }
 
         var dictionaries = System.Windows.Application.Current.Resources.MergedDictionaries;
-        var tokens = new ResourceDictionary
+        dictionaries.Add(new ResourceDictionary
         {
             Source = new Uri(
                 light
                     ? "pack://application:,,,/Themes/TokensLight.xaml"
                     : "pack://application:,,,/Themes/Tokens.xaml",
                 UriKind.Absolute)
-        };
-        var controls = new ResourceDictionary
+        });
+        dictionaries.Add(new ResourceDictionary
         {
             Source = new Uri("pack://application:,,,/Themes/Controls.xaml", UriKind.Absolute)
-        };
-        var design = new ResourceDictionary
+        });
+        dictionaries.Add(new ResourceDictionary
         {
             Source = new Uri("pack://application:,,,/Themes/Design.xaml", UriKind.Absolute)
-        };
-
-        dictionaries.Add(tokens);
-        dictionaries.Add(controls);
-        dictionaries.Add(design);
+        });
     }
 }

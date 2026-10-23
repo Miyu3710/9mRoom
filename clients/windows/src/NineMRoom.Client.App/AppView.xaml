@@ -38,7 +38,7 @@
                                         Style="{StaticResource ModernButton}" Margin="14,0,0,0" />
                             </StackPanel>
 
-                            <Border Grid.Column="1" Width="238" Height="34"
+                            <Border Grid.Column="1" Width="238" Height="64"
                                     Background="{StaticResource BrushControlBg}"
                                     BorderBrush="Transparent"
                                     BorderThickness="0" CornerRadius="{StaticResource RadiusSm}"

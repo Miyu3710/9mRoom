@@ -105,6 +105,26 @@
         <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="19" />
     </Style>
 
+    <Style x:Key="CompactButton" TargetType="Button" BasedOn="{StaticResource ModernButton}">
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Padding" Value="10,0" />
+        <Setter Property="Margin" Value="0,0,4,4" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" />
+    </Style>
+
+    <Style x:Key="InlineTextButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource BrushPrimary}" />
+        <Setter Property="FontSize" Value="{DynamicResource FontSizeSm}" />
+        <Setter Property="Height" Value="64" />
+        <Setter Property="Padding" Value="16,0" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="FocusVisualStyle" Value="{x:Null}" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="0" />
+    </Style>
+
     <Style x:Key="ModeChip" TargetType="RadioButton">
         <Setter Property="Height" Value="32" />
         <Setter Property="Padding" Value="14,0" />
@@ -179,61 +199,20 @@
         </Setter>
     </Style>
 
-    <Style x:Key="InputBox" TargetType="TextBox">
+    <Style x:Key="InputBox" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignFilledTextBox}">
         <Setter Property="Background" Value="{DynamicResource BrushSurfaceAlt}" />
         <Setter Property="Foreground" Value="{DynamicResource BrushText}" />
-        <Setter Property="BorderBrush" Value="{DynamicResource BrushOutline}" />
-        <Setter Property="BorderThickness" Value="0" />
         <Setter Property="CaretBrush" Value="{DynamicResource BrushText}" />
         <Setter Property="SelectionBrush" Value="{DynamicResource BrushPrimary}" />
         <Setter Property="FontSize" Value="{DynamicResource FontSizeMd}" />
-        <Setter Property="Padding" Value="12,0" />
-        <Setter Property="MinHeight" Value="44" />
+        <Setter Property="Height" Value="64" />
+        <Setter Property="MinHeight" Value="64" />
         <Setter Property="IsReadOnly" Value="False" />
         <Setter Property="InputMethod.IsInputMethodEnabled" Value="True" />
         <Setter Property="Focusable" Value="True" />
         <Setter Property="IsTabStop" Value="True" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="Template">
-            <Setter.Value>
-                <ControlTemplate TargetType="TextBox">
-                    <Border x:Name="Field"
-                            Background="{TemplateBinding Background}"
-                            BorderBrush="{TemplateBinding BorderBrush}"
-                            BorderThickness="{TemplateBinding BorderThickness}"
-                            CornerRadius="{DynamicResource RadiusSm}"
-                            SnapsToDevicePixels="True">
-                        <Grid>
-                            <ScrollViewer x:Name="PART_ContentHost"
-                                          Margin="{TemplateBinding Padding}"
-                                          VerticalAlignment="Center"
-                                          HorizontalAlignment="Stretch" />
-                            <Border x:Name="FocusLine" Height="1" Margin="8,0"
-                                    VerticalAlignment="Bottom"
-                                    Background="{DynamicResource BrushOutline}"
-                                    IsHitTestVisible="False" />
-                        </Grid>
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsKeyboardFocused" Value="True">
-                            <Setter TargetName="FocusLine" Property="Background" Value="{DynamicResource BrushPrimary}" />
-                            <Setter TargetName="FocusLine" Property="Height" Value="2" />
-                        </Trigger>
-                        <Trigger Property="IsMouseOver" Value="True">
-                            <Setter TargetName="Field" Property="Background" Value="{DynamicResource BrushControlHover}" />
-                        </Trigger>
-                        <Trigger Property="IsEnabled" Value="False">
-                            <Setter TargetName="Field" Property="Opacity" Value="0.42" />
-                        </Trigger>
-                        <Trigger Property="Validation.HasError" Value="True">
-                            <Setter TargetName="Field" Property="BorderBrush" Value="{DynamicResource BrushError}" />
-                            <Setter TargetName="Field" Property="BorderThickness" Value="1" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Setter.Value>
-        </Setter>
     </Style>
 
 </ResourceDictionary>

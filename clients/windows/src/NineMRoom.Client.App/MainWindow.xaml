@@ -50,7 +50,7 @@
             <Setter Property="Foreground" Value="{StaticResource BrushText}" />
             <Setter Property="CaretBrush" Value="{StaticResource BrushText}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
-            <Setter Property="MinHeight" Value="0" />
+            <Setter Property="MinHeight" Value="64" />
             <Setter Property="VerticalAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Padding" Value="0" />
@@ -93,7 +93,7 @@
         </Style>
 
         <Style x:Key="BarActionButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
-            <Setter Property="Height" Value="48" />
+            <Setter Property="Height" Value="64" />
             <Setter Property="Width" Value="112" />
             <Setter Property="MinWidth" Value="76" />
             <Setter Property="Padding" Value="0" />
@@ -435,9 +435,7 @@
                                 </Grid.ColumnDefinitions>
 
                                 <StackPanel Grid.Column="0" Margin="0,0,16,0">
-                                    <TextBlock Text="服务器地址" Style="{StaticResource Label}"
-                                               Margin="4,0,0,6" />
-                                    <Border Height="48"
+                                    <Border Height="64"
                                             Background="{StaticResource BrushSurfaceAlt}"
                                             BorderThickness="0"
                                             CornerRadius="8"
@@ -468,6 +466,7 @@
                                                      Style="{StaticResource ServerInput}"
                                                      IsReadOnly="{Binding IsConnected}"
                                                      Margin="10,0,0,0"
+                                                     materialDesign:HintAssist.Hint="服务器地址"
                                                      VerticalContentAlignment="Center" />
                                             <Border Grid.Column="2" Width="1" Margin="8,10,0,10"
                                                     Background="{StaticResource BrushBorder}" />

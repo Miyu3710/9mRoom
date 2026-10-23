@@ -22,15 +22,14 @@
             <StackPanel Margin="0,0,24,0">
                 <Border Style="{StaticResource Card}">
                     <StackPanel>
-                        <TextBlock Text="待办标题" Style="{StaticResource Label}" Margin="0,0,0,6" />
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <TextBox x:Name="NewTodoBox" Style="{StaticResource InputBox}" Margin="0,0,8,0"
-                                     Height="48" MinHeight="48" MaxHeight="48" VerticalAlignment="Center"
-                                     KeyDown="NewTodo_KeyDown" /><Button Grid.Column="1" Content="添加待办" Click="AddTodo_Click"
+                                     
+                                     KeyDown="NewTodo_KeyDown" materialDesign:HintAssist.Hint="待办标题" /><Button Grid.Column="1" Content="添加待办" Click="AddTodo_Click"
                                     Style="{StaticResource ModernPrimaryButton}"
                                     VerticalAlignment="Center" />
                         </Grid>

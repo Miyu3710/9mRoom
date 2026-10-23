@@ -5,20 +5,6 @@
              FontFamily="{StaticResource FontUi}">
 
     <UserControl.Resources>
-<Style x:Key="ChatSendButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
-            <Setter Property="Background" Value="Transparent" />
-            <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
-            <Setter Property="Height" Value="42" />
-            <Setter Property="Width" Value="72" />
-            <Setter Property="Padding" Value="0" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
-            <Setter Property="VerticalContentAlignment" Value="Center" />
-            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="0" />
-        </Style>
     </UserControl.Resources>
 
     <Grid>
@@ -75,13 +61,13 @@
                 <TextBox x:Name="ChatBox" Text="{Binding ChatInput, UpdateSourceTrigger=PropertyChanged}"
                          Style="{StaticResource InputBox}" MaxLength="500"
                          Background="Transparent" BorderThickness="0"
-                         Padding="12,0" Height="42"
+                         Padding="12,0" Height="64"
                          VerticalContentAlignment="Center"
                          KeyDown="ChatBox_KeyDown" />
                 <Border Grid.Column="1" Width="1" Margin="0,8"
                         Background="{StaticResource BrushBorder}" />
                 <Button Grid.Column="2" Click="Send_Click"
-                        Style="{StaticResource ChatSendButton}">
+                        Style="{StaticResource InlineTextButton}">
                     <Grid Width="72">
                         <TextBlock Text="发送"
                                    HorizontalAlignment="Center"
