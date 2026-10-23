@@ -6,9 +6,10 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,6 +41,10 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -47,6 +52,7 @@ import com.ninemroom.app.data.ChatLine
 import com.ninemroom.app.data.LogLine
 import com.ninemroom.app.data.RoomMember
 import com.ninemroom.app.data.chatTime
+import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -68,7 +74,7 @@ fun RoomScreen(
     Column(
         Modifier
             .fillMaxSize()
-            .imePadding(),
+            .adaptiveImePadding(),
     ) {
         Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp)) {
             Text("房间", style = MaterialTheme.typography.headlineMedium)
@@ -304,6 +310,23 @@ private fun EmptyState(text: String) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+@Composable
+private fun Modifier.adaptiveImePadding(): Modifier {
+    val density = LocalDensity.current
+    val windowInfo = LocalWindowInfo.current
+    val imeBottom = WindowInsets.ime.getBottom(density)
+    var rootBottom by remember { mutableIntStateOf(0) }
+    val bottomPadding = (
+        rootBottom - (windowInfo.containerSize.height - imeBottom)
+        ).coerceAtLeast(0)
+
+    return this
+        .onGloballyPositioned {
+            rootBottom = it.boundsInWindow().bottom.roundToInt()
+        }
+        .padding(bottom = with(density) { bottomPadding.toDp() })
 }
 
 @Composable
