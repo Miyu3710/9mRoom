@@ -64,6 +64,16 @@
             <Setter Property="MinWidth" Value="220" />
         </Style>
 
+        <Style x:Key="ServerInput" TargetType="TextBox">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="Foreground" Value="{StaticResource BrushText}" />
+            <Setter Property="CaretBrush" Value="{StaticResource BrushText}" />
+            <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="Padding" Value="0" />
+        </Style>
+
         <Style x:Key="TitleBarButton" TargetType="Button">
             <Setter Property="Width" Value="46" />
             <Setter Property="Height" Value="32" />
@@ -366,28 +376,23 @@
                     <StackPanel DockPanel.Dock="Left">
                         <TextBlock Text="自习室" FontSize="26" FontWeight="SemiBold" />
                     </StackPanel>
-                    <Border DockPanel.Dock="Right"
-                            Background="{StaticResource BrushSurfaceAlt}"
-                            CornerRadius="999"
-                            Padding="12,6"
-                            VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal">
-                            <Ellipse Width="7" Height="7" Margin="0,0,7,0" VerticalAlignment="Center">
-                                <Ellipse.Style>
-                                    <Style TargetType="Ellipse">
-                                        <Setter Property="Fill" Value="{StaticResource BrushOffline}" />
-                                        <Style.Triggers>
-                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
-                                                <Setter Property="Fill" Value="{StaticResource BrushFocus}" />
-                                            </DataTrigger>
-                                        </Style.Triggers>
-                                    </Style>
-                                </Ellipse.Style>
-                            </Ellipse>
-                            <TextBlock Text="{Binding ConnectionText}" Style="{StaticResource Label}"
-                                       VerticalAlignment="Center" />
-                        </StackPanel>
-                    </Border>
+                    <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                                VerticalAlignment="Center">
+                        <Ellipse Width="7" Height="7" Margin="0,0,7,0" VerticalAlignment="Center">
+                            <Ellipse.Style>
+                                <Style TargetType="Ellipse">
+                                    <Setter Property="Fill" Value="{StaticResource BrushOffline}" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                            <Setter Property="Fill" Value="{StaticResource BrushFocus}" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Ellipse.Style>
+                        </Ellipse>
+                        <TextBlock Text="{Binding ConnectionText}" Style="{StaticResource Label}"
+                                   VerticalAlignment="Center" />
+                    </StackPanel>
                 </DockPanel>
 
                 <Border Grid.Row="1" Grid.RowSpan="2"
@@ -414,47 +419,76 @@
                 <ScrollViewer Grid.Row="2" x:Name="StateTabContent"
                               VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
                     <StackPanel Margin="14,8,14,20">
-                        <Border Style="{StaticResource Card}" Padding="16" Margin="0,0,0,16">
-                            <StackPanel>
-                                <Grid>
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="*" />
-                                        <ColumnDefinition Width="Auto" />
-                                    </Grid.ColumnDefinitions>
+                        <StackPanel Margin="4,4,4,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
 
-                                    <TextBox Grid.Column="0"
-                                             Text="{Binding ServerBase, UpdateSourceTrigger=PropertyChanged}"
-                                             Style="{StaticResource InputBox}"
-                                             materialDesign:HintAssist.Hint="服务器地址"
-                                             Margin="0,0,12,0" />
+                                <StackPanel Grid.Column="0" Margin="0,0,16,0">
+                                    <TextBlock Text="服务器地址" Style="{StaticResource Label}"
+                                               Margin="4,0,0,6" />
+                                    <Border Height="48"
+                                            Background="{StaticResource BrushSurfaceAlt}"
+                                            BorderThickness="1"
+                                            CornerRadius="12">
+                                        <Border.Style>
+                                            <Style TargetType="Border">
+                                                <Setter Property="BorderBrush" Value="{StaticResource BrushControlBorder}" />
+                                                <Style.Triggers>
+                                                    <Trigger Property="IsKeyboardFocusWithin" Value="True">
+                                                        <Setter Property="BorderBrush" Value="{StaticResource BrushAccent}" />
+                                                    </Trigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </Border.Style>
+                                        <Grid Margin="13,0">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="Auto" />
+                                                <ColumnDefinition Width="*" />
+                                            </Grid.ColumnDefinitions>
+                                            <materialDesign:PackIcon Kind="Server"
+                                                                     Width="18" Height="18"
+                                                                     VerticalAlignment="Center"
+                                                                     Foreground="{StaticResource BrushTextMuted}" />
+                                            <TextBox Grid.Column="1"
+                                                     Text="{Binding ServerBase, UpdateSourceTrigger=PropertyChanged}"
+                                                     Style="{StaticResource ServerInput}"
+                                                     Margin="10,0,0,0"
+                                                     VerticalContentAlignment="Center" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
 
-                                    <StackPanel Grid.Column="1" Orientation="Horizontal"
-                                                VerticalAlignment="Center">
-                                        <Button Content="{Binding ConnectButtonText}" Click="Connect_Click"
-                                                Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" />
-                                        <Button Content="离开房间" Click="LeaveRoom_Click"
-                                                Style="{StaticResource SecondaryButton}"
-                                                Visibility="{Binding IsInRoom, Converter={StaticResource BoolToVisibility}}" />
-                                    </StackPanel>
-                                </Grid>
-                                <TextBlock Text="连接后会自动同步当前应用、音乐与专注状态。"
-                                           Style="{StaticResource Label}"
-                                           Margin="0,10,0,0" />
-                                <TextBlock Text="{Binding NoticeText}" Foreground="{StaticResource BrushBreak}"
-                                           FontSize="{StaticResource FontSizeSm}" TextWrapping="Wrap" Margin="0,8,0,0">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Visible" />
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding NoticeText}" Value="">
-                                                    <Setter Property="Visibility" Value="Collapsed" />
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
-                            </StackPanel>
-                        </Border>
+                                <StackPanel Grid.Column="1" Orientation="Horizontal"
+                                            VerticalAlignment="Bottom">
+                                    <Button Content="{Binding ConnectButtonText}" Click="Connect_Click"
+                                            Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" />
+                                    <Button Content="离开房间" Click="LeaveRoom_Click"
+                                            Style="{StaticResource SecondaryButton}"
+                                            Visibility="{Binding IsInRoom, Converter={StaticResource BoolToVisibility}}" />
+                                </StackPanel>
+                            </Grid>
+                            <TextBlock Text="连接后会自动同步当前应用、音乐与专注状态。"
+                                       Style="{StaticResource Label}"
+                                       Margin="4,8,0,0" />
+                            <TextBlock Text="{Binding NoticeText}" Foreground="{StaticResource BrushBreak}"
+                                       FontSize="{StaticResource FontSizeSm}" TextWrapping="Wrap" Margin="4,6,0,0">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding NoticeText}" Value="">
+                                                <Setter Property="Visibility" Value="Collapsed" />
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
+
+                        <Border Height="1" Background="{StaticResource BrushBorder}" Margin="4,18,4,18" />
 
                         <Border Margin="0,0,0,16" Padding="26">
                             <Border.Style>
@@ -525,18 +559,19 @@
                             </StackPanel>
                         </Border>
 
-                    <Border Style="{StaticResource Card}" Margin="0,0,0,16"
+                    <Border Margin="4,0,4,16" Padding="0"
+                            Background="Transparent" BorderThickness="0"
                             Visibility="{Binding IsInRoom, Converter={StaticResource BoolToVisibility}}">
                         <StackPanel>
                                 <TextBlock Text="我的状态" FontSize="18" FontWeight="SemiBold" />
                                 <TextBlock Text="{Binding MyStatusText}" Style="{StaticResource Body}" Margin="0,10,0,0" />
 
                                 <WrapPanel Margin="0,10,0,0">
-                                    <Button Content="自动" Tag="auto" Click="Mode_Click" Style="{StaticResource ModeButton}" Padding="8,4" Margin="0,0,4,4" />
-                                    <Button Content="专注" Tag="focusing" Click="Mode_Click" Style="{StaticResource ModeButton}" Padding="8,4" Margin="0,0,4,4" />
-                                    <Button Content="休息" Tag="break" Click="Mode_Click" Style="{StaticResource ModeButton}" Padding="8,4" Margin="0,0,4,4" />
-                                    <Button Content="离开" Tag="away" Click="Mode_Click" Style="{StaticResource ModeButton}" Padding="8,4" Margin="0,0,4,4" />
-                                    <Button Content="隐身" Tag="invisible" Click="Mode_Click" Style="{StaticResource ModeButton}" Padding="8,4" Margin="0,0,4,4" />
+                                    <Button Content="自动" Tag="auto" Click="Mode_Click" Style="{StaticResource ModeButton}" Margin="0,0,4,4" />
+                                    <Button Content="专注" Tag="focusing" Click="Mode_Click" Style="{StaticResource ModeButton}" Margin="0,0,4,4" />
+                                    <Button Content="休息" Tag="break" Click="Mode_Click" Style="{StaticResource ModeButton}" Margin="0,0,4,4" />
+                                    <Button Content="离开" Tag="away" Click="Mode_Click" Style="{StaticResource ModeButton}" Margin="0,0,4,4" />
+                                    <Button Content="隐身" Tag="invisible" Click="Mode_Click" Style="{StaticResource ModeButton}" Margin="0,0,4,4" />
                                 </WrapPanel>
 
                                 <Grid Margin="0,12,0,0">
