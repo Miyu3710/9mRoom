@@ -155,7 +155,7 @@
   <sys:Double x:Key="SizeListThreeLine">88</sys:Double>
   <sys:Double x:Key="SizeTab">48</sys:Double>
   <sys:Double x:Key="SizeNavItem">56</sys:Double>
-  <sys:Double x:Key="SizeNavRailExpanded">184</sys:Double>
+  <sys:Double x:Key="SizeNavRailExpanded">128</sys:Double>
   <sys:Double x:Key="SizeNavRailCollapsed">80</sys:Double>
   <sys:Double x:Key="SizeAppBar">56</sys:Double>
   <sys:Double x:Key="SizeDialogMax">560</sys:Double>
