@@ -90,23 +90,25 @@
                  controls:M3Field.HelperText="用于定位图标；留空表示自动探测。"
                  VerticalAlignment="Top" />
 
-        <Grid Margin="0,16,0,4">
-          <controls:M3Button x:Name="TemplateHelpButton"
-                             HorizontalAlignment="Right"
-                             Style="{StaticResource M3IconButton}"
-                             Width="28" Height="28"
-                             ToolTip="查看可用占位符"
-                             AutomationProperties.Name="查看可用占位符"
-                             Click="Help_Click">
-            <materialDesign:PackIcon Kind="HelpCircleOutline" Width="16" Height="16"
-                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=controls:M3Button}}" />
-          </controls:M3Button>
-        </Grid>
         <TextBox Text="{Binding AppDraft.Template, UpdateSourceTrigger=PropertyChanged}"
                  Style="{StaticResource M3TextBox}"
                  controls:M3Field.Label="状态模板"
-                 controls:M3Field.HelperText="例如：{app} · {title}"
                  VerticalAlignment="Top" />
+
+        <StackPanel Orientation="Horizontal" Margin="0,4,0,0">
+          <TextBlock Text="例如：{app} · {title}"
+                     Style="{StaticResource HintText}" VerticalAlignment="Center" />
+          <controls:M3Button x:Name="TemplateHelpButton"
+                             Style="{StaticResource M3IconButton}"
+                             Width="24" Height="24" MinWidth="0" MinHeight="0" Padding="0"
+                             Margin="4,0,0,0"
+                             ToolTip="查看可用占位符"
+                             AutomationProperties.Name="查看可用占位符"
+                             Click="Help_Click">
+            <materialDesign:PackIcon Kind="HelpCircleOutline" Width="14" Height="14"
+                                     Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=controls:M3Button}}" />
+          </controls:M3Button>
+        </StackPanel>
 
         <Popup x:Name="TemplateHelpPopup" PlacementTarget="{Binding ElementName=TemplateHelpButton}"
                Placement="Bottom" StaysOpen="False" AllowsTransparency="True">

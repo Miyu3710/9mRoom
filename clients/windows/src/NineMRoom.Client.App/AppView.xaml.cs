@@ -1,4 +1,5 @@
 using System.Windows;
+using MouseButtonEventArgs = System.Windows.Input.MouseButtonEventArgs;
 using RadioButton = System.Windows.Controls.RadioButton;
 using SelectionChangedEventArgs = System.Windows.Controls.SelectionChangedEventArgs;
 using UserControl = System.Windows.Controls.UserControl;
@@ -18,6 +19,21 @@ public partial class AppView : UserControl
     private void AppList_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (AppList.SelectedItem is AppRuleItem item && ViewModel is not null)
+        {
+            ViewModel.OpenAppEditor(item);
+        }
+    }
+
+    private void AppList_PreviewMouseLeftButtonUp(object sender, MouseButtonEventArgs e)
+    {
+        if (AppList.SelectedItem is not AppRuleItem item || ViewModel is null)
+        {
+            return;
+        }
+
+        var source = e.OriginalSource as DependencyObject;
+        var container = source is null ? null : System.Windows.Controls.ItemsControl.ContainerFromElement(AppList, source) as System.Windows.Controls.ListBoxItem;
+        if (container?.DataContext is AppRuleItem clicked && ReferenceEquals(clicked, item))
         {
             ViewModel.OpenAppEditor(item);
         }
