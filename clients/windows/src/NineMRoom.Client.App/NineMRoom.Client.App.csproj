@@ -24,9 +24,5 @@
     <ProjectReference Include="..\NineMRoom.Client.Core\NineMRoom.Client.Core.csproj" />
     <None Include="..\..\..\..\shared\app-catalog\catalog.json" Link="catalog.json" CopyToOutputDirectory="PreserveNewest" />
     <Resource Include="Assets\9mRoom-mark.png" />
-    <Resource Include="Assets\Fonts\MiSans-Regular.ttf" />
-    <Resource Include="Assets\Fonts\MiSans-Medium.ttf" />
-    <Resource Include="Assets\Fonts\MiSans-Semibold.ttf" />
-    <Resource Include="Assets\Fonts\MiSans-Bold.ttf" />
   </ItemGroup>
 </Project>

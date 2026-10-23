@@ -451,13 +451,9 @@
   - 标题栏按钮移除边框与焦点框，关闭按钮 hover 只变红。
   - 成员详情关闭按钮改为无边框 8px 圆角图标按钮，hover 只显示淡背景。
   - **已完成**：编译通过，连接/断开态截图已核对；未重新打包 MSI。
-- **FIX-060 字体渲染与 DPI 审计**：
-  - 确认 Manifest 为 PerMonitorV2，进程 DPI awareness=2，125% 下 980×720 DIP 对应 1225×900 物理像素，无位图缩放。
-  - 主窗口背景从近透明改为不透明，ShellBorder、成员抽屉、App 编辑器启用 `ClearTypeHint`。
-  - 仅对小字号静态 UI（Label、导航、标签、小按钮、输入框）使用 `TextFormattingMode=Display`；大标题、正文和透明叠加层保留 Ideal。
-  - 成员详情和 App 编辑器打开动画结束后清除 Opacity/TranslateTransform 动画，避免残留合成层。
-  - 内嵌 MiSans Regular/Medium/Semibold/Bold 四个字重，字体族使用 `pack://application:,,,/Assets/Fonts/#MiSans`，以 Microsoft YaHei UI 回退。
-  - **验证**：125% 截图与构建通过；100%/150% 需切换系统缩放并重启会话，当前未伪造结果；详见 `docs/font-rendering-audit.md`。
+- **FIX-060 字体渲染与 DPI 审计（已回退）**：
+  - 审计确认 Manifest 为 PerMonitorV2，进程 DPI awareness=2，125% 下无位图缩放。
+  - 曾尝试透明窗口修复、选择性 Display/Grayscale、MiSans 内嵌和抽屉动画清理；因字体观感不佳，字体相关部分由 FIX-063 回退。
   - **未重新打包 MSI**。
 - **FIX-061 去边框与模块背景扁平化**：
   - 删除空状态里的“自动同步 / 隐私可控”标签。
@@ -476,6 +472,12 @@
   - 恢复模块背景：`BrushGlassSurface` 改为不透明 `#1D2024`，与主窗口 `#17171A` 区分；边框仍为透明。
   - 侧栏状态卡恢复 `BrushSurface` 背景。
   - **已完成**：编译通过，聊天/设置截图已核对；未重新打包 MSI。
+- **FIX-063 回退字体修复，统一使用 Noto Sans**：
+  - 删除内嵌 MiSans 字体文件、字体资源和相关文档。
+  - 字体 token 改为 `Noto Sans SC, Microsoft YaHei UI`。
+  - 移除 MainWindow 上所有 `TextOptions` 自定义渲染设置、小字号 Grayscale/Display 设置和 Medium 字重覆盖。
+  - 恢复 WPF 默认的 `Ideal + ClearType` 文本渲染，不再做字体层面的特殊修复。
+  - **已完成**：编译通过；未重新打包 MSI。
 
 
 

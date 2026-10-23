@@ -38,9 +38,6 @@
         <Style x:Key="Label" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
-            <Setter Property="FontWeight" Value="Medium" />
-            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
-            <Setter Property="TextOptions.TextRenderingMode" Value="Grayscale" />
         </Style>
 
         <Style x:Key="Body" TargetType="TextBlock">
@@ -76,8 +73,6 @@
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Padding" Value="0" />
-            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
-            <Setter Property="TextOptions.TextRenderingMode" Value="Grayscale" />
         </Style>
 
         <Style x:Key="TitleBarButton" TargetType="Button">
@@ -120,9 +115,6 @@
             <Setter Property="Background" Value="{StaticResource BrushAccent}" />
             <Setter Property="Foreground" Value="{StaticResource BrushOnAccent}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
-            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
-            <Setter Property="TextOptions.TextRenderingMode" Value="Grayscale" />
-            <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="Height" Value="38" />
             <Setter Property="Padding" Value="20,0" />
             <Setter Property="Cursor" Value="Hand" />
@@ -135,8 +127,6 @@
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
-            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
-            <Setter Property="TextOptions.TextRenderingMode" Value="Grayscale" />
             <Setter Property="Height" Value="38" />
             <Setter Property="Padding" Value="18,0" />
             <Setter Property="Cursor" Value="Hand" />
@@ -150,9 +140,6 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
-            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
-            <Setter Property="TextOptions.TextRenderingMode" Value="Grayscale" />
-            <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Cursor" Value="Hand" />
@@ -244,8 +231,6 @@
         <Style x:Key="NavItem" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
-            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
-            <Setter Property="TextOptions.TextRenderingMode" Value="Grayscale" />
             <Setter Property="Height" Value="44" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -274,8 +259,6 @@
         <Style x:Key="RoomTab" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
-            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
-            <Setter Property="TextOptions.TextRenderingMode" Value="Grayscale" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Margin" Value="0" />
@@ -301,7 +284,6 @@
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
-                                <Setter Property="FontWeight" Value="Medium" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
