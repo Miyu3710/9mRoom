@@ -13,9 +13,14 @@ public partial class App : WpfApplication
 
     protected override void OnStartup(StartupEventArgs e)
     {
-        NativeTheme.EnableDarkMenus();
         base.OnStartup(e);
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
+        _settings = SettingsStore.Load();
+        ThemeService.Apply(_settings.Theme);
+        if (!ThemeService.IsLight(_settings.Theme))
+        {
+            NativeTheme.EnableDarkMenus();
+        }
 
         _singleInstance = new SingleInstance();
         _isPrimary = _singleInstance.IsFirst;
@@ -27,7 +32,6 @@ public partial class App : WpfApplication
             return;
         }
 
-        _settings = SettingsStore.Load();
         LogService.Write($"startup primary={_isPrimary}");
 
         DispatcherUnhandledException += OnDispatcherUnhandledException;

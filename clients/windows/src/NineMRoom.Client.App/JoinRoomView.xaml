@@ -3,39 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              FontFamily="{StaticResource FontUi}">
     <UserControl.Resources>
-        <Style x:Key="Label" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
-        </Style>
-
-        <Style x:Key="InputBox" TargetType="TextBox" BasedOn="{StaticResource ModernTextBox}">
-            <Setter Property="Background" Value="{StaticResource BrushControlBg}" />
-        </Style>
-
-        <Style x:Key="ActionButton" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource BrushSurfaceAlt}" />
-            <Setter Property="Foreground" Value="{StaticResource BrushText}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
-            <Setter Property="Padding" Value="12,6" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="{StaticResource RadiusSm}"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.85" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-    </UserControl.Resources>
+</UserControl.Resources>
 
     <StackPanel Margin="24">
         <TextBlock Text="加入房间" FontSize="{StaticResource FontSizeLg}" FontWeight="SemiBold" />

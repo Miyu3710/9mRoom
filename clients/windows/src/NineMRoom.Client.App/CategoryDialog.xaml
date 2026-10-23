@@ -1,6 +1,7 @@
 <Window x:Class="NineMRoom.Client.App.CategoryDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         Title="应用分类"
         Width="760" Height="600"
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
@@ -13,13 +14,8 @@
         UseLayoutRounding="True"
         SnapsToDevicePixels="True">
     <Window.Resources>
-        <Style x:Key="Label" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
-        </Style>
-    </Window.Resources>
-    <Border Background="#17171A" BorderBrush="{StaticResource BrushGlassBorder}"
-            BorderThickness="1" CornerRadius="12">
+        </Window.Resources>
+    <Border Background="{StaticResource BrushSurface}" BorderBrush="Transparent" BorderThickness="0" CornerRadius="{StaticResource RadiusLg}">
         <Grid Margin="22">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
@@ -29,9 +25,11 @@
             </Grid.RowDefinitions>
 
             <Grid Grid.Row="0" Margin="0,0,0,12" MouseLeftButtonDown="TitleBar_MouseLeftButtonDown">
-                <TextBlock Text="应用分类" FontSize="{StaticResource FontSizeLg}" FontWeight="SemiBold" />
-                <Button Content="×" Click="Close_Click" HorizontalAlignment="Right"
-                        Style="{StaticResource ModernButton}" Padding="10,3" />
+                <TextBlock Text="应用分类" Style="{StaticResource SectionTitle}" />
+                <Button Click="Close_Click" HorizontalAlignment="Right"
+                        Style="{StaticResource MaterialDesignIconButton}" Width="36" Height="36" ToolTip="关闭">
+                    <materialDesign:PackIcon Kind="Close" Width="18" Height="18" />
+                </Button>
             </Grid>
 
             <TextBlock Grid.Row="1" Text="分类模板只作用于 app 块；拖动 ≡ 可调整分类顺序，顺序会同步到应用规则。优先级：单应用模板 &gt; 分类模板 &gt; 全局模板。"

@@ -446,6 +446,26 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
     }
 
+    public bool UseLightTheme
+    {
+        get => ThemeService.IsLight(_settings.Theme);
+        set
+        {
+            var theme = value ? "light" : "dark";
+            if (string.Equals(_settings.Theme, theme, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            _settings.Theme = theme;
+            SettingsStore.Save(_settings);
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(ThemeRestartHint));
+        }
+    }
+
+    public string ThemeRestartHint => "主题在下次启动时生效";
+
     public bool ShareMusic
     {
         get => _settings.ShareMusic;

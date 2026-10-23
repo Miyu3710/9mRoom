@@ -11,6 +11,7 @@
         MinHeight="560"
         WindowStyle="None"
         Background="{StaticResource BrushBg}"
+        Foreground="{StaticResource BrushText}"
         FontFamily="{StaticResource FontUi}"
         TextOptions.TextFormattingMode="Ideal"
         TextOptions.TextRenderingMode="ClearType"
@@ -35,34 +36,12 @@
             <Setter Property="Foreground" Value="{StaticResource BrushText}" />
         </Style>
 
-        <Style x:Key="Label" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
-        </Style>
-
-        <Style x:Key="Body" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource BrushText}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
-
         <Style x:Key="Card" TargetType="Border">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="Transparent" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="16" />
             <Setter Property="Padding" Value="20" />
-        </Style>
-
-        <Style x:Key="InputBox" TargetType="TextBox" BasedOn="{StaticResource MaterialDesignFilledTextBox}">
-            <Setter Property="Background" Value="{StaticResource BrushControlBg}" />
-            <Setter Property="Foreground" Value="{StaticResource BrushText}" />
-            <Setter Property="CaretBrush" Value="{StaticResource BrushText}" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
-            <Setter Property="MinHeight" Value="52" />
-            <Setter Property="MinWidth" Value="220" />
         </Style>
 
         <Style x:Key="ServerInput" TargetType="TextBox">
@@ -109,28 +88,6 @@
                     <Setter Property="Foreground" Value="{StaticResource BrushDanger}" />
                 </Trigger>
             </Style.Triggers>
-        </Style>
-
-        <Style x:Key="PrimaryButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
-            <Setter Property="Background" Value="{StaticResource BrushAccent}" />
-            <Setter Property="Foreground" Value="{StaticResource BrushOnAccent}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
-            <Setter Property="Height" Value="38" />
-            <Setter Property="Padding" Value="20,0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="20" />
-        </Style>
-
-        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignOutlinedButton}">
-            <Setter Property="Background" Value="{StaticResource BrushSurfaceAlt}" />
-            <Setter Property="Foreground" Value="{StaticResource BrushText}" />
-            <Setter Property="BorderBrush" Value="Transparent" />
-            <Setter Property="BorderThickness" Value="0" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
-            <Setter Property="Height" Value="38" />
-            <Setter Property="Padding" Value="18,0" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="20" />
         </Style>
 
         <Style x:Key="BarActionButton" TargetType="Button" BasedOn="{StaticResource MaterialDesignFlatButton}">
@@ -235,6 +192,7 @@
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
                                 <Setter TargetName="Bg" Property="Background" Value="{StaticResource BrushControlHover}" />
+                                <Setter Property="Foreground" Value="{StaticResource BrushText}" />
                             </Trigger>
                             <Trigger Property="IsChecked" Value="True">
                                 <Setter TargetName="Bg" Property="Background" Value="{StaticResource BrushAccentSoft}" />
@@ -259,7 +217,7 @@
     </Window.Resources>
 
     <Border x:Name="ShellBorder"
-            Background="#FF17171A"
+            Background="{StaticResource BrushBg}"
             BorderBrush="{StaticResource BrushGlassBorder}"
             BorderThickness="0"
             ClipToBounds="True"
@@ -296,7 +254,7 @@
 
         <!-- 侧边栏 -->
         <Border Grid.Column="0"
-                Background="#FF1B1B1E"
+                Background="{StaticResource BrushSurface}"
                 BorderBrush="Transparent"
                 BorderThickness="0">
             <Grid Margin="12,16,12,16">
@@ -310,60 +268,48 @@
                                  GroupName="Nav" IsChecked="True" Checked="RoomNav_Checked">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="HomeOutline" Width="18" Height="18" Margin="0,0,10,0"
-                                                                                          VerticalAlignment="Center"
-                                                                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
-                            <TextBlock Text="自习室" VerticalAlignment="Center"
-                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                                                                          VerticalAlignment="Center" />
+                            <TextBlock Text="自习室" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="FocusNav" Style="{StaticResource NavItem}"
                                  GroupName="Nav" Checked="FocusNav_Checked">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="TimerOutline" Width="18" Height="18" Margin="0,0,10,0"
-                                                                                          VerticalAlignment="Center"
-                                                                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
-                            <TextBlock Text="专注" VerticalAlignment="Center"
-                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                                                                          VerticalAlignment="Center" />
+                            <TextBlock Text="专注" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="TodoNav" Style="{StaticResource NavItem}"
                                  GroupName="Nav" Checked="TodoNav_Checked">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="FormatListChecks" Width="18" Height="18" Margin="0,0,10,0"
-                                                                                          VerticalAlignment="Center"
-                                                                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
-                            <TextBlock Text="待办" VerticalAlignment="Center"
-                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                                                                          VerticalAlignment="Center" />
+                            <TextBlock Text="待办" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="LayoutNav" Style="{StaticResource NavItem}"
                                  GroupName="Nav" Checked="LayoutNav_Checked">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="ViewDashboardOutline" Width="18" Height="18" Margin="0,0,10,0"
-                                                                                          VerticalAlignment="Center"
-                                                                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
-                            <TextBlock Text="状态" VerticalAlignment="Center"
-                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                                                                          VerticalAlignment="Center" />
+                            <TextBlock Text="状态" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="AppNav" Style="{StaticResource NavItem}"
                                  GroupName="Nav" Checked="AppNav_Checked">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="Apps" Width="18" Height="18" Margin="0,0,10,0"
-                                                                                          VerticalAlignment="Center"
-                                                                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
-                            <TextBlock Text="应用" VerticalAlignment="Center"
-                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                                                                          VerticalAlignment="Center" />
+                            <TextBlock Text="应用" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
                     <RadioButton x:Name="SettingsNav" Style="{StaticResource NavItem}"
                                  GroupName="Nav" Checked="SettingsNav_Checked">
                         <StackPanel Orientation="Horizontal">
                             <materialDesign:PackIcon Kind="CogOutline" Width="18" Height="18" Margin="0,0,10,0"
-                                                                                          VerticalAlignment="Center"
-                                                                                          Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
-                            <TextBlock Text="设置" VerticalAlignment="Center"
-                                       Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=RadioButton}}" />
+                                                                                          VerticalAlignment="Center" />
+                            <TextBlock Text="设置" VerticalAlignment="Center" />
                         </StackPanel>
                     </RadioButton>
                 </StackPanel>
@@ -406,7 +352,7 @@
 
                 <DockPanel Grid.Row="0" Margin="0,0,0,18" LastChildFill="False">
                     <StackPanel DockPanel.Dock="Left">
-                        <TextBlock Text="自习室" FontSize="26" FontWeight="SemiBold" />
+                        <TextBlock Text="自习室" Style="{StaticResource PageTitle}" />
                     </StackPanel>
                     <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
                                 VerticalAlignment="Center">

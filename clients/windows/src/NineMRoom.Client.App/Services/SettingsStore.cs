@@ -12,6 +12,7 @@ public sealed class AppSettings
     public string Name { get; set; } = Environment.UserName;
     public string ClientId { get; set; } = string.Empty;
     public bool AutoStart { get; set; }
+    public string Theme { get; set; } = "dark";
     public bool CloseToTray { get; set; } = true;
     public bool CloseToTrayHintShown { get; set; }
     public bool AutoConnect { get; set; } = true;

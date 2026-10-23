@@ -1,0 +1,80 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:sys="clr-namespace:System;assembly=System.Runtime">
+    <!-- Light M3 roles. Loaded before Controls/Design at startup. -->
+    <Color x:Key="ColorBg">#F8F7FC</Color>
+    <SolidColorBrush x:Key="BrushBg" Color="{StaticResource ColorBg}" />
+    <Color x:Key="ColorSurface">#FFFFFF</Color>
+    <SolidColorBrush x:Key="BrushSurface" Color="{StaticResource ColorSurface}" />
+    <Color x:Key="ColorSurfaceAlt">#F0EEF7</Color>
+    <SolidColorBrush x:Key="BrushSurfaceAlt" Color="{StaticResource ColorSurfaceAlt}" />
+    <Color x:Key="ColorBorder">#74777F</Color>
+    <SolidColorBrush x:Key="BrushBorder" Color="{StaticResource ColorBorder}" />
+    <Color x:Key="ColorText">#1B1B21</Color>
+    <SolidColorBrush x:Key="BrushText" Color="{StaticResource ColorText}" />
+    <Color x:Key="ColorTextMuted">#46464F</Color>
+    <SolidColorBrush x:Key="BrushTextMuted" Color="{StaticResource ColorTextMuted}" />
+    <Color x:Key="ColorTextFaint">#74777F</Color>
+    <SolidColorBrush x:Key="BrushTextFaint" Color="{StaticResource ColorTextFaint}" />
+    <Color x:Key="ColorAccent">#4A5B92</Color>
+    <SolidColorBrush x:Key="BrushAccent" Color="{StaticResource ColorAccent}" />
+    <Color x:Key="ColorOnAccent">#FFFFFF</Color>
+    <SolidColorBrush x:Key="BrushOnAccent" Color="{StaticResource ColorOnAccent}" />
+    <Color x:Key="ColorFocus">#2E6B45</Color>
+    <SolidColorBrush x:Key="BrushFocus" Color="{StaticResource ColorFocus}" />
+    <Color x:Key="ColorBreak">#8A5A00</Color>
+    <SolidColorBrush x:Key="BrushBreak" Color="{StaticResource ColorBreak}" />
+    <Color x:Key="ColorAway">#6F6F78</Color>
+    <SolidColorBrush x:Key="BrushAway" Color="{StaticResource ColorAway}" />
+    <Color x:Key="ColorOffline">#8E8E97</Color>
+    <SolidColorBrush x:Key="BrushOffline" Color="{StaticResource ColorOffline}" />
+    <Color x:Key="ColorDanger">#BA1A1A</Color>
+    <SolidColorBrush x:Key="BrushDanger" Color="{StaticResource ColorDanger}" />
+    <Color x:Key="ColorOverlayBg">#E6FFFFFF</Color>
+    <SolidColorBrush x:Key="BrushOverlayBg" Color="{StaticResource ColorOverlayBg}" />
+    <Color x:Key="ColorOverlayBorder">#80FFFFFF</Color>
+    <SolidColorBrush x:Key="BrushOverlayBorder" Color="{StaticResource ColorOverlayBorder}" />
+    <Color x:Key="ColorGlassShell">#F2F8F7FC</Color>
+    <SolidColorBrush x:Key="BrushGlassShell" Color="{StaticResource ColorGlassShell}" />
+    <Color x:Key="ColorGlassSurface">#FFFFFFFF</Color>
+    <SolidColorBrush x:Key="BrushGlassSurface" Color="{StaticResource ColorGlassSurface}" />
+    <Color x:Key="ColorGlassBorder">#0044474F</Color>
+    <SolidColorBrush x:Key="BrushGlassBorder" Color="{StaticResource ColorGlassBorder}" />
+    <Color x:Key="ColorControlBg">#F0EEF7</Color>
+    <SolidColorBrush x:Key="BrushControlBg" Color="{StaticResource ColorControlBg}" />
+    <Color x:Key="ColorControlHover">#E5E2ED</Color>
+    <SolidColorBrush x:Key="BrushControlHover" Color="{StaticResource ColorControlHover}" />
+    <Color x:Key="ColorControlBorder">#74777F</Color>
+    <SolidColorBrush x:Key="BrushControlBorder" Color="{StaticResource ColorControlBorder}" />
+    <Color x:Key="ColorAccentSoft">#DDE1FF</Color>
+    <SolidColorBrush x:Key="BrushAccentSoft" Color="{StaticResource ColorAccentSoft}" />
+    <FontFamily x:Key="FontUi">Noto Sans SC, Microsoft YaHei UI</FontFamily>
+    <FontFamily x:Key="FontMono">Cascadia Mono</FontFamily>
+    <sys:Double x:Key="FontSizeXs">11</sys:Double>
+    <sys:Double x:Key="FontSizeSm">12</sys:Double>
+    <sys:Double x:Key="FontSizeMd">14</sys:Double>
+    <sys:Double x:Key="FontSizeLg">16</sys:Double>
+    <sys:Double x:Key="FontSizeXl">20</sys:Double>
+    <sys:Double x:Key="FontSizeTitle">26</sys:Double>
+    <sys:Double x:Key="Space1">4</sys:Double>
+    <sys:Double x:Key="Space2">8</sys:Double>
+    <sys:Double x:Key="Space3">12</sys:Double>
+    <sys:Double x:Key="Space4">16</sys:Double>
+    <sys:Double x:Key="Space5">20</sys:Double>
+    <sys:Double x:Key="Space6">24</sys:Double>
+    <sys:Double x:Key="Space8">32</sys:Double>
+    <CornerRadius x:Key="RadiusSm">8</CornerRadius>
+    <CornerRadius x:Key="RadiusMd">12</CornerRadius>
+    <CornerRadius x:Key="RadiusLg">16</CornerRadius>
+    <CornerRadius x:Key="RadiusXl">20</CornerRadius>
+    <CornerRadius x:Key="RadiusPill">999</CornerRadius>
+    <sys:Double x:Key="LayoutAvatar">40</sys:Double>
+    <sys:Double x:Key="LayoutMemberRowHeight">72</sys:Double>
+    <sys:Double x:Key="LayoutSidebar">200</sys:Double>
+    <sys:Double x:Key="LayoutWindowWidth">980</sys:Double>
+    <sys:Double x:Key="LayoutWindowHeight">720</sys:Double>
+    <sys:Double x:Key="LayoutTitleBarHeight">48</sys:Double>
+    <sys:Double x:Key="LayoutScrollBar">8</sys:Double>
+    <sys:Double x:Key="MotionFast">120</sys:Double>
+    <sys:Double x:Key="MotionNormal">200</sys:Double>
+</ResourceDictionary>

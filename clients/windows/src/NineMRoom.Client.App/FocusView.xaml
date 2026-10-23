@@ -4,61 +4,7 @@
              FontFamily="{StaticResource FontUi}">
 
     <UserControl.Resources>
-        <Style x:Key="Card" TargetType="Border">
-            <Setter Property="Background" Value="{StaticResource BrushGlassSurface}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BrushGlassBorder}" />
-            <Setter Property="BorderThickness" Value="1" />
-            <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
-            <Setter Property="Padding" Value="20" />
-            <Setter Property="Margin" Value="0,0,0,14" />
-        </Style>
-
-        <Style x:Key="SectionTitle" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource BrushText}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeLg}" />
-            <Setter Property="FontWeight" Value="SemiBold" />
-            <Setter Property="Margin" Value="0,0,0,14" />
-        </Style>
-
-        <Style x:Key="Label" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
-        </Style>
-
-        <Style x:Key="Body" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{StaticResource BrushText}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
-            <Setter Property="TextWrapping" Value="Wrap" />
-        </Style>
-
-        <Style x:Key="ActionButton" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource BrushControlBg}" />
-            <Setter Property="Foreground" Value="{StaticResource BrushText}" />
-            <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
-            <Setter Property="Padding" Value="14,7" />
-            <Setter Property="Cursor" Value="Hand" />
-            <Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="Button">
-                        <Border Background="{TemplateBinding Background}"
-                                CornerRadius="{StaticResource RadiusSm}"
-                                Padding="{TemplateBinding Padding}">
-                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.85" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>
-        </Style>
-
-        <Style x:Key="InputBox" TargetType="TextBox" BasedOn="{StaticResource ModernTextBox}">
-            <Setter Property="Background" Value="{StaticResource BrushControlBg}" />
-        </Style>
-    </UserControl.Resources>
+</UserControl.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -67,7 +13,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="0,0,24,16">
-            <TextBlock Text="专注" FontSize="{StaticResource FontSizeTitle}" FontWeight="SemiBold" />
+            <TextBlock Text="专注" Style="{StaticResource PageTitle}" Margin="0,0,0,16" />
         </StackPanel>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
