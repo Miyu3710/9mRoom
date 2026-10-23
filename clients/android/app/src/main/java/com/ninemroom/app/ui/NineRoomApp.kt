@@ -13,6 +13,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -275,10 +276,16 @@ fun NineRoomApp(
                     navController = navController,
                     startDestination = Destination.Home.route,
                     modifier = Modifier.weight(1f),
-                    enterTransition = { fadeIn(tween(80)) },
-                    exitTransition = { fadeOut(tween(60)) },
-                    popEnterTransition = { fadeIn(tween(80)) },
-                    popExitTransition = { fadeOut(tween(60)) },
+                    enterTransition = {
+                        fadeIn(tween(120)) +
+                            slideInHorizontally(tween(120)) { it / 16 }
+                    },
+                    exitTransition = { fadeOut(tween(90)) },
+                    popEnterTransition = {
+                        fadeIn(tween(120)) +
+                            slideInHorizontally(tween(120)) { -it / 16 }
+                    },
+                    popExitTransition = { fadeOut(tween(90)) },
                 ) {
                     composable(Destination.Home.route) {
                         HomeScreen(
