@@ -83,13 +83,12 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
     var draggedId by remember { mutableStateOf<String?>(null) }
     var originIndex by remember { mutableStateOf(-1) }
     var dragY by remember { mutableFloatStateOf(0f) }
-    var scrollBase by remember { mutableFloatStateOf(0f) }
+    var dragOriginY by remember { mutableFloatStateOf(0f) }
     var targetIndex by remember { mutableStateOf(-1) }
     val listState = rememberLazyListState()
     val density = LocalDensity.current
     val rowHeightPx = with(density) { 76.dp.toPx() }
     val stepPx = with(density) { 84.dp.toPx() }
-    val paddingTopPx = with(density) { 8.dp.toPx() }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Column(Modifier.fillMaxSize()) {
@@ -138,7 +137,11 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
                     }
                     val shift by animateFloatAsState(
                         targetValue = shiftSteps * stepPx,
-                        animationSpec = if (draggedId == null) snap() else tween(140),
+                        animationSpec = if (draggedId == null || targetIndex == originIndex) {
+                            snap()
+                        } else {
+                            tween(140)
+                        },
                         label = "category-shift",
                     )
                     CategoryRow(
@@ -148,17 +151,20 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
                         translationY = shift,
                         onClick = { selected = category },
                         onDragStart = {
-                            scrollBase = listState.firstVisibleItemIndex * stepPx +
-                                listState.firstVisibleItemScrollOffset
-                            dragY = paddingTopPx + index * stepPx + rowHeightPx / 2f - scrollBase
+                            val info = listState.layoutInfo.visibleItemsInfo
+                                .firstOrNull { it.key == category.id }
+                            val top = (info?.offset ?: 0) -
+                                listState.layoutInfo.viewportStartOffset
+                            dragOriginY = top.toFloat()
+                            dragY = dragOriginY + rowHeightPx / 2f
                             originIndex = index
                             targetIndex = index
                             draggedId = category.id
                         },
                         onDrag = { amount ->
                             dragY += amount
-                            val contentY = dragY - paddingTopPx + scrollBase
-                            targetIndex = (contentY / stepPx).toInt()
+                            val movedSlots = ((dragY - dragOriginY) / stepPx).roundToInt()
+                            targetIndex = (originIndex + movedSlots)
                                 .coerceIn(0, categories.lastIndex)
                         },
                         onDragEnd = {
@@ -177,7 +183,7 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
                             originIndex = -1
                             targetIndex = -1
                             dragY = 0f
-                            scrollBase = 0f
+                            dragOriginY = 0f
                         },
                     )
                 }
