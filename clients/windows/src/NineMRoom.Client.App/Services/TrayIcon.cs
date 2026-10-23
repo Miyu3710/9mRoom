@@ -23,16 +23,43 @@ public sealed class TrayIcon : IDisposable
     private const int WmLButtonDblClk = 0x0203;
     private const int WmRButtonUp = 0x0205;
 
+    private const uint MfString = 0x00000000;
+    private const uint MfSeparator = 0x00000800;
+    private const uint MfChecked = 0x00000008;
+    private const uint TpmRightButton = 0x0002;
+    private const uint TpmReturnCmd = 0x0100;
+
+    private const uint ShowCommand = 1;
+    private const uint PauseCommand = 2;
+    private const uint InvisibleCommand = 3;
+    private const uint OverlayCommand = 4;
+    private const uint ClickThroughCommand = 5;
+    private const uint ExitCommand = 6;
+
     [DllImport("user32.dll")]
     private static extern bool SetForegroundWindow(IntPtr hWnd);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern IntPtr CreatePopupMenu();
+
+    [DllImport("user32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
+    private static extern bool AppendMenu(IntPtr hMenu, uint flags, UIntPtr item, string? text);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern bool DestroyMenu(IntPtr hMenu);
+
+    [DllImport("user32.dll", SetLastError = true)]
+    private static extern uint TrackPopupMenuEx(
+        IntPtr hMenu, uint flags, int x, int y, IntPtr hWnd, IntPtr parameters);
+
+    [DllImport("user32.dll")]
+    private static extern bool PostMessage(IntPtr hWnd, uint message, IntPtr wParam, IntPtr lParam);
 
     private readonly Icon _icon;
     private readonly IntPtr _iconHandle;
     private readonly HwndSource _source;
     private readonly uint _id = 1;
 
-    private TrayMenuWindow? _menu;
-    private string _statusText = "正在运行";
     private bool _pauseChecked;
     private bool _invisibleChecked;
     private bool _overlayChecked;
@@ -75,44 +102,25 @@ public sealed class TrayIcon : IDisposable
     public void SetOverlayChecked(bool value)
     {
         _overlayChecked = value;
-        if (_menu is not null)
-        {
-            _menu.SetState(_pauseChecked, _invisibleChecked, _overlayChecked, _clickThroughChecked);
-        }
     }
 
     public void SetClickThroughChecked(bool value)
     {
         _clickThroughChecked = value;
-        if (_menu is not null)
-        {
-            _menu.SetState(_pauseChecked, _invisibleChecked, _overlayChecked, _clickThroughChecked);
-        }
     }
 
     public void SetPauseChecked(bool value)
     {
         _pauseChecked = value;
-        if (_menu is not null)
-        {
-            _menu.SetState(_pauseChecked, _invisibleChecked, _overlayChecked, _clickThroughChecked);
-        }
     }
 
     public void SetInvisibleChecked(bool value)
     {
         _invisibleChecked = value;
-        if (_menu is not null)
-        {
-            _menu.SetState(_pauseChecked, _invisibleChecked, _overlayChecked, _clickThroughChecked);
-        }
     }
 
     public void UpdateTooltip(string text)
     {
-        _statusText = string.IsNullOrWhiteSpace(text) ? "正在运行" : text;
-        _menu?.SetStatus(_statusText);
-
         var data = CreateData(NifTip);
         data.szTip = Truncate(text, 127);
         Shell_NotifyIcon(NimModify, ref data);
@@ -122,38 +130,77 @@ public sealed class TrayIcon : IDisposable
     {
         SetForegroundWindow(_source.Handle);
 
-        _menu ??= CreateMenu();
-        _menu.SetState(_pauseChecked, _invisibleChecked, _overlayChecked, _clickThroughChecked);
-        _menu.SetStatus(_statusText);
-        _menu.ShowAt(Cursor.Position);
+        var menu = CreatePopupMenu();
+        if (menu == IntPtr.Zero)
+        {
+            return;
+        }
+
+        try
+        {
+            AppendMenu(menu, MfString, ShowCommand, "显示");
+            AppendMenu(menu, MfSeparator, UIntPtr.Zero, null);
+            AppendMenu(menu, MfString | (_pauseChecked ? MfChecked : 0), PauseCommand, "暂停");
+            AppendMenu(menu, MfString | (_invisibleChecked ? MfChecked : 0), InvisibleCommand, "隐身");
+            AppendMenu(menu, MfSeparator, UIntPtr.Zero, null);
+            AppendMenu(menu, MfString | (_overlayChecked ? MfChecked : 0), OverlayCommand, "叠加层");
+            AppendMenu(menu, MfString | (_clickThroughChecked ? MfChecked : 0), ClickThroughCommand, "穿透");
+            AppendMenu(menu, MfSeparator, UIntPtr.Zero, null);
+            AppendMenu(menu, MfString, ExitCommand, "退出");
+
+            var point = Cursor.Position;
+            var command = TrackPopupMenuEx(
+                menu,
+                TpmReturnCmd | TpmRightButton,
+                point.X,
+                point.Y,
+                _source.Handle,
+                IntPtr.Zero);
+            DestroyMenu(menu);
+            menu = IntPtr.Zero;
+            PostMessage(_source.Handle, 0, IntPtr.Zero, IntPtr.Zero);
+
+            if (command != 0)
+            {
+                HandleMenuCommand(command);
+            }
+        }
+        finally
+        {
+            if (menu != IntPtr.Zero)
+            {
+                DestroyMenu(menu);
+            }
+        }
     }
 
-    private TrayMenuWindow CreateMenu()
+    private void HandleMenuCommand(uint command)
     {
-        var menu = new TrayMenuWindow();
-        menu.ShowRequested += () => ShowRequested?.Invoke();
-        menu.ExitRequested += () => ExitRequested?.Invoke();
-        menu.PauseToggled += value =>
+        switch (command)
         {
-            _pauseChecked = value;
-            PauseToggled?.Invoke(value);
-        };
-        menu.InvisibleToggled += value =>
-        {
-            _invisibleChecked = value;
-            InvisibleToggled?.Invoke(value);
-        };
-        menu.OverlayToggled += value =>
-        {
-            _overlayChecked = value;
-            OverlayToggled?.Invoke(value);
-        };
-        menu.ClickThroughToggled += value =>
-        {
-            _clickThroughChecked = value;
-            ClickThroughToggled?.Invoke(value);
-        };
-        return menu;
+            case ShowCommand:
+                ShowRequested?.Invoke();
+                break;
+            case PauseCommand:
+                _pauseChecked = !_pauseChecked;
+                PauseToggled?.Invoke(_pauseChecked);
+                break;
+            case InvisibleCommand:
+                _invisibleChecked = !_invisibleChecked;
+                InvisibleToggled?.Invoke(_invisibleChecked);
+                break;
+            case OverlayCommand:
+                _overlayChecked = !_overlayChecked;
+                OverlayToggled?.Invoke(_overlayChecked);
+                break;
+            case ClickThroughCommand:
+                _clickThroughChecked = !_clickThroughChecked;
+                ClickThroughToggled?.Invoke(_clickThroughChecked);
+                break;
+            case ExitCommand:
+                ExitRequested?.Invoke();
+                break;
+        }
     }
 
     public void ShowBalloon(string title, string text)
@@ -199,12 +246,6 @@ public sealed class TrayIcon : IDisposable
                 ShowRequested?.Invoke();
                 break;
             case WmRButtonUp:
-                if (_menu is { IsVisible: true })
-                {
-                    _menu.Close();
-                    break;
-                }
-
                 ShowMenu();
                 break;
         }
@@ -310,7 +351,6 @@ public sealed class TrayIcon : IDisposable
 
         _source.RemoveHook(WndProc);
         _source.Dispose();
-        _menu?.Close();
         _icon.Dispose();
 
         if (_iconHandle != IntPtr.Zero)

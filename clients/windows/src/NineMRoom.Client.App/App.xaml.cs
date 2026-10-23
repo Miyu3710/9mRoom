@@ -13,6 +13,7 @@ public partial class App : WpfApplication
 
     protected override void OnStartup(StartupEventArgs e)
     {
+        NativeTheme.EnableDarkMenus();
         base.OnStartup(e);
         ShutdownMode = ShutdownMode.OnExplicitShutdown;
 

@@ -418,11 +418,12 @@
   - 副作用：非管理员用户不能安装；旧 perUser 1.1.1 需先卸载。
   - **待验证**：1.2.0 安装到 D 盘后卸载是否不再出现 1926。
 - **FIX-056 托盘右键菜单重构**：
-  - 参考 Uxcel `ux-menus` 与 Apple HIG menus 的分组、开关、危险操作分离原则。
-  - 用 WPF `TrayMenuWindow` 替换 WinForms `ContextMenuStrip`，与应用主题统一。
-  - 深色玻璃卡片、圆角阴影、分组细线、开关式状态项、退出项危险色。
-  - 支持 Esc 关闭、失焦关闭、键盘焦点提示、屏幕边缘翻转定位。
-  - **已完成**：编译通过，菜单预览已核对。
+  - 参考 Uxcel `ux-menus` 与 Apple HIG menus 的分组与危险操作分离原则。
+  - 最终改用 Windows 原生 `TrackPopupMenuEx`，不再自绘窗口。
+  - `SetPreferredAppMode(ForceDark)` 让原生菜单跟随深色模式。
+  - 短标签、原生圆角、系统字体，避免自定义圆角接缝、模糊和宽度问题。
+  - 菜单项：显示、暂停、隐身、叠加层、穿透、退出。
+  - **已完成**：编译通过，原生菜单截图已核对；未重新打包 MSI。
 
 
 
