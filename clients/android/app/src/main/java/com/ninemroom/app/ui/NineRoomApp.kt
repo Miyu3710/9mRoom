@@ -14,6 +14,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -102,8 +103,13 @@ private val navDestinations = Destination.entries.filter {
         it != Destination.SyncList
 }
 
-private fun openBackgroundSettings(context: Context) {
-    val candidates = listOf(
+private fun navDirection(fromRoute: String?, toRoute: String?): Int {
+    val fromIndex = Destination.entries.indexOfFirst { it.route == fromRoute }
+    val toIndex = Destination.entries.indexOfFirst { it.route == toRoute }
+    return if (fromIndex >= 0 && toIndex >= 0 && toIndex < fromIndex) -1 else 1
+}
+
+private fun openBackgroundSettings(context: Context) {    val candidates = listOf(
         ComponentName(
             "com.coloros.safecenter",
             "com.coloros.safecenter.permission.startup.StartupAppListActivity",
@@ -277,15 +283,37 @@ fun NineRoomApp(
                     startDestination = Destination.Home.route,
                     modifier = Modifier.weight(1f),
                     enterTransition = {
-                        fadeIn(tween(160)) +
-                            slideInHorizontally(tween(180)) { it / 16 }
+                        val direction = navDirection(
+                            initialState.destination.route,
+                            targetState.destination.route,
+                        )
+                        fadeIn(tween(220)) +
+                            slideInHorizontally(tween(300)) { direction * it / 6 }
                     },
-                    exitTransition = { fadeOut(tween(130)) },
+                    exitTransition = {
+                        val direction = navDirection(
+                            initialState.destination.route,
+                            targetState.destination.route,
+                        )
+                        fadeOut(tween(180)) +
+                            slideOutHorizontally(tween(260)) { -direction * it / 6 }
+                    },
                     popEnterTransition = {
-                        fadeIn(tween(160)) +
-                            slideInHorizontally(tween(180)) { -it / 16 }
+                        val direction = navDirection(
+                            initialState.destination.route,
+                            targetState.destination.route,
+                        )
+                        fadeIn(tween(220)) +
+                            slideInHorizontally(tween(300)) { direction * it / 6 }
                     },
-                    popExitTransition = { fadeOut(tween(130)) },
+                    popExitTransition = {
+                        val direction = navDirection(
+                            initialState.destination.route,
+                            targetState.destination.route,
+                        )
+                        fadeOut(tween(180)) +
+                            slideOutHorizontally(tween(260)) { -direction * it / 6 }
+                    },
                 ) {
                     composable(Destination.Home.route) {
                         HomeScreen(
@@ -308,6 +336,7 @@ fun NineRoomApp(
                                 navController.navigate(Destination.SyncList.route)
                             },
                             onPoke = roomViewModel::sendPoke,
+                            onTimerChanged = roomViewModel::refreshPresence,
                         )
                     }
                     composable(Destination.Focus.route) {

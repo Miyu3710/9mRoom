@@ -21,10 +21,9 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Pause
 import androidx.compose.material.icons.outlined.PlayArrow
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -45,10 +44,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.ninemroom.app.NineRoomApplication
 import com.ninemroom.app.data.RoomMember
 import com.ninemroom.app.feature.room.MemberDetail
 
@@ -65,6 +67,7 @@ fun HomeScreen(
     onModeChange: (String) -> Unit,
     onEditStatus: () -> Unit,
     onPoke: (String) -> Unit,
+    onTimerChanged: () -> Unit,
 ) {
     val self = members.firstOrNull { it.id == selfId }
     val onlineCount = members.count { it.online }
@@ -99,7 +102,7 @@ fun HomeScreen(
             )
         }
         item {
-            QuickActions()
+            QuickActions(onTimerChanged = onTimerChanged)
         }
         item {
             Spacer(Modifier.height(72.dp))
@@ -332,7 +335,12 @@ private fun ModeChip(
 }
 
 @Composable
-private fun QuickActions() {
+private fun QuickActions(onTimerChanged: () -> Unit) {
+    val context = LocalContext.current
+    val focusTimer = (context.applicationContext as NineRoomApplication).focusTimer
+    val state by focusTimer.state.collectAsStateWithLifecycle()
+    val phaseLabel = if (state.isBreak) "休息" else "专注"
+
     Card(
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surfaceContainer,
@@ -340,26 +348,55 @@ private fun QuickActions() {
         shape = MaterialTheme.shapes.large,
         modifier = Modifier.fillMaxWidth(),
     ) {
-        Column(Modifier.padding(18.dp)) {
-            Text("快捷操作", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(12.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Button(
-                    onClick = {},
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Icon(Icons.Outlined.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(5.dp))
-                    Text("开始专注")
-                }
-                FilledTonalButton(
-                    onClick = {},
-                    modifier = Modifier.weight(1f),
-                ) {
-                    Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(18.dp))
-                    Spacer(Modifier.width(5.dp))
-                    Text("休息 5 分钟")
-                }
+        Row(
+            modifier = Modifier.padding(horizontal = 18.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(Modifier.weight(1f)) {
+                Text(
+                    "${phaseLabel}剩余",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    state.display,
+                    style = MaterialTheme.typography.displaySmall,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
+                Text(
+                    when {
+                        state.running -> "${phaseLabel}中"
+                        state.remainingSeconds < state.durationSeconds -> "${phaseLabel}已暂停"
+                        else -> "${phaseLabel}准备"
+                    },
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            FilledTonalButton(
+                onClick = {
+                    when {
+                        state.running -> focusTimer.pause()
+                        state.remainingSeconds in 1 until state.durationSeconds -> focusTimer.resume()
+                        else -> focusTimer.startCurrent()
+                    }
+                    onTimerChanged()
+                },
+            ) {
+                Icon(
+                    if (state.running) Icons.Outlined.Pause else Icons.Outlined.PlayArrow,
+                    contentDescription = null,
+                    modifier = Modifier.size(18.dp),
+                )
+                Spacer(Modifier.width(6.dp))
+                Text(
+                    when {
+                        state.running -> "暂停"
+                        state.remainingSeconds in 1 until state.durationSeconds -> "继续"
+                        else -> "开始"
+                    },
+                )
             }
         }
     }
