@@ -8,10 +8,7 @@
 - **状态来源**：前台应用类别 + 系统音乐（Windows SMTC / Android MediaSession）+ 自习计时
 - **状态展示**：可编排的「同步列表」——应用、音乐、待办、计时器、自定义文本与脚本，自由排序与模板
 
-> 当前 Windows / Android 客户端与服务端（SQLite 房间 / 管理员、聊天、状态同步）均已可用。
-> 下载与版本历史：[Windows](https://miyu3710.github.io/9mRoom/releases/platform.html?platform=windows) ·
-> [Linux 服务端](https://miyu3710.github.io/9mRoom/releases/platform.html?platform=server) ·
-> [Android](https://miyu3710.github.io/9mRoom/releases/platform.html?platform=android)
+> 当前 Windows 客户端与服务端（SQLite 房间 / 管理员、聊天、状态同步）已可用；Android 端尚未开始。
 > 先读 [Structure.md](Structure.md) 了解目录，再看 [docs/development-approach.md](docs/development-approach.md) 了解开发思路。
 > Windows 端待办与功能提议见 [ToDo.md](ToDo.md)，用户提出的问题与需求见 [Fix.md](Fix.md)。
 

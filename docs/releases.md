@@ -2,24 +2,6 @@
 
 三端共用同一个仓库，但**独立发布、独立检查更新**。GitHub 页面上的 `Latest` 徽标只代表某一个 Release，客户端不依赖它。
 
-## 下载中心
-
-面向用户的入口是 GitHub Pages 下载中心：
-
-<https://miyu3710.github.io/9mRoom/releases/>
-
-页面只展示 Windows / Server / Android 三个入口，点击后进入该端的版本历史、更新说明与下载资产。
-
-- 页面：`docs/releases/`
-- 版本数据：`docs/releases/releases.json`
-- 发布后重新生成数据：
-
-  ```powershell
-  powershell -ExecutionPolicy Bypass -File packaging\generate-release-index.ps1
-  ```
-
-  `releases.json` 只包含已发布的 Release，draft 不会出现在页面中。
-
 ## 通道与 Tag
 
 | 端 | Tag 格式 | 更新清单 | 资产 |
@@ -51,13 +33,7 @@ https://raw.githubusercontent.com/Miyu3710/9mRoom/main/update-server.json
 
 4. 创建 Release，标题写 `9mRoom Windows 1.2.0`，只上传本端资产。
 5. 更新仓库根目录对应清单，提交并推送 `main`。
-6. 重新生成下载中心的版本数据并提交：
-
-   ```powershell
-   powershell -ExecutionPolicy Bypass -File packaging\generate-release-index.ps1
-   ```
-
-7. 验证：
+6. 验证：
 
    ```bash
    curl -fsSL https://raw.githubusercontent.com/Miyu3710/9mRoom/main/update-windows.json
