@@ -11,8 +11,6 @@ import android.provider.Settings
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -290,32 +288,28 @@ fun NineRoomApp(
                             initialState.destination.route,
                             targetState.destination.route,
                         )
-                        fadeIn(tween(220)) +
-                            slideInHorizontally(tween(300)) { direction * it / 6 }
+                        slideInHorizontally(tween(300)) { direction * it / 6 }
                     },
                     exitTransition = {
                         val direction = navDirection(
                             initialState.destination.route,
                             targetState.destination.route,
                         )
-                        fadeOut(tween(180)) +
-                            slideOutHorizontally(tween(260)) { -direction * it / 6 }
+                        slideOutHorizontally(tween(260)) { -direction * it / 6 }
                     },
                     popEnterTransition = {
                         val direction = navDirection(
                             initialState.destination.route,
                             targetState.destination.route,
                         )
-                        fadeIn(tween(220)) +
-                            slideInHorizontally(tween(300)) { direction * it / 6 }
+                        slideInHorizontally(tween(300)) { direction * it / 6 }
                     },
                     popExitTransition = {
                         val direction = navDirection(
                             initialState.destination.route,
                             targetState.destination.route,
                         )
-                        fadeOut(tween(180)) +
-                            slideOutHorizontally(tween(260)) { -direction * it / 6 }
+                        slideOutHorizontally(tween(260)) { -direction * it / 6 }
                     },
                 ) {
                     composable(Destination.Home.route) {
