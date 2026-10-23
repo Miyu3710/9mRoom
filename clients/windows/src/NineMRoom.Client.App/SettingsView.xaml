@@ -37,60 +37,120 @@
       <StackPanel Margin="0,0,0,24">
 
         <TextBlock Text="外观" Style="{StaticResource SettingsSectionTitle}" />
-        <CheckBox Style="{StaticResource SettingsRow}"
-                  Content="使用浅色主题"
-                  IsChecked="{Binding UseLightTheme}"
-                  Margin="0,8,0,0" />
+        <Grid Margin="0,8,0,0" MinHeight="48">
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="*" />
+    <ColumnDefinition Width="Auto" />
+  </Grid.ColumnDefinitions>
+  <TextBlock Text="使用浅色主题" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding UseLightTheme}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="使用浅色主题" />
+</Grid>
         <TextBlock Text="{Binding ThemeRestartHint}" Style="{StaticResource HintText}" Margin="0,2,0,0" />
         <Border Style="{StaticResource M3Divider}" Margin="0,12,0,0" />
 
         <TextBlock Text="启动与常驻" Style="{StaticResource SettingsSectionTitle}" />
-        <CheckBox Style="{StaticResource SettingsRow}" Content="启动时自动连接"
-                  IsChecked="{Binding AutoConnect}" />
-        <CheckBox Style="{StaticResource SettingsRow}" Content="开机自启（静默启动到托盘）"
-                  IsChecked="{Binding AutoStart}" />
-        <CheckBox Style="{StaticResource SettingsRow}" Content="关闭窗口时最小化到托盘"
-                  IsChecked="{Binding CloseToTray}"
-                  IsEnabled="{Binding TrayAvailable}" />
-        <CheckBox Style="{StaticResource SettingsRow}" Content="关闭到托盘时显示提示"
-                  IsChecked="{Binding NotifyOnClose}" />
+        <Grid Margin="0,2,0,0" MinHeight="48">
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="*" />
+    <ColumnDefinition Width="Auto" />
+  </Grid.ColumnDefinitions>
+  <TextBlock Text="启动时自动连接" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding AutoConnect}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="启动时自动连接" />
+</Grid>
+        <Grid Margin="0,2,0,0" MinHeight="48">
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="*" />
+    <ColumnDefinition Width="Auto" />
+  </Grid.ColumnDefinitions>
+  <TextBlock Text="开机自启（静默启动到托盘）" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding AutoStart}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="开机自启（静默启动到托盘）" />
+</Grid>
+        <Grid Margin="0,2,0,0" MinHeight="48">
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="*" />
+    <ColumnDefinition Width="Auto" />
+  </Grid.ColumnDefinitions>
+  <TextBlock Text="关闭窗口时最小化到托盘" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding CloseToTray}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="关闭窗口时最小化到托盘" IsEnabled="{Binding TrayAvailable}" />
+</Grid>
+        <Grid Margin="0,2,0,0" MinHeight="48">
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="*" />
+    <ColumnDefinition Width="Auto" />
+  </Grid.ColumnDefinitions>
+  <TextBlock Text="关闭到托盘时显示提示" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding NotifyOnClose}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="关闭到托盘时显示提示" />
+</Grid>
         <TextBlock Text="若托盘不可用，关闭窗口将直接退出。全局快捷键：Ctrl+Alt+Shift+T 开始/暂停计时，Ctrl+Alt+H 显示/隐藏叠加层。"
                    Style="{StaticResource HintText}" Margin="0,4,0,0" />
         <Border Style="{StaticResource M3Divider}" Margin="0,12,0,0" />
 
         <TextBlock Text="通知" Style="{StaticResource SettingsSectionTitle}" />
-        <CheckBox Style="{StaticResource SettingsRow}" Content="房间成员进入 / 离开时发送系统通知"
-                  IsChecked="{Binding NotifyRoomEvents}" />
-        <CheckBox Style="{StaticResource SettingsRow}" Content="房间聊天消息也显示系统通知"
-                  IsChecked="{Binding NotifyRoomChat}" />
+        <Grid Margin="0,2,0,0" MinHeight="48">
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="*" />
+    <ColumnDefinition Width="Auto" />
+  </Grid.ColumnDefinitions>
+  <TextBlock Text="房间成员进入 / 离开时发送系统通知" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding NotifyRoomEvents}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="房间成员进入 / 离开时发送系统通知" />
+</Grid>
+        <Grid Margin="0,2,0,0" MinHeight="48">
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="*" />
+    <ColumnDefinition Width="Auto" />
+  </Grid.ColumnDefinitions>
+  <TextBlock Text="房间聊天消息也显示系统通知" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding NotifyRoomChat}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="房间聊天消息也显示系统通知" />
+</Grid>
         <TextBlock Text="通知通过 Windows 通知中心显示；关闭后不再弹出。"
                    Style="{StaticResource HintText}" Margin="0,4,0,0" />
         <Border Style="{StaticResource M3Divider}" Margin="0,12,0,0" />
 
         <TextBlock Text="隐私" Style="{StaticResource SettingsSectionTitle}" />
-        <CheckBox Style="{StaticResource SettingsRow}" Content="共享当前窗口标题"
-                  IsChecked="{Binding ShareWindowTitles}" />
+        <Grid Margin="0,2,0,0" MinHeight="48">
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="*" />
+    <ColumnDefinition Width="Auto" />
+  </Grid.ColumnDefinitions>
+  <TextBlock Text="共享当前窗口标题" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding ShareWindowTitles}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="共享当前窗口标题" />
+</Grid>
         <TextBlock Text="窗口标题只在这个开关开启后上传；关闭时只显示应用名。"
                    Style="{StaticResource HintText}" Margin="0,4,0,0" />
 
-        <CheckBox Style="{StaticResource SettingsRow}" Content="共享当前音乐状态"
-                  IsChecked="{Binding ShareMusic}"
-                  Margin="0,12,0,0" />
-        <TextBlock Text="只展示指定播放器的媒体；按播放器标识子串匹配，多个用英文逗号分隔，留空表示全部。"
-                   Style="{StaticResource HintText}" Margin="0,4,0,0" />
+        <Grid Margin="0,12,0,0" MinHeight="48">
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="*" />
+    <ColumnDefinition Width="Auto" />
+  </Grid.ColumnDefinitions>
+  <TextBlock Text="共享当前音乐状态" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding ShareMusic}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="共享当前音乐状态" />
+</Grid>
         <TextBox Text="{Binding MediaSourceFilter, UpdateSourceTrigger=LostFocus}"
                  Style="{StaticResource M3TextBox}"
                  controls:M3Field.Label="播放器过滤"
-                 controls:M3Field.HelperText="例如：Spotify, QQMusic, 网易云"
+                 controls:M3Field.HelperText="只展示指定播放器的媒体；按播放器标识子串匹配，多个用英文逗号分隔，留空表示全部。例如：Spotify, QQMusic, 网易云"
                  Margin="0,8,0,0"
                  VerticalAlignment="Top" />
         <Border Style="{StaticResource M3Divider}" Margin="0,16,0,0" />
 
         <TextBlock Text="叠加层" Style="{StaticResource SettingsSectionTitle}" />
-        <CheckBox Style="{StaticResource SettingsRow}" Content="显示屏幕叠加层"
-                  IsChecked="{Binding OverlayEnabled}" />
-        <CheckBox Style="{StaticResource SettingsRow}" Content="点击穿透（不遮挡下方窗口）"
-                  IsChecked="{Binding OverlayClickThrough}" />
+        <Grid Margin="0,2,0,0" MinHeight="48">
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="*" />
+    <ColumnDefinition Width="Auto" />
+  </Grid.ColumnDefinitions>
+  <TextBlock Text="显示屏幕叠加层" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding OverlayEnabled}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="显示屏幕叠加层" />
+</Grid>
+        <Grid Margin="0,2,0,0" MinHeight="48">
+  <Grid.ColumnDefinitions>
+    <ColumnDefinition Width="*" />
+    <ColumnDefinition Width="Auto" />
+  </Grid.ColumnDefinitions>
+  <TextBlock Text="点击穿透（不遮挡下方窗口）" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding OverlayClickThrough}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="点击穿透（不遮挡下方窗口）" />
+</Grid>
 
         <TextBlock Text="预设样式" Style="{StaticResource ItemSupporting}" Margin="0,16,0,6" />
         <WrapPanel x:Name="PresetPanel" Orientation="Horizontal" Margin="0,0,0,4">
@@ -156,14 +216,12 @@
                                  Click="Export_Click" Margin="0,0,8,8" />
               <controls:M3Button Style="{StaticResource M3TextButtonNeutral}" Content="导入 JSON"
                                  Click="Import_Click" Margin="0,0,0,8" />
+              <controls:M3Button Style="{StaticResource M3TextButtonNeutral}" Content="重置叠加层位置"
+                                 Click="ResetOverlay_Click" Margin="8,0,0,8" />
             </WrapPanel>
           </StackPanel>
         </Border>
 
-        <controls:M3Button Style="{StaticResource M3TextButtonNeutral}" Content="重置叠加层位置"
-                           HorizontalAlignment="Left" Click="ResetOverlay_Click" />
-        <TextBlock Text="叠加层显示房间内所有成员：在线优先，离线置灰；人数较多时可滚动。"
-                   Style="{StaticResource HintText}" Margin="0,4,0,0" />
         <Border Style="{StaticResource M3Divider}" Margin="0,16,0,0" />
 
         <TextBlock Text="关于" Style="{StaticResource SettingsSectionTitle}" />
@@ -190,7 +248,6 @@
         </StackPanel>
         <TextBlock Text="{Binding UpdateStatusText}" Style="{StaticResource HintText}" Margin="0,0,0,12" />
 
-        <TextBlock Text="配置文件" Style="{StaticResource ItemSupporting}" Margin="0,0,0,4" />
         <Grid Margin="0,0,0,8">
           <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
