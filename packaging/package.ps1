@@ -93,6 +93,7 @@ if ($Sign) {
 
 $msi = Join-Path $dist "9mRoom-Setup-$Version.msi"
 & $wix build (Join-Path $PSScriptRoot 'installer.wxs') `
+    -arch x64 `
     -ext $uiExtension `
     -loc $uiLocalization `
     -d "Version=$Version" `
