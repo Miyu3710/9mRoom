@@ -403,7 +403,13 @@
 - **FIX-053 Windows 更新检查与卸载调查**：
   - Windows 独立更新通道当前最新为 `1.1.0`；1.1.1 / 1.1.2 是 Android 版本，不是 Windows 版本。已实测 Windows 检查更新返回“已是最新版本（1.1.0）”。
   - 卸载报错为 Windows Installer 1926：`D:\Config.Msi` 权限损坏，卸载实际成功但会弹大量非致命错误；已写入 `docs/installer-antivirus.md`，安装到 C 盘或管理员修复该目录即可。
-  - **调查完成**；本轮未重打 MSI。
+  - **调查完成**；已保留自定义安装路径。
+- **FIX-054 Windows 1.1.1 发布**：
+  - 打包包含房间页、标签页、专注页与字体修复的 1.1.1 MSI。
+  - 保留自定义安装目录（`WixUI_InstallDir`），不强制 C 盘。
+  - 修复 `package.ps1` 的旧兼容清单变量与跨平台清单生成。
+  - 建立 `windows-v1.1.1` 独立通道，根目录 `update-windows.json` 指向 1.1.1。
+  - **已完成**：Windows Release 已发布；MSI SHA256 `563BB6A5B001E63E12C40C8BD45E0DE08B7A23AEE13B4B59209F4B9C3AD3C850`。
 
 
 
