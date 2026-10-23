@@ -1,5 +1,8 @@
 package com.ninemroom.app.feature.apps
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
@@ -78,6 +81,7 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
     var selected by remember { mutableStateOf<AppCategory?>(null) }
     var showAdd by remember { mutableStateOf(false) }
     var draggedId by remember { mutableStateOf<String?>(null) }
+    var originIndex by remember { mutableStateOf(-1) }
     var dragY by remember { mutableFloatStateOf(0f) }
     var scrollBase by remember { mutableFloatStateOf(0f) }
     var targetIndex by remember { mutableStateOf(-1) }
@@ -126,25 +130,36 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
             ) {
                 itemsIndexed(categories, key = { _, category -> category.id }) { index, category ->
                     val dragging = draggedId == category.id
+                    val shiftSteps = when {
+                        dragging || draggedId == null || originIndex < 0 || targetIndex < 0 -> 0
+                        targetIndex > originIndex && index in (originIndex + 1)..targetIndex -> -1
+                        targetIndex < originIndex && index in targetIndex until originIndex -> 1
+                        else -> 0
+                    }
+                    val shift by animateFloatAsState(
+                        targetValue = shiftSteps * stepPx,
+                        animationSpec = if (draggedId == null) snap() else tween(140),
+                        label = "category-shift",
+                    )
                     CategoryRow(
                         category = category,
                         dragging = dragging,
                         hidden = dragging,
-                        dragOffset = 0f,
+                        translationY = shift,
                         onClick = { selected = category },
                         onDragStart = {
                             scrollBase = listState.firstVisibleItemIndex * stepPx +
                                 listState.firstVisibleItemScrollOffset
                             dragY = paddingTopPx + index * stepPx + rowHeightPx / 2f - scrollBase
+                            originIndex = index
                             targetIndex = index
                             draggedId = category.id
                         },
                         onDrag = { amount ->
                             dragY += amount
                             val contentY = dragY - paddingTopPx + scrollBase
-                            val target = (contentY / stepPx).toInt()
+                            targetIndex = (contentY / stepPx).toInt()
                                 .coerceIn(0, categories.lastIndex)
-                            targetIndex = target
                         },
                         onDragEnd = {
                             val id = draggedId
@@ -159,6 +174,7 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
                                 }
                             }
                             draggedId = null
+                            originIndex = -1
                             targetIndex = -1
                             dragY = 0f
                             scrollBase = 0f
@@ -175,7 +191,7 @@ fun CategoryManagerScreen(onBack: () -> Unit) {
                     category = preview,
                     dragging = true,
                     hidden = false,
-                    dragOffset = 0f,
+                    translationY = 0f,
                     interactive = false,
                     onClick = {},
                     onDragStart = {},
@@ -223,7 +239,7 @@ private fun CategoryRow(
     category: AppCategory,
     dragging: Boolean,
     hidden: Boolean = false,
-    dragOffset: Float,
+    translationY: Float,
     interactive: Boolean = true,
     onClick: () -> Unit,
     onDragStart: () -> Unit,
@@ -238,7 +254,7 @@ private fun CategoryRow(
         .zIndex(if (dragging) 10f else 0f)
         .alpha(if (hidden) 0f else 1f)
         .graphicsLayer {
-            translationY = if (dragging && interactive) dragOffset else 0f
+            this.translationY = translationY
         }
     val clickableModifier = if (interactive) {
         cardModifier.clickable(
