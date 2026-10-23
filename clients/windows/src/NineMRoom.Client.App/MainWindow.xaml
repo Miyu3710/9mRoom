@@ -80,11 +80,14 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
-                        <Border x:Name="Bg" Background="{TemplateBinding Background}" CornerRadius="6" Margin="2,4">
+                        <Border x:Name="Bg" Background="{TemplateBinding Background}"
+                                BorderThickness="0" CornerRadius="6" Margin="2,4">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                     </ControlTemplate>
@@ -101,8 +104,8 @@
         <Style x:Key="CloseButton" TargetType="Button" BasedOn="{StaticResource TitleBarButton}">
             <Style.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="{StaticResource BrushDanger}" />
-                    <Setter Property="Foreground" Value="White" />
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="{StaticResource BrushDanger}" />
                 </Trigger>
             </Style.Triggers>
         </Style>
@@ -127,6 +130,14 @@
             <Setter Property="Padding" Value="18,0" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="20" />
+        </Style>
+
+        <Style x:Key="InlineConnectButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+            <Setter Property="Height" Value="34" />
+            <Setter Property="MinWidth" Value="80" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
+            <Setter Property="materialDesign:ButtonAssist.CornerRadius" Value="17" />
         </Style>
 
         <local:CategoryMatchConverter x:Key="ModeMatch" />
@@ -462,6 +473,7 @@
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="Auto" />
                                                 <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
                                             </Grid.ColumnDefinitions>
                                             <materialDesign:PackIcon Kind="Server"
                                                                      Width="18" Height="18"
@@ -469,21 +481,49 @@
                                                                      Foreground="{StaticResource BrushTextMuted}" />
                                             <TextBox Grid.Column="1"
                                                      Text="{Binding ServerBase, UpdateSourceTrigger=PropertyChanged}"
-                                                     Style="{StaticResource ServerInput}"
                                                      Margin="10,0,0,0"
-                                                     VerticalContentAlignment="Center" />
+                                                     VerticalContentAlignment="Center">
+                                                <TextBox.Style>
+                                                    <Style TargetType="TextBox" BasedOn="{StaticResource ServerInput}">
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                                <Setter Property="Visibility" Value="Collapsed" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBox.Style>
+                                            </TextBox>
+                                            <TextBlock Grid.Column="1"
+                                                       Text="{Binding ServerBase}"
+                                                       Margin="10,0,0,0"
+                                                       VerticalAlignment="Center"
+                                                       FontSize="{StaticResource FontSizeMd}"
+                                                       Foreground="{StaticResource BrushText}"
+                                                       TextTrimming="CharacterEllipsis">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Visibility" Value="Collapsed" />
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding IsConnected}" Value="True">
+                                                                <Setter Property="Visibility" Value="Visible" />
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                            </TextBlock>
+                                            <Button Grid.Column="2"
+                                                    Content="{Binding ConnectButtonText}"
+                                                    Click="Connect_Click"
+                                                    Style="{StaticResource InlineConnectButton}"
+                                                    Margin="6,0,0,0" />
                                         </Grid>
                                     </Border>
                                 </StackPanel>
 
-                                <StackPanel Grid.Column="1" Orientation="Horizontal"
-                                            VerticalAlignment="Bottom">
-                                    <Button Content="{Binding ConnectButtonText}" Click="Connect_Click"
-                                            Style="{StaticResource PrimaryButton}" Margin="0,0,8,0" />
-                                    <Button Content="离开房间" Click="LeaveRoom_Click"
-                                            Style="{StaticResource SecondaryButton}"
-                                            Visibility="{Binding IsInRoom, Converter={StaticResource BoolToVisibility}}" />
-                                </StackPanel>
+                                <Button Grid.Column="1" Content="离开房间" Click="LeaveRoom_Click"
+                                        Style="{StaticResource SecondaryButton}"
+                                        VerticalAlignment="Bottom" Margin="12,0,0,0"
+                                        Visibility="{Binding IsInRoom, Converter={StaticResource BoolToVisibility}}" />
                             </Grid>
                             <TextBlock Text="连接后会自动同步当前应用、音乐与专注状态。"
                                        Style="{StaticResource Label}"

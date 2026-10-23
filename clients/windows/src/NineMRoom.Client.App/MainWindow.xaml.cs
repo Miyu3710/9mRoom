@@ -371,14 +371,24 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Minimize_Click(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
+    private void Minimize_Click(object sender, RoutedEventArgs e) =>
+        SystemCommands.MinimizeWindow(this);
 
     private void Maximize_Click(object sender, RoutedEventArgs e) => ToggleMaximize();
 
     private void Close_Click(object sender, RoutedEventArgs e) => Close();
 
-    private void ToggleMaximize() =>
-        WindowState = WindowState == WindowState.Maximized ? WindowState.Normal : WindowState.Maximized;
+    private void ToggleMaximize()
+    {
+        if (WindowState == WindowState.Maximized)
+        {
+            SystemCommands.RestoreWindow(this);
+        }
+        else
+        {
+            SystemCommands.MaximizeWindow(this);
+        }
+    }
 
     private void Window_StateChanged(object sender, EventArgs e)
     {
