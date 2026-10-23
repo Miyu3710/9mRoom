@@ -10,7 +10,7 @@
         MinWidth="900"
         MinHeight="560"
         WindowStyle="None"
-        Background="#01000000"
+        Background="{StaticResource BrushBg}"
         FontFamily="{StaticResource FontUi}"
         TextOptions.TextFormattingMode="Ideal"
         TextOptions.TextRenderingMode="ClearType"
@@ -38,6 +38,7 @@
         <Style x:Key="Label" TargetType="TextBlock">
             <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
         </Style>
 
         <Style x:Key="Body" TargetType="TextBlock">
@@ -72,6 +73,7 @@
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
             <Setter Property="Padding" Value="0" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
         </Style>
 
         <Style x:Key="TitleBarButton" TargetType="Button">
@@ -114,6 +116,7 @@
             <Setter Property="Background" Value="{StaticResource BrushAccent}" />
             <Setter Property="Foreground" Value="{StaticResource BrushOnAccent}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
             <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="Height" Value="38" />
             <Setter Property="Padding" Value="20,0" />
@@ -126,6 +129,7 @@
             <Setter Property="Foreground" Value="{StaticResource BrushText}" />
             <Setter Property="BorderBrush" Value="{StaticResource BrushControlBorder}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
             <Setter Property="Height" Value="38" />
             <Setter Property="Padding" Value="18,0" />
             <Setter Property="Cursor" Value="Hand" />
@@ -139,6 +143,7 @@
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
             <Setter Property="FontWeight" Value="Medium" />
             <Setter Property="BorderThickness" Value="0" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -231,6 +236,7 @@
         <Style x:Key="NavItem" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
             <Setter Property="Height" Value="44" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
@@ -259,6 +265,7 @@
         <Style x:Key="RoomTab" TargetType="RadioButton">
             <Setter Property="Foreground" Value="{StaticResource BrushTextMuted}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeMd}" />
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Margin" Value="0" />
@@ -296,7 +303,8 @@
     <Border x:Name="ShellBorder"
             BorderBrush="{StaticResource BrushGlassBorder}"
             BorderThickness="1"
-            ClipToBounds="True">
+            ClipToBounds="True"
+            RenderOptions.ClearTypeHint="Enabled">
         <Border.Background>
             <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
                 <GradientStop Color="#FF17161C" Offset="0" />
@@ -916,7 +924,8 @@
                     Background="{StaticResource BrushSurface}"
                     BorderBrush="{StaticResource BrushBorder}"
                     BorderThickness="1,0,0,0"
-                    Padding="22">
+                    Padding="22"
+                    RenderOptions.ClearTypeHint="Enabled">
                 <Border.RenderTransform>
                     <TranslateTransform X="400" />
                 </Border.RenderTransform>
@@ -1002,9 +1011,10 @@
               Opacity="0" Visibility="Collapsed"
               MouseLeftButtonDown="AppEditorOverlay_MouseLeftButtonDown">
             <Border x:Name="AppEditorPanel" Width="500" HorizontalAlignment="Right"
-                    Background="#F517171A"
+                    Background="{StaticResource BrushSurface}"
                     BorderBrush="{StaticResource BrushGlassBorder}"
-                    BorderThickness="1,0,0,0">
+                    BorderThickness="1,0,0,0"
+                    RenderOptions.ClearTypeHint="Enabled">
                 <Border.RenderTransform>
                     <TranslateTransform x:Name="AppEditorSlide" X="28" />
                 </Border.RenderTransform>

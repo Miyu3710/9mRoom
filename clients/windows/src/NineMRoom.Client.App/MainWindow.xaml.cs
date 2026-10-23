@@ -428,9 +428,24 @@ public partial class MainWindow : Window
         if (open)
         {
             MemberDrawerOverlay.Visibility = Visibility.Visible;
-            MemberDrawerOverlay.BeginAnimation(
-                OpacityProperty,
-                new DoubleAnimation(0, 1, duration) { EasingFunction = ease });
+            var openFade = new DoubleAnimation(0, 1, duration) { EasingFunction = ease };
+            openFade.Completed += (_, _) =>
+            {
+                if (!_viewModel.IsMemberDrawerOpen)
+                {
+                    return;
+                }
+
+                MemberDrawerOverlay.BeginAnimation(OpacityProperty, null);
+                MemberDrawerOverlay.Opacity = 1;
+
+                if (MemberDrawerPanel.RenderTransform is TranslateTransform completed)
+                {
+                    completed.BeginAnimation(TranslateTransform.XProperty, null);
+                    completed.X = 0;
+                }
+            };
+            MemberDrawerOverlay.BeginAnimation(OpacityProperty, openFade);
 
             if (MemberDrawerPanel.RenderTransform is TranslateTransform transform)
             {
@@ -481,12 +496,23 @@ public partial class MainWindow : Window
             AppEditorOverlay.BeginAnimation(OpacityProperty, null);
             AppEditorOverlay.Opacity = 0;
 
-            AppEditorOverlay.BeginAnimation(
-                OpacityProperty,
-                new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(160))
+            var openFade = new DoubleAnimation(0, 1, TimeSpan.FromMilliseconds(160))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
+            };
+            openFade.Completed += (_, _) =>
+            {
+                if (!_viewModel.IsAppEditorOpen)
                 {
-                    EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
-                });
+                    return;
+                }
+
+                AppEditorOverlay.BeginAnimation(OpacityProperty, null);
+                AppEditorOverlay.Opacity = 1;
+                AppEditorSlide.BeginAnimation(TranslateTransform.XProperty, null);
+                AppEditorSlide.X = 0;
+            };
+            AppEditorOverlay.BeginAnimation(OpacityProperty, openFade);
 
             AppEditorSlide.BeginAnimation(
                 TranslateTransform.XProperty,
