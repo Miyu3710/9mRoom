@@ -6,8 +6,8 @@
     <UserControl.Resources>
         <Style x:Key="Card" TargetType="Border">
             <Setter Property="Background" Value="{StaticResource BrushGlassSurface}" />
-            <Setter Property="BorderBrush" Value="{StaticResource BrushGlassBorder}" />
-            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="BorderBrush" Value="Transparent" />
+            <Setter Property="BorderThickness" Value="0" />
             <Setter Property="CornerRadius" Value="{StaticResource RadiusMd}" />
             <Setter Property="Padding" Value="14" />
             <Setter Property="Margin" Value="0,0,0,10" />
@@ -28,23 +28,34 @@
             <Setter Property="Background" Value="{StaticResource BrushControlBg}" />
         </Style>
 
-        <Style x:Key="ActionButton" TargetType="Button">
-            <Setter Property="Background" Value="{StaticResource BrushAccent}" />
-            <Setter Property="Foreground" Value="{StaticResource BrushOnAccent}" />
+        <Style x:Key="ChatSendButton" TargetType="Button">
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Foreground" Value="{StaticResource BrushAccent}" />
             <Setter Property="FontSize" Value="{StaticResource FontSizeSm}" />
-            <Setter Property="Padding" Value="14,6" />
+            <Setter Property="FontWeight" Value="Medium" />
+            <Setter Property="Height" Value="42" />
+            <Setter Property="Padding" Value="14,0" />
+            <Setter Property="BorderThickness" Value="0" />
+            <Setter Property="FocusVisualStyle" Value="{x:Null}" />
             <Setter Property="Cursor" Value="Hand" />
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="Button">
                         <Border Background="{TemplateBinding Background}"
-                                CornerRadius="{StaticResource RadiusSm}"
+                                BorderThickness="0"
+                                CornerRadius="0"
                                 Padding="{TemplateBinding Padding}">
                             <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
                         </Border>
                         <ControlTemplate.Triggers>
                             <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Opacity" Value="0.85" />
+                                <Setter Property="Background" Value="#14FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Background" Value="#22FFFFFF" />
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4" />
                             </Trigger>
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
@@ -93,15 +104,28 @@
             </ScrollViewer>
         </Border>
 
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*" />
-                <ColumnDefinition Width="Auto" />
-            </Grid.ColumnDefinitions>
-            <TextBox x:Name="ChatBox" Text="{Binding ChatInput, UpdateSourceTrigger=PropertyChanged}"
-                     Style="{StaticResource InputBox}" MaxLength="500" Margin="0,0,8,0"
-                     KeyDown="ChatBox_KeyDown" />
-            <Button Grid.Column="1" Content="发送" Click="Send_Click" Style="{StaticResource ModernPrimaryButton}" />
-        </Grid>
+        <Border Grid.Row="1"
+                Background="{StaticResource BrushSurfaceAlt}"
+                BorderThickness="0"
+                CornerRadius="8"
+                ClipToBounds="True">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBox x:Name="ChatBox" Text="{Binding ChatInput, UpdateSourceTrigger=PropertyChanged}"
+                         Style="{StaticResource InputBox}" MaxLength="500"
+                         Background="Transparent" BorderThickness="0"
+                         Padding="12,0" Height="42"
+                         VerticalContentAlignment="Center"
+                         KeyDown="ChatBox_KeyDown" />
+                <Border Grid.Column="1" Width="1" Margin="0,8"
+                        Background="{StaticResource BrushBorder}" />
+                <Button Grid.Column="2" Content="发送" Click="Send_Click"
+                        Style="{StaticResource ChatSendButton}" />
+            </Grid>
+        </Border>
     </Grid>
 </UserControl>

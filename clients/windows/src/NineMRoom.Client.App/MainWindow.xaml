@@ -412,7 +412,7 @@
                     </RadioButton>
                 </StackPanel>
 
-                <Border Grid.Row="1" Background="Transparent" CornerRadius="12"
+                <Border Grid.Row="1" Background="{StaticResource BrushSurface}" CornerRadius="12"
                         BorderBrush="Transparent" BorderThickness="0"
                         Padding="12,10">
                     <StackPanel>
@@ -886,7 +886,7 @@
                 </Grid>
 
                 <Grid Grid.Row="2" x:Name="ChatTabContent" Visibility="Collapsed">
-                    <local:ChatPanel Margin="14,6,42,16" />
+                    <local:ChatPanel Margin="16,6,16,16" />
                 </Grid>
             </Grid>
 
