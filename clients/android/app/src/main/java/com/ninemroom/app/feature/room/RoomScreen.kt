@@ -13,7 +13,9 @@ import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
@@ -34,6 +36,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -53,6 +56,7 @@ import com.ninemroom.app.data.ChatLine
 import com.ninemroom.app.data.LogLine
 import com.ninemroom.app.data.RoomMember
 import com.ninemroom.app.data.chatTime
+import kotlinx.coroutines.delay
 import com.ninemroom.app.ui.MemberAvatar
 import kotlin.math.roundToInt
 
@@ -72,7 +76,17 @@ fun RoomScreen(
     var selectedMember by remember { mutableStateOf<RoomMember?>(null) }
     var draft by rememberSaveable { mutableStateOf("") }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val chatListState = rememberLazyListState()
+    val density = LocalDensity.current
+    val imeVisible = WindowInsets.ime.getBottom(density) > 0
     val onlineCount = members.count { it.online }
+
+    LaunchedEffect(tab, chat.size, imeVisible) {
+        if (tab == 2 && chat.isNotEmpty()) {
+            if (imeVisible) delay(180)
+            chatListState.scrollToItem(0)
+        }
+    }
 
     Column(
         Modifier
@@ -106,7 +120,7 @@ fun RoomScreen(
             when (tab) {
                 0 -> MemberList(members, selfId) { selectedMember = it }
                 1 -> LogList(logs)
-                else -> ChatList(chat, selfId)
+                else -> ChatList(chat, selfId, chatListState)
             }
         }
 
@@ -269,17 +283,23 @@ private fun LogList(logs: List<LogLine>) {
 }
 
 @Composable
-private fun ChatList(chat: List<ChatLine>, selfId: String?) {
+private fun ChatList(
+    chat: List<ChatLine>,
+    selfId: String?,
+    listState: LazyListState,
+) {
     if (chat.isEmpty()) {
         EmptyState("还没有消息，打个招呼吧")
         return
     }
 
     LazyColumn(
+        state = listState,
+        reverseLayout = true,
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
     ) {
-        items(chat, key = { it.id }) { line ->
+        items(chat.asReversed(), key = { it.id }) { line ->
             val mine = line.memberId == selfId
             Card(
                 colors = CardDefaults.cardColors(
