@@ -201,7 +201,7 @@
     <Setter Property="FocusVisualStyle" Value="{x:Null}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="MinHeight" Value="48" />
-    <Setter Property="Margin" Value="0,0,4,0" />
+    <Setter Property="Margin" Value="0,0,8,0" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="CheckBox">
@@ -216,10 +216,10 @@
                               TextElement.Foreground="{TemplateBinding Foreground}"
                               TextElement.FontSize="{TemplateBinding FontSize}" />
 
-            <Grid Grid.Column="1" Width="52" Height="48" VerticalAlignment="Center" RenderTransformOrigin="0.5,0.5">
-              <Grid.RenderTransform>
-                <ScaleTransform x:Name="SwitchScale" />
-              </Grid.RenderTransform>
+            <Grid x:Name="SwitchRoot" Grid.Column="1" Width="52" Height="48" VerticalAlignment="Center">
+              <Grid.Effect>
+                <DropShadowEffect Color="{StaticResource ColorPrimary}" ShadowDepth="0" BlurRadius="16" Opacity="0" />
+              </Grid.Effect>
               <Border x:Name="StateLayer" Width="52" Height="40" CornerRadius="20"
                       Background="{TemplateBinding Foreground}" Opacity="0" />
               <Border x:Name="Track" Width="52" Height="32" CornerRadius="16"
@@ -251,11 +251,10 @@
               <Trigger.EnterActions>
                 <BeginStoryboard>
                   <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="SwitchScale" Storyboard.TargetProperty="ScaleX" From="1" To="1.03" Duration="0:0:0.2">
-                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
-                    </DoubleAnimation>
-                    <DoubleAnimation Storyboard.TargetName="SwitchScale" Storyboard.TargetProperty="ScaleY" From="1" To="1.03" Duration="0:0:0.2">
-                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
+                    <DoubleAnimation Storyboard.TargetName="SwitchRoot"
+                                     Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Opacity)"
+                                     To="0.55" Duration="0:0:0.22">
+                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
                     </DoubleAnimation>
                   </Storyboard>
                 </BeginStoryboard>
@@ -263,11 +262,10 @@
               <Trigger.ExitActions>
                 <BeginStoryboard>
                   <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="SwitchScale" Storyboard.TargetProperty="ScaleX" From="1.03" To="1" Duration="0:0:0.2">
-                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
-                    </DoubleAnimation>
-                    <DoubleAnimation Storyboard.TargetName="SwitchScale" Storyboard.TargetProperty="ScaleY" From="1.03" To="1" Duration="0:0:0.2">
-                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
+                    <DoubleAnimation Storyboard.TargetName="SwitchRoot"
+                                     Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Opacity)"
+                                     To="0" Duration="0:0:0.26">
+                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
                     </DoubleAnimation>
                   </Storyboard>
                 </BeginStoryboard>
