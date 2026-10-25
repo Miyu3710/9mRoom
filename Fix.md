@@ -604,6 +604,10 @@
   - 启动时静默检查更新并提示；补齐 120 秒重连、离开房间失败清理与成员抽屉动画。
   - **已完成**：APK 版本 `1.1.5`（versionCode 7），调试签名；发布 `android-v1.1.5`，SHA-256 `73F786890D9BEFD75CC55E7ECCFE69AB81C4CAE467B6A6651C119285B4FC6850`；`update-android.json` 与 `update.json` 已更新。
 
+- **FIX-073 Android 1.1.6 发布**：
+  - 同步列表模板输入改为跟随输入法/键盘上移，新增 `AdaptiveImePadding`，修复输入框被遮挡和底部异常留白。
+  - **已完成**：APK 版本 `1.1.6`（versionCode 8），调试签名；发布 `android-v1.1.6`，SHA-256 `57D2DA62C4621025D6091687818771AE47980C09CA3655E782B2C7B914748316`；`update-android.json` 与 `update.json` 已更新，GitHub `Latest` 已指向 1.1.6。
+
 ## Windows 1.2.0 更新日志（2026-10-24）
 
 依据 `windows-v1.1.1..windows-v1.2.0` 的代码差异重新整理。此前分散在 FIX-055～068 的改动，均已包含在 1.2.0 MSI 中。
