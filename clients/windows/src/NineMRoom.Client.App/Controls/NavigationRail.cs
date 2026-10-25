@@ -62,7 +62,7 @@ public class NavigationRail : ListBox
             {
                 Height = 48,
                 Width = IsCollapsed ? 48 : 96,
-                CornerRadius = new CornerRadius(10),
+                CornerRadius = new CornerRadius(12),
                 IsHitTestVisible = false,
                 Visibility = Visibility.Collapsed,
                 Background = TryFindResource("BrushPrimaryContainer") as Brush
@@ -195,7 +195,7 @@ public class NavigationRail : ListBox
         _pressedIcon = FindNamed<PackIcon>(container, "NavIcon");
         _pressCanceled = false;
 
-        FadeLayer(_pressLayer, 0.12, 80);
+        FadeLayer(_pressLayer, 1, 80);
         PressIcon(0.82, 80, new CubicEase { EasingMode = EasingMode.EaseOut });
 
         CaptureMouse();

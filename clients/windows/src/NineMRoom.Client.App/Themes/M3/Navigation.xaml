@@ -51,18 +51,18 @@
                   Height="48"
                   HorizontalAlignment="Left"
                   VerticalAlignment="Center"
-                  CornerRadius="10"
+                  CornerRadius="12"
                   Background="Transparent">
             <Grid>
               <!-- 悬停层跟随背景宽度，用透明度做渐亮 / 渐暗。 -->
               <Border x:Name="HoverBg"
                       Background="{DynamicResource BrushSecondaryContainer}"
-                      CornerRadius="10"
+                      CornerRadius="12"
                       Opacity="0"
                       IsHitTestVisible="False" />
               <Border x:Name="PressBg"
                       Background="{DynamicResource BrushOnSurface}"
-                      CornerRadius="10"
+                      CornerRadius="12"
                       Opacity="0"
                       IsHitTestVisible="False" />
             </Grid>
@@ -94,7 +94,7 @@
       <Border x:Name="FocusRing"
               BorderBrush="{DynamicResource BrushPrimary}"
               BorderThickness="3"
-              CornerRadius="10"
+              CornerRadius="12"
               Margin="10,2,10,2"
               Visibility="Collapsed"
               IsHitTestVisible="False" />
@@ -105,7 +105,7 @@
           <BeginStoryboard>
             <Storyboard>
               <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity"
-                               To="1" Duration="0:0:0.14">
+                               To="0.12" Duration="0:0:0.14">
                 <DoubleAnimation.EasingFunction>
                   <CubicEase EasingMode="EaseOut" />
                 </DoubleAnimation.EasingFunction>
