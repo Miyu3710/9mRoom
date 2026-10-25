@@ -38,7 +38,6 @@
   <!-- Expanded: icon + label in a row, 56x32 pill behind the icon. -->
   <DataTemplate x:Key="M3NavRailExpandedItem">
     <Grid Height="64" ClipToBounds="True" ToolTip="{Binding Label}">
-      <Canvas x:Name="RippleHost" IsHitTestVisible="False" ClipToBounds="True" />
       <Border x:Name="Pill"
               Width="96"
               Height="48"
@@ -53,7 +52,15 @@
                   HorizontalAlignment="Left"
                   VerticalAlignment="Center"
                   CornerRadius="12"
-                  Background="Transparent" />
+                  Background="Transparent">
+            <!-- 悬停层跟随背景宽度，用透明度做渐亮 / 渐暗。 -->
+            <Border x:Name="HoverBg"
+                    Background="{DynamicResource BrushSecondaryContainer}"
+                    CornerRadius="12"
+                    Opacity="0"
+                    IsHitTestVisible="False" />
+          </Border>
+          <Canvas x:Name="RippleHost" IsHitTestVisible="False" ClipToBounds="True" />
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
                       Margin="12,0"
                       IsHitTestVisible="False">
@@ -61,7 +68,12 @@
                                       Kind="{Binding Glyph}"
                                       Width="24" Height="24"
                                       VerticalAlignment="Center"
-                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" />
+                                      RenderTransformOrigin="0.5,0.5"
+                                      Foreground="{Binding Foreground, RelativeSource={RelativeSource AncestorType=ListBoxItem}}">
+              <materialDesign:PackIcon.RenderTransform>
+                <ScaleTransform x:Name="NavIconScale" />
+              </materialDesign:PackIcon.RenderTransform>
+            </materialDesign:PackIcon>
             <TextBlock x:Name="NavLabel"
                        Text="{Binding Label}"
                        Margin="12,0,0,0"
@@ -83,10 +95,34 @@
     </Grid>
     <DataTemplate.Triggers>
       <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-        <Setter TargetName="PillBg" Property="Background" Value="{DynamicResource BrushSecondaryContainer}" />
+        <DataTrigger.EnterActions>
+          <BeginStoryboard>
+            <Storyboard>
+              <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity"
+                               To="1" Duration="0:0:0.14">
+                <DoubleAnimation.EasingFunction>
+                  <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+            </Storyboard>
+          </BeginStoryboard>
+        </DataTrigger.EnterActions>
+        <DataTrigger.ExitActions>
+          <BeginStoryboard>
+            <Storyboard>
+              <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity"
+                               To="0" Duration="0:0:0.18">
+                <DoubleAnimation.EasingFunction>
+                  <CubicEase EasingMode="EaseOut" />
+                </DoubleAnimation.EasingFunction>
+              </DoubleAnimation>
+            </Storyboard>
+          </BeginStoryboard>
+        </DataTrigger.ExitActions>
       </DataTrigger>
       <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
         <Setter TargetName="PillBg" Property="Background" Value="{DynamicResource BrushPrimaryContainer}" />
+        <Setter TargetName="HoverBg" Property="Visibility" Value="Collapsed" />
         <Setter TargetName="NavIcon" Property="Foreground" Value="{DynamicResource BrushOnPrimaryContainer}" />
         <Setter TargetName="NavLabel" Property="Foreground" Value="{DynamicResource BrushOnPrimaryContainer}" />
         <Setter TargetName="NavLabel" Property="FontWeight" Value="SemiBold" />
