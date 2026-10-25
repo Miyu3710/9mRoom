@@ -17,7 +17,6 @@
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="FocusVisualStyle" Value="{x:Null}" />
     <Setter Property="Cursor" Value="Hand" />
-    <Setter Property="controls:Ripple.IsEnabled" Value="True" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="ListBoxItem">
@@ -52,18 +51,18 @@
                   Height="48"
                   HorizontalAlignment="Left"
                   VerticalAlignment="Center"
-                  CornerRadius="12"
+                  CornerRadius="10"
                   Background="Transparent">
             <Grid>
               <!-- 悬停层跟随背景宽度，用透明度做渐亮 / 渐暗。 -->
               <Border x:Name="HoverBg"
                       Background="{DynamicResource BrushSecondaryContainer}"
-                      CornerRadius="12"
+                      CornerRadius="10"
                       Opacity="0"
                       IsHitTestVisible="False" />
               <Border x:Name="PressBg"
                       Background="{DynamicResource BrushOnSurface}"
-                      CornerRadius="12"
+                      CornerRadius="10"
                       Opacity="0"
                       IsHitTestVisible="False" />
             </Grid>
@@ -95,7 +94,7 @@
       <Border x:Name="FocusRing"
               BorderBrush="{DynamicResource BrushPrimary}"
               BorderThickness="3"
-              CornerRadius="12"
+              CornerRadius="10"
               Margin="10,2,10,2"
               Visibility="Collapsed"
               IsHitTestVisible="False" />

@@ -32,7 +32,6 @@ public class NavigationRail : ListBox
     private ListBoxItem? _pressContainer;
     private Border? _pressPill;
     private Border? _pressLayer;
-    private Canvas? _pressRippleHost;
     private bool _pressCanceled;
     private Canvas? _selectionLayer;
     private Border? _selectionIndicator;
@@ -63,7 +62,7 @@ public class NavigationRail : ListBox
             {
                 Height = 48,
                 Width = IsCollapsed ? 48 : 96,
-                CornerRadius = new CornerRadius(12),
+                CornerRadius = new CornerRadius(10),
                 IsHitTestVisible = false,
                 Visibility = Visibility.Collapsed,
                 Background = TryFindResource("BrushPrimaryContainer") as Brush
@@ -193,15 +192,8 @@ public class NavigationRail : ListBox
         _pressContainer = container;
         _pressPill = pill;
         _pressLayer = FindNamed<Border>(container, "PressBg");
-        _pressRippleHost = FindNamed<Canvas>(container, "RippleHost");
         _pressedIcon = FindNamed<PackIcon>(container, "NavIcon");
         _pressCanceled = false;
-
-        // 点击波纹仍画在原来的 RippleHost 上。
-        if (_pressRippleHost is { ActualWidth: > 0, ActualHeight: > 0 })
-        {
-            Ripple.Play(_pressRippleHost, e.GetPosition(_pressRippleHost), container.Foreground);
-        }
 
         FadeLayer(_pressLayer, 0.12, 80);
         PressIcon(0.82, 80, new CubicEase { EasingMode = EasingMode.EaseOut });
@@ -243,7 +235,6 @@ public class NavigationRail : ListBox
         _pressContainer = null;
         _pressPill = null;
         _pressLayer = null;
-        _pressRippleHost = null;
         _pressCanceled = false;
 
         if (Mouse.Captured == this)
