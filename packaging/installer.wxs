@@ -8,8 +8,31 @@
            Codepage="936"
            Scope="perMachine">
 
-    <MajorUpgrade DowngradeErrorMessage="已安装更高版本的 9mRoom。" />
+    <MajorUpgrade AllowSameVersionUpgrades="yes"
+                  DowngradeErrorMessage="已安装更高版本的 9mRoom。" />
     <MediaTemplate EmbedCab="yes" />
+
+    <!-- 记住安装位置：升级时从注册表读取，保留用户自定义目录。 -->
+    <Property Id="EXISTINGINSTALLFOLDER">
+      <RegistrySearch Id="ExistingInstallFolder"
+                      Root="HKLM"
+                      Key="Software\9mRoom"
+                      Name="InstallDir"
+                      Type="directory"
+                      Bitness="always64" />
+    </Property>
+    <SetDirectory Id="INSTALLFOLDER"
+                  Value="[EXISTINGINSTALLFOLDER]"
+                  Condition="EXISTINGINSTALLFOLDER" />
+
+    <!-- 覆盖升级时先结束正在运行的客户端，避免 exe 被占用。 -->
+    <Binary Id="TaskKillBinary" SourceFile="$(var.TaskKillPath)" />
+    <CustomAction Id="StopRunningApp"
+                  BinaryRef="TaskKillBinary"
+                  ExeCommand="/IM &quot;NineMRoom.Client.App.exe&quot; /F"
+                  Execute="immediate"
+                  Impersonate="no"
+                  Return="ignore" />
 
     <Icon Id="AppIcon" SourceFile="$(var.IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="AppIcon" />
@@ -28,6 +51,19 @@
     </StandardDirectory>
 
     <StandardDirectory Id="DesktopFolder" />
+
+    <InstallExecuteSequence>
+      <Custom Action="StopRunningApp" Before="InstallValidate" Condition="WIX_UPGRADE_DETECTED" />
+    </InstallExecuteSequence>
+
+    <Component Id="InstallLocationRegistry" Directory="INSTALLFOLDER" Guid="A6C4F8D2-1B3E-4A59-8C7D-2E9F0B5A6C31">
+      <RegistryValue Root="HKLM"
+                     Key="Software\9mRoom"
+                     Name="InstallDir"
+                     Type="string"
+                     Value="[INSTALLFOLDER]"
+                     KeyPath="yes" />
+    </Component>
 
     <Component Id="StartMenuShortcut" Directory="ProgramMenuDir" Guid="2C7D9E41-5A3B-4F8C-8E21-7D6B0A9C3F12">
       <Shortcut Id="StartMenuShortcutLink"
