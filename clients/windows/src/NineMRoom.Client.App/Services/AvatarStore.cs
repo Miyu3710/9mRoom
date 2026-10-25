@@ -50,7 +50,18 @@ public static class AvatarStore
     {
         try
         {
-            var source = LoadImage(path);
+            return CreateFromImage(LoadImage(path));
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public static AvatarPayload? CreateFromImage(BitmapSource source)
+    {
+        try
+        {
             var side = Math.Min(source.PixelWidth, source.PixelHeight);
             if (side <= 0)
             {

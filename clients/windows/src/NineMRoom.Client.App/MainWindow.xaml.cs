@@ -10,6 +10,7 @@ using MaterialDesignThemes.Wpf;
 using Microsoft.Win32;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
+using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using ContextMenu = System.Windows.Controls.ContextMenu;
 using MenuItem = System.Windows.Controls.MenuItem;
 using RadioButton = System.Windows.Controls.RadioButton;
@@ -740,10 +741,36 @@ public partial class MainWindow : Window
             Filter = "图片 (*.png;*.jpg;*.jpeg;*.webp)|*.png;*.jpg;*.jpeg;*.webp|所有文件 (*.*)|*.*"
         };
 
-        if (dialog.ShowDialog(this) == true)
+        if (dialog.ShowDialog(this) != true || _viewModel is null)
         {
-            await _viewModel.ChangeAvatarAsync(dialog.FileName);
+            return;
         }
+
+        var crop = new AvatarCropDialog(dialog.FileName) { Owner = this };
+        if (crop.ShowDialog() == true && crop.ResultImage is not null)
+        {
+            await _viewModel.ChangeAvatarAsync(crop.ResultImage);
+        }
+    }
+
+    private void AvatarButton_MouseEnter(object sender, MouseEventArgs e) => FadeAvatarOverlay(1);
+
+    private void AvatarButton_MouseLeave(object sender, MouseEventArgs e) => FadeAvatarOverlay(0);
+
+    private void FadeAvatarOverlay(double to)
+    {
+        if (AvatarHoverOverlay is null)
+        {
+            return;
+        }
+
+        AvatarHoverOverlay.BeginAnimation(
+            OpacityProperty,
+            new DoubleAnimation(to, TimeSpan.FromMilliseconds(to > 0 ? 140 : 180))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+                FillBehavior = FillBehavior.HoldEnd
+            });
     }
 
     private void Mode_Checked(object sender, RoutedEventArgs e)

@@ -10,6 +10,7 @@ using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Data;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Xml.Linq;
 using NineMRoom.Client.Core;
@@ -2262,9 +2263,14 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public string MyAvatarInitial => string.IsNullOrWhiteSpace(_settings.Name) ? "?" : _settings.Name[..1];
 
-    public async Task ChangeAvatarAsync(string path)
+    public async Task ChangeAvatarAsync(string path) =>
+        await ApplyAvatarAsync(AvatarStore.CreateFromFile(path));
+
+    public async Task ChangeAvatarAsync(BitmapSource image) =>
+        await ApplyAvatarAsync(AvatarStore.CreateFromImage(image));
+
+    private async Task ApplyAvatarAsync(AvatarPayload? avatar)
     {
-        var avatar = AvatarStore.CreateFromFile(path);
         if (avatar is null)
         {
             ShowNotice("无法读取或压缩该图片，请换一张不超过 512×512 的图片。");
