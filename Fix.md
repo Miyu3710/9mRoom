@@ -592,6 +592,12 @@
   - **已完成**：服务端 `avatar.update` / `member.avatar` 与校验；Windows/Android 本地缓存、512 裁剪压缩、自动重连重发、成员头像显示。
   - 验证：服务端头像往返/快照/新成员补发测试通过；Windows 与 Android 构建通过；**已随服务端 1.2.0 部署到生产服务器**。
 
+- **FIX-071 Server 1.2.0 发布与构建清理**：
+  - 打包 Linux 自包含包 `9mRoom-Server-1.2.0-linux-x64.tar.gz`，包含 `run-server.sh` / `update-server.sh`。
+  - 更新 `update-server.json` 与兼容清单 `update.json` 的 Linux 段到 1.2.0。
+  - 发布 `server-v1.2.0` Release，上传 tar、SHA256、两个清单。
+  - **已完成**：SHA-256 `24226E4D682D8D1C0EBEE1A912DBB203DD5BA0855F3C328172BC699B46D89B87`；tar 已确认不包含自身；清空旧 `dist` 测试 exe，并移除 Windows 构建的 `publish` 中间目录；`artifacts/` 仅保留 Windows 1.2.0 MSI 与服务端 1.2.0 tar。
+
 ## Windows 1.2.0 更新日志（2026-10-24）
 
 依据 `windows-v1.1.1..windows-v1.2.0` 的代码差异重新整理。此前分散在 FIX-055～068 的改动，均已包含在 1.2.0 MSI 中。
