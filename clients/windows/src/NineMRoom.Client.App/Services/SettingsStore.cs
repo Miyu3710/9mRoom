@@ -14,6 +14,7 @@ public sealed class AppSettings
     public bool AutoStart { get; set; }
     public string Theme { get; set; } = "dark";
     public bool CloseToTray { get; set; } = true;
+    public bool NavRailCollapsed { get; set; }
     public bool CloseToTrayHintShown { get; set; }
     public bool AutoConnect { get; set; } = true;
     public bool ShareMusic { get; set; } = true;

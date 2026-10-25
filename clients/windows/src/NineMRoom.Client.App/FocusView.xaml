@@ -65,11 +65,21 @@
             <TextBlock Text="{Binding TimerText}" Style="{StaticResource TimerDisplay}" />
           </StackPanel>
           <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-            <controls:M3Button Style="{StaticResource M3FilledButton}"
-                               Content="{Binding TimerButtonText}"
+            <controls:M3Button Content="{Binding TimerButtonText}"
                                MinWidth="96"
                                AutomationProperties.Name="{Binding TimerButtonText}"
-                               Click="TimerToggle_Click" />
+                               Click="TimerToggle_Click">
+              <controls:M3Button.Style>
+                <Style TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3FilledButton}">
+                  <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsTimerRunning}" Value="True">
+                      <Setter Property="Background" Value="{DynamicResource BrushSecondaryContainer}" />
+                      <Setter Property="Foreground" Value="{DynamicResource BrushOnSecondaryContainer}" />
+                    </DataTrigger>
+                  </Style.Triggers>
+                </Style>
+              </controls:M3Button.Style>
+            </controls:M3Button>
             <controls:M3Button Style="{StaticResource M3TextButtonNeutral}" Content="重置"
                                AutomationProperties.Name="重置计时"
                                Margin="8,0,0,0"

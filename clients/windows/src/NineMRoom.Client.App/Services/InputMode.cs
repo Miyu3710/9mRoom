@@ -41,6 +41,12 @@ public sealed class InputMode : INotifyPropertyChanged
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
+    private static bool IsModifier(Key key) => key is
+        Key.LeftAlt or Key.RightAlt or
+        Key.LeftCtrl or Key.RightCtrl or
+        Key.LeftShift or Key.RightShift or
+        Key.LWin or Key.RWin;
+
     private void OnPreProcessInput(object? sender, PreProcessInputEventArgs e)
     {
         switch (e.StagingItem.Input)
@@ -48,8 +54,13 @@ public sealed class InputMode : INotifyPropertyChanged
             case MouseButtonEventArgs:
                 IsKeyboard = false;
                 break;
-            case KeyEventArgs:
-                IsKeyboard = true;
+            case KeyEventArgs keyArgs:
+                // Alt / Ctrl / Shift 等纯修饰键不算键盘操作，避免按 Alt 时弹出焦点框。
+                if (!IsModifier(keyArgs.Key))
+                {
+                    IsKeyboard = true;
+                }
+
                 break;
         }
     }

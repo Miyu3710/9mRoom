@@ -48,7 +48,7 @@
                          Content="添加"
                          AutomationProperties.Name="添加待办"
                          VerticalAlignment="Top"
-                         Margin="0,8,0,0"
+                         Margin="0,20,0,0"
                          Click="AddTodo_Click" />
     </Grid>
 

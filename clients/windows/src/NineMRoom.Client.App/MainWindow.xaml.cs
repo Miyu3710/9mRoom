@@ -51,6 +51,7 @@ public partial class MainWindow : Window
     {
         _settings = settings;
         InitializeComponent();
+        _visiblePage = RoomPage;
 
         _viewModel = new MainViewModel(settings);
         DataContext = _viewModel;
@@ -510,6 +511,17 @@ public partial class MainWindow : Window
 
         if (previous is null)
         {
+            // 首次切换时把其他页面全部收起，避免旧页面残留在窗口里。
+            foreach (var candidate in new UIElement[] { RoomPage, FocusPage, TodoPage, LayoutPage, AppPage, SettingsPage })
+            {
+                if (!ReferenceEquals(candidate, page))
+                {
+                    candidate.Visibility = Visibility.Collapsed;
+                    candidate.Opacity = 1;
+                    candidate.IsHitTestVisible = true;
+                }
+            }
+
             page.Visibility = Visibility.Visible;
             page.Opacity = 1;
             return;

@@ -42,10 +42,12 @@
     <ColumnDefinition Width="*" />
     <ColumnDefinition Width="Auto" />
   </Grid.ColumnDefinitions>
-  <TextBlock Text="使用浅色主题" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+    <TextBlock Text="使用浅色主题" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" />
+    <controls:InfoHint Text="{Binding ThemeRestartHint}" Margin="4,0,0,0" VerticalAlignment="Center" />
+  </StackPanel>
   <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding UseLightTheme}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="使用浅色主题" />
 </Grid>
-        <TextBlock Text="{Binding ThemeRestartHint}" Style="{StaticResource HintText}" Margin="0,2,0,0" />
         <Border Style="{StaticResource M3Divider}" Margin="0,12,0,0" />
 
         <TextBlock Text="启动与常驻" Style="{StaticResource SettingsSectionTitle}" />
@@ -70,7 +72,10 @@
     <ColumnDefinition Width="*" />
     <ColumnDefinition Width="Auto" />
   </Grid.ColumnDefinitions>
-  <TextBlock Text="关闭窗口时最小化到托盘" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+    <TextBlock Text="关闭窗口时最小化到托盘" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" />
+    <controls:InfoHint Text="若托盘不可用，关闭窗口将直接退出。全局快捷键：Ctrl+Alt+Shift+T 开始/暂停计时，Ctrl+Alt+H 显示/隐藏叠加层。" Margin="4,0,0,0" VerticalAlignment="Center" />
+  </StackPanel>
   <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding CloseToTray}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="关闭窗口时最小化到托盘" IsEnabled="{Binding TrayAvailable}" />
 </Grid>
         <Grid Margin="0,2,0,0" MinHeight="48">
@@ -81,8 +86,6 @@
   <TextBlock Text="关闭到托盘时显示提示" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
   <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding NotifyOnClose}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="关闭到托盘时显示提示" />
 </Grid>
-        <TextBlock Text="若托盘不可用，关闭窗口将直接退出。全局快捷键：Ctrl+Alt+Shift+T 开始/暂停计时，Ctrl+Alt+H 显示/隐藏叠加层。"
-                   Style="{StaticResource HintText}" Margin="0,4,0,0" />
         <Border Style="{StaticResource M3Divider}" Margin="0,12,0,0" />
 
         <TextBlock Text="通知" Style="{StaticResource SettingsSectionTitle}" />
@@ -91,7 +94,10 @@
     <ColumnDefinition Width="*" />
     <ColumnDefinition Width="Auto" />
   </Grid.ColumnDefinitions>
-  <TextBlock Text="房间成员进入 / 离开时发送系统通知" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+    <TextBlock Text="房间成员进入 / 离开时发送系统通知" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" />
+    <controls:InfoHint Text="通知通过 Windows 通知中心显示；关闭后不再弹出。" Margin="4,0,0,0" VerticalAlignment="Center" />
+  </StackPanel>
   <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding NotifyRoomEvents}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="房间成员进入 / 离开时发送系统通知" />
 </Grid>
         <Grid Margin="0,2,0,0" MinHeight="48">
@@ -102,8 +108,6 @@
   <TextBlock Text="房间聊天消息也显示系统通知" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
   <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding NotifyRoomChat}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="房间聊天消息也显示系统通知" />
 </Grid>
-        <TextBlock Text="通知通过 Windows 通知中心显示；关闭后不再弹出。"
-                   Style="{StaticResource HintText}" Margin="0,4,0,0" />
         <Border Style="{StaticResource M3Divider}" Margin="0,12,0,0" />
 
         <TextBlock Text="隐私" Style="{StaticResource SettingsSectionTitle}" />
@@ -112,11 +116,12 @@
     <ColumnDefinition Width="*" />
     <ColumnDefinition Width="Auto" />
   </Grid.ColumnDefinitions>
-  <TextBlock Text="共享当前窗口标题" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" Margin="0,0,16,0" />
+  <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,16,0">
+    <TextBlock Text="共享当前窗口标题" Style="{StaticResource ValueText}" VerticalAlignment="Center" TextWrapping="Wrap" />
+    <controls:InfoHint Text="窗口标题只在这个开关开启后上传；关闭时只显示应用名。" Margin="4,0,0,0" VerticalAlignment="Center" />
+  </StackPanel>
   <CheckBox Grid.Column="1" Style="{StaticResource M3Switch}" IsChecked="{Binding ShareWindowTitles}" HorizontalAlignment="Right" VerticalAlignment="Center" AutomationProperties.Name="共享当前窗口标题" />
 </Grid>
-        <TextBlock Text="窗口标题只在这个开关开启后上传；关闭时只显示应用名。"
-                   Style="{StaticResource HintText}" Margin="0,4,0,0" />
 
         <Grid Margin="0,12,0,0" MinHeight="48">
   <Grid.ColumnDefinitions>

@@ -515,6 +515,22 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
     }
 
+    public bool NavRailCollapsed
+    {
+        get => _settings.NavRailCollapsed;
+        set
+        {
+            if (_settings.NavRailCollapsed == value)
+            {
+                return;
+            }
+
+            _settings.NavRailCollapsed = value;
+            SettingsStore.Save(_settings);
+            OnPropertyChanged();
+        }
+    }
+
     public bool ShareWindowTitles
     {
         get => _settings.ShareWindowTitles;
@@ -1238,6 +1254,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _timerStartedAt = now - (durationMs - _timerRemainingMs);
         _timerRunning = true;
         OnPropertyChanged(nameof(IsTimerRunning));
+            OnPropertyChanged(nameof(TimerButtonText));
         if (_timer is not null)
         {
             _timer.Interval = TimeSpan.FromSeconds(1);
@@ -1258,6 +1275,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _timerRemainingMs = Math.Max(0, _timerStartedAt + PhaseMinutes * 60_000L - now);
         _timerRunning = false;
         OnPropertyChanged(nameof(IsTimerRunning));
+            OnPropertyChanged(nameof(TimerButtonText));
         if (_timer is not null)
         {
             _timer.Interval = TimeSpan.FromSeconds(2);
@@ -1271,6 +1289,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         _timerRunning = false;
         OnPropertyChanged(nameof(IsTimerRunning));
+            OnPropertyChanged(nameof(TimerButtonText));
         _timerPhase = "focus";
         OnPropertyChanged(nameof(TimerPhaseText));
         _timerRemainingMs = _focusMinutes * 60_000L;
@@ -2145,6 +2164,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 }
 
                 OnPropertyChanged(nameof(IsTimerRunning));
+            OnPropertyChanged(nameof(TimerButtonText));
                 _timerRemainingMs = 0;
                 if (_timer is not null)
                 {

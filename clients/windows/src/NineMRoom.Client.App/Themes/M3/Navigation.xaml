@@ -56,12 +56,12 @@
             <Grid>
               <!-- 悬停层跟随背景宽度，用透明度做渐亮 / 渐暗。 -->
               <Border x:Name="HoverBg"
-                      Background="{DynamicResource BrushSecondaryContainer}"
+                      Background="{DynamicResource BrushOnSurface}"
                       CornerRadius="12"
                       Opacity="0"
                       IsHitTestVisible="False" />
               <Border x:Name="PressBg"
-                      Background="{DynamicResource BrushOnSurface}"
+                      Background="{DynamicResource BrushSecondaryContainer}"
                       CornerRadius="12"
                       Opacity="0"
                       IsHitTestVisible="False" />
