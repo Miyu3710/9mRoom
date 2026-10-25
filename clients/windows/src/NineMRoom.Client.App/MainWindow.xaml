@@ -515,39 +515,37 @@
                           </Grid.ColumnDefinitions>
 
                           <Border Width="40" Height="40" CornerRadius="10"
-                                  Background="{StaticResource BrushPrimaryContainer}"
-                                  Margin="0,0,12,0" VerticalAlignment="Center">
-                            <Grid>
-                              <TextBlock Text="{Binding Initial}"
-                                         Foreground="{StaticResource BrushOnPrimaryContainer}"
-                                         FontSize="{StaticResource TypeTitleMediumSize}"
-                                         FontWeight="SemiBold"
-                                         HorizontalAlignment="Center" VerticalAlignment="Center">
-                                <TextBlock.Style>
-                                  <Style TargetType="TextBlock">
-                                    <Style.Triggers>
-                                      <DataTrigger Binding="{Binding HasAvatar}" Value="True">
-                                        <Setter Property="Visibility" Value="Collapsed" />
-                                      </DataTrigger>
-                                    </Style.Triggers>
-                                  </Style>
-                                </TextBlock.Style>
-                              </TextBlock>
-                              <Border CornerRadius="10" ClipToBounds="True">
-                                <Border.Style>
-                                  <Style TargetType="Border">
-                                    <Setter Property="Visibility" Value="Collapsed" />
-                                    <Style.Triggers>
-                                      <DataTrigger Binding="{Binding HasAvatar}" Value="True">
-                                        <Setter Property="Visibility" Value="Visible" />
-                                      </DataTrigger>
-                                    </Style.Triggers>
-                                  </Style>
-                                </Border.Style>
-                                <Image Source="{Binding Avatar}" Stretch="UniformToFill"
-                                       RenderOptions.BitmapScalingMode="HighQuality" />
-                              </Border>
-                            </Grid>
+                                  Margin="0,0,12,0" VerticalAlignment="Center"
+                                  RenderOptions.BitmapScalingMode="HighQuality">
+                            <Border.Style>
+                              <Style TargetType="Border">
+                                <Setter Property="Background" Value="{StaticResource BrushPrimaryContainer}" />
+                                <Style.Triggers>
+                                  <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                                    <Setter Property="Background">
+                                      <Setter.Value>
+                                        <ImageBrush ImageSource="{Binding Avatar}" Stretch="UniformToFill" />
+                                      </Setter.Value>
+                                    </Setter>
+                                  </DataTrigger>
+                                </Style.Triggers>
+                              </Style>
+                            </Border.Style>
+                            <TextBlock Text="{Binding Initial}"
+                                       Foreground="{StaticResource BrushOnPrimaryContainer}"
+                                       FontSize="{StaticResource TypeTitleMediumSize}"
+                                       FontWeight="SemiBold"
+                                       HorizontalAlignment="Center" VerticalAlignment="Center">
+                              <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                  <Style.Triggers>
+                                    <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                                      <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                  </Style.Triggers>
+                                </Style>
+                              </TextBlock.Style>
+                            </TextBlock>
                           </Border>
 
                           <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
@@ -700,12 +698,36 @@
                 <ColumnDefinition Width="Auto" />
               </Grid.ColumnDefinitions>
 
-              <Border Width="48" Height="48" CornerRadius="12"
-                      Background="{StaticResource BrushPrimaryContainer}" Margin="0,0,12,0">
+              <Border Width="48" Height="48" CornerRadius="12" Margin="0,0,12,0"
+                      RenderOptions.BitmapScalingMode="HighQuality">
+                <Border.Style>
+                  <Style TargetType="Border">
+                    <Setter Property="Background" Value="{StaticResource BrushPrimaryContainer}" />
+                    <Style.Triggers>
+                      <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                        <Setter Property="Background">
+                          <Setter.Value>
+                            <ImageBrush ImageSource="{Binding Avatar}" Stretch="UniformToFill" />
+                          </Setter.Value>
+                        </Setter>
+                      </DataTrigger>
+                    </Style.Triggers>
+                  </Style>
+                </Border.Style>
                 <TextBlock Text="{Binding Initial}"
                            Foreground="{StaticResource BrushOnPrimaryContainer}"
                            FontSize="{StaticResource TypeTitleMediumSize}" FontWeight="SemiBold"
-                           HorizontalAlignment="Center" VerticalAlignment="Center" />
+                           HorizontalAlignment="Center" VerticalAlignment="Center">
+                  <TextBlock.Style>
+                    <Style TargetType="TextBlock">
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </TextBlock.Style>
+                </TextBlock>
               </Border>
               <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">
                 <TextBlock Text="{Binding Name}" Style="{StaticResource ItemTitle}" />
