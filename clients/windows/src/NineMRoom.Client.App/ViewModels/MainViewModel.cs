@@ -3079,7 +3079,15 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             var client = _client;
             _client = null;
-            await client.SendLeaveAsync();
+            try
+            {
+                await client.SendLeaveAsync();
+            }
+            catch
+            {
+                // 断线时也继续清理本地状态
+            }
+
             await client.DisposeAsync();
         }
 

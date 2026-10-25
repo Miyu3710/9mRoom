@@ -70,7 +70,11 @@ class PresenceSocket(
     }
 
     fun sendLeave() {
-        sendEnvelope("leave", JSONObject())
+        try {
+            sendEnvelope("leave", JSONObject())
+        } catch (_: Exception) {
+            // 连接已断开时忽略
+        }
     }
 
     fun sendPing() {
