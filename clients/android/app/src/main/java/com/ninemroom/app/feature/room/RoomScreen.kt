@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
@@ -35,6 +36,7 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -107,7 +109,7 @@ fun RoomScreen(
             when (tab) {
                 0 -> MemberList(members, selfId) { selectedMember = it }
                 1 -> LogList(logs)
-                else -> ChatList(chat, selfId)
+                else -> ChatList(chat, selfId, members) { selectedMember = it }
             }
         }
 
@@ -273,46 +275,97 @@ private fun LogList(logs: List<LogLine>) {
 private fun ChatList(
     chat: List<ChatLine>,
     selfId: String?,
+    members: List<RoomMember>,
+    onMemberClick: (RoomMember) -> Unit,
 ) {
     if (chat.isEmpty()) {
         EmptyState("还没有消息，打个招呼吧")
         return
     }
 
+    val listState = rememberLazyListState()
+    var previousSize by remember { mutableIntStateOf(chat.size) }
+    var previousLatestId by remember { mutableStateOf(chat.lastOrNull()?.id) }
+
+    LaunchedEffect(chat.size) {
+        val oldLatestVisible = listState.layoutInfo.visibleItemsInfo
+            .any { it.key == previousLatestId }
+        if (chat.size > previousSize && oldLatestVisible) {
+            listState.scrollToItem(0)
+        }
+        previousSize = chat.size
+        previousLatestId = chat.lastOrNull()?.id
+    }
+
     LazyColumn(
-        state = rememberLazyListState(),
+        state = listState,
         reverseLayout = true,
         contentPadding = PaddingValues(20.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {
-        items(chat.asReversed(), key = { it.id }) { line ->
+    ) {        items(chat.asReversed(), key = { it.id }) { line ->
             val mine = line.memberId == selfId
-            Card(
-                colors = CardDefaults.cardColors(
-                    containerColor = if (mine) {
-                        MaterialTheme.colorScheme.primaryContainer
-                    } else {
-                        MaterialTheme.colorScheme.surfaceContainer
-                    },
-                ),
-                shape = MaterialTheme.shapes.large,
-                modifier = Modifier.fillMaxWidth(),
+            val member = members.firstOrNull { it.id == line.memberId }
+            val avatar = member?.avatar
+            val initial = member?.initial ?: line.author.take(1).ifBlank { "?" }
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 2.dp),
+                horizontalArrangement = if (mine) Arrangement.End else Arrangement.Start,
+                verticalAlignment = Alignment.Top,
             ) {
-                Column(Modifier.padding(14.dp)) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
+                if (!mine) {
+                    MemberAvatar(
+                        avatar = avatar,
+                        initial = initial,
+                        size = 34.dp,
+                        onClick = member?.let { { onMemberClick(it) } },
+                    )
+                    Spacer(Modifier.size(8.dp))
+                }
+
+                Card(
+                    colors = CardDefaults.cardColors(
+                        containerColor = if (mine) {
+                            MaterialTheme.colorScheme.primaryContainer
+                        } else {
+                            MaterialTheme.colorScheme.surfaceContainer
+                        },
+                    ),
+                    shape = MaterialTheme.shapes.large,
+                    modifier = Modifier.widthIn(max = 300.dp),
+                ) {
+                    Column(Modifier.padding(14.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                line.author,
+                                style = MaterialTheme.typography.labelLarge,
+                                fontWeight = FontWeight.Medium,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Text(
+                                chatTime(line.at),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                         Text(
-                            line.author,
-                            style = MaterialTheme.typography.labelLarge,
-                            fontWeight = FontWeight.Medium,
-                            modifier = Modifier.weight(1f),
-                        )
-                        Text(
-                            chatTime(line.at),
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            line.text,
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.padding(top = 4.dp),
                         )
                     }
-                    Text(line.text, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(top = 4.dp))
+                }
+
+                if (mine) {
+                    Spacer(Modifier.size(8.dp))
+                    MemberAvatar(
+                        avatar = avatar,
+                        initial = initial,
+                        size = 34.dp,
+                        onClick = member?.let { { onMemberClick(it) } },
+                    )
                 }
             }
         }
