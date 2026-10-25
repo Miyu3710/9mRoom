@@ -20,7 +20,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.safeDrawingPadding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Button
@@ -210,7 +210,7 @@ private fun CropViewport(
         Box(
             modifier = Modifier
                 .size(side)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(CircleShape)
                 .background(Color.Black)
                 .onSizeChanged { state.viewport = it }
                 .pointerInput(bitmap, state.viewport) {
@@ -247,9 +247,9 @@ private fun CropViewport(
                     dstOffset = IntOffset(left, top),
                     dstSize = IntSize(drawWidth, drawHeight),
                 )
-                drawRect(
+                drawCircle(
                     color = Color.White.copy(alpha = 0.9f),
-                    size = Size(size.width, size.height),
+                    radius = size.minDimension / 2f - 1.dp.toPx(),
                     style = Stroke(width = 2.dp.toPx()),
                 )
                 drawGrid(size)
