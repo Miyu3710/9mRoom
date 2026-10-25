@@ -590,7 +590,7 @@
   - 规格：512×512 JPEG、目标 ≤96 KiB、服务端上限 128 KiB；`room.snapshot` 只带 hash，头像通过 `member.avatar` 单独发送。
   - Windows 入口在“自习 → 状态”的“我的状态”区域，点击圆形头像选择图片；Android 在成员抽屉点击自己的头像。
   - **已完成**：服务端 `avatar.update` / `member.avatar` 与校验；Windows/Android 本地缓存、512 裁剪压缩、自动重连重发、成员头像显示。
-  - 验证：服务端头像往返/快照/新成员补发测试通过；Windows 与 Android 构建通过。
+  - 验证：服务端头像往返/快照/新成员补发测试通过；Windows 与 Android 构建通过；**已随服务端 1.2.0 部署到生产服务器**。
 
 ## Windows 1.2.0 更新日志（2026-10-24）
 
