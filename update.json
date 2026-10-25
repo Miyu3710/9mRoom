@@ -12,9 +12,9 @@
     "entry": "run-server.sh"
   },
   "android": {
-    "version": "1.1.1",
-    "tag": "android-v1.1.1",
-    "asset": "9mRoom-Android-1.1.1.apk",
-    "sha256": "899296D64F00A2C2C310A65C56FC0CB7A9CF7D0BF83400D5F0E63FA948A0D3F8"
+    "version": "1.1.5",
+    "tag": "android-v1.1.5",
+    "asset": "9mRoom-Android-1.1.5.apk",
+    "sha256": "73F786890D9BEFD75CC55E7ECCFE69AB81C4CAE467B6A6651C119285B4FC6850"
   }
 }
