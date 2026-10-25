@@ -383,6 +383,7 @@ public class NavigationRail : ListBox
             {
                 if (collapsed)
                 {
+                    label.Opacity = 0;
                     label.BeginAnimation(
                         OpacityProperty,
                         new DoubleAnimation
@@ -395,6 +396,7 @@ public class NavigationRail : ListBox
                 }
                 else
                 {
+                    label.Opacity = 0;
                     var animation = new DoubleAnimationUsingKeyFrames { FillBehavior = FillBehavior.HoldEnd };
                     animation.KeyFrames.Add(new DiscreteDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(120))));
                     animation.KeyFrames.Add(new EasingDoubleKeyFrame(1, KeyTime.FromTimeSpan(duration)) { EasingFunction = ease });
