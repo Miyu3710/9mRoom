@@ -46,27 +46,22 @@
               VerticalAlignment="Center">
         <Grid>
           <!-- 背景单独一层，只动画它的宽度；图标与文字的布局始终固定，避免展开时抖动。 -->
-          <Border x:Name="PillBg"
-                  Width="96"
-                  Height="48"
-                  HorizontalAlignment="Left"
-                  VerticalAlignment="Center"
-                  CornerRadius="10"
-                  Background="Transparent">
-            <Grid>
-              <!-- 悬停层跟随背景宽度，用透明度做渐亮 / 渐暗。 -->
-              <Border x:Name="HoverBg"
-                      Background="{DynamicResource BrushSecondaryContainer}"
-                      CornerRadius="10"
-                      Opacity="0"
-                      IsHitTestVisible="False" />
-              <Border x:Name="PressBg"
-                      Background="{DynamicResource BrushOnSurface}"
-                      CornerRadius="10"
-                      Opacity="0"
-                      IsHitTestVisible="False" />
-            </Grid>
-          </Border>
+          <Grid x:Name="PillBg"
+                Width="96"
+                Height="48"
+                HorizontalAlignment="Left"
+                VerticalAlignment="Center">
+            <controls:Squircle Fill="Transparent" />
+            <!-- 悬停层：浅色（OnSurface 12%）；按下层：SecondaryContainer。 -->
+            <controls:Squircle x:Name="HoverBg"
+                               Fill="{DynamicResource BrushOnSurface}"
+                               Opacity="0"
+                               IsHitTestVisible="False" />
+            <controls:Squircle x:Name="PressBg"
+                               Fill="{DynamicResource BrushSecondaryContainer}"
+                               Opacity="0"
+                               IsHitTestVisible="False" />
+          </Grid>
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
                       Margin="12,0"
                       IsHitTestVisible="False">
@@ -105,7 +100,7 @@
           <BeginStoryboard>
             <Storyboard>
               <DoubleAnimation Storyboard.TargetName="HoverBg" Storyboard.TargetProperty="Opacity"
-                               To="1" Duration="0:0:0.14">
+                               To="0.12" Duration="0:0:0.14">
                 <DoubleAnimation.EasingFunction>
                   <CubicEase EasingMode="EaseOut" />
                 </DoubleAnimation.EasingFunction>
