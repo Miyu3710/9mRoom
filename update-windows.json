@@ -1,10 +1,10 @@
 {
   "platform": "windows",
-  "version": "1.2.0",
-  "tag": "windows-v1.2.0",
-  "release": "https://github.com/Miyu3710/9mRoom/releases/tag/windows-v1.2.0",
+  "version": "1.2.1",
+  "tag": "windows-v1.2.1",
+  "release": "https://github.com/Miyu3710/9mRoom/releases/tag/windows-v1.2.1",
   "windows": {
-    "asset": "9mRoom-Setup-1.2.0.msi",
-    "sha256": "AABC947BC535D8B33C8517612B88678708E8D9C5A335438CC7B0FC44C3C39FD5"
+    "asset": "9mRoom-Setup-1.2.1.msi",
+    "sha256": "F5CB44DD3B7CC8109B63CB3EEFA53F9280FAEA643E68F18A1ACC05B503AFD0E6"
   }
 }
