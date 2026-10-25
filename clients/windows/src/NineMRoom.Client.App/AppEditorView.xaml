@@ -154,7 +154,7 @@
       </StackPanel>
     </ScrollViewer>
 
-    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0">
+    <StackPanel Grid.Row="2" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,28,0">
       <controls:M3Button Style="{StaticResource M3TextButtonNeutral}" Content="取消"
                          Click="Cancel_Click" />
       <controls:M3Button Style="{StaticResource M3FilledButton}" Content="保存"
