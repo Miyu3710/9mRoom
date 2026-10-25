@@ -15,7 +15,8 @@ public sealed record RoomMember(
     long UpdatedAt,
     JsonElement? Status,
     string WindowTitle,
-    long FocusSecondsToday);
+    long FocusSecondsToday,
+    string ConnectionState);
 
 public sealed record ChatMessage(
     string Id,
@@ -173,6 +174,15 @@ public sealed class PresenceClient : IAsyncDisposable
             payload = new { targetId = id }
         });
     }
+
+    public Task SendLeaveAsync() =>
+        SendMessageAsync(new
+        {
+            v = 1,
+            type = "leave",
+            ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            payload = new { }
+        });
 
     private async Task SendMessageAsync(object message)
     {
@@ -457,7 +467,10 @@ public sealed class PresenceClient : IAsyncDisposable
             updatedAt,
             status,
             Str(member, "windowTitle"),
-            focusSeconds);
+            focusSeconds,
+            string.IsNullOrWhiteSpace(Str(member, "connectionState"))
+                ? (online ? "online" : "offline")
+                : Str(member, "connectionState"));
     }
 
     private static string Str(JsonElement element, string name) =>

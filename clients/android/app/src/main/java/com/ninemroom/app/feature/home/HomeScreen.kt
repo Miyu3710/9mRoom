@@ -231,6 +231,14 @@ private fun MemberRow(
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.padding(top = 5.dp),
                 )
+                if (member.isReconnecting) {
+                    Text(
+                        "重连中",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.tertiary,
+                        maxLines = 1,
+                    )
+                }
             }
         }
     }

@@ -69,6 +69,10 @@ class PresenceSocket(
         sendEnvelope("poke.send", JSONObject().put("targetId", targetId))
     }
 
+    fun sendLeave() {
+        sendEnvelope("leave", JSONObject())
+    }
+
     fun sendPing() {
         sendEnvelope("ping", JSONObject())
     }

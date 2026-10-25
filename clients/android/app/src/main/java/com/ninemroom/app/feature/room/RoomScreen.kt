@@ -190,9 +190,19 @@ private fun MemberList(
                             )
                         }
                         Text(
-                            if (!member.online) "离线" else "${member.modeLabel} · 同步于 ${member.agoText}",
+                            if (member.isReconnecting) {
+                                "重连中 · ${member.modeLabel}"
+                            } else if (!member.online) {
+                                "离线"
+                            } else {
+                                "${member.modeLabel} · 同步于 ${member.agoText}"
+                            },
                             style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            color = if (member.isReconnecting) {
+                                MaterialTheme.colorScheme.tertiary
+                            } else {
+                                MaterialTheme.colorScheme.onSurfaceVariant
+                            },
                             modifier = Modifier.padding(top = 3.dp),
                         )
                         if (member.statusText.isNotBlank()) {
@@ -208,7 +218,9 @@ private fun MemberList(
                     }
                     Surface(
                         shape = CircleShape,
-                        color = if (member.online) {
+                        color = if (member.isReconnecting) {
+                            MaterialTheme.colorScheme.tertiary
+                        } else if (member.online) {
                             MaterialTheme.colorScheme.primary
                         } else {
                             MaterialTheme.colorScheme.outlineVariant
@@ -385,9 +397,17 @@ internal fun MemberDetail(
                     style = MaterialTheme.typography.headlineSmall,
                 )
                 Text(
-                    "${member.deviceLabel} · ${member.modeLabel}",
+                    if (member.isReconnecting) {
+                        "${member.deviceLabel} · 重连中"
+                    } else {
+                        "${member.deviceLabel} · ${member.modeLabel}"
+                    },
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    color = if (member.isReconnecting) {
+                        MaterialTheme.colorScheme.tertiary
+                    } else {
+                        MaterialTheme.colorScheme.onSurfaceVariant
+                    },
                 )
             }
         }

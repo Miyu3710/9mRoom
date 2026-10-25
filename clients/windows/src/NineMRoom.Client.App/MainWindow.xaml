@@ -479,23 +479,36 @@
                               <TextBlock Text="{Binding Name}" Style="{StaticResource ItemTitle}" />
                               <TextBlock Text="{Binding DeviceLabel}" Style="{StaticResource ItemSupporting}"
                                          Margin="8,0,0,0" VerticalAlignment="Center" />
-                              <TextBlock Text="离线"
-                                         Foreground="{StaticResource BrushStatusOffline}"
+                              <TextBlock Text="{Binding PresenceLabel}"
                                          Margin="8,0,0,0" VerticalAlignment="Center">
                                 <TextBlock.Style>
                                   <Style TargetType="TextBlock" BasedOn="{StaticResource ItemSupporting}">
+                                    <Setter Property="Foreground" Value="{StaticResource BrushStatusOffline}" />
                                     <Setter Property="Visibility" Value="Collapsed" />
                                     <Style.Triggers>
                                       <DataTrigger Binding="{Binding IsOnline}" Value="False">
                                         <Setter Property="Visibility" Value="Visible" />
+                                      </DataTrigger>
+                                      <DataTrigger Binding="{Binding IsReconnecting}" Value="True">
+                                        <Setter Property="Foreground" Value="{StaticResource BrushStatusAway}" />
                                       </DataTrigger>
                                     </Style.Triggers>
                                   </Style>
                                 </TextBlock.Style>
                               </TextBlock>
                             </StackPanel>
-                            <TextBlock Text="{Binding StatusText}" Style="{StaticResource ItemSupporting}"
-                                       TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
+                            <TextBlock Text="{Binding StatusText}"
+                                       TextTrimming="CharacterEllipsis" Margin="0,2,0,0">
+                              <TextBlock.Style>
+                                <Style TargetType="TextBlock" BasedOn="{StaticResource ItemSupporting}">
+                                  <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsReconnecting}" Value="True">
+                                      <Setter Property="Visibility" Value="Collapsed" />
+                                    </DataTrigger>
+                                  </Style.Triggers>
+                                </Style>
+                              </TextBlock.Style>
+                            </TextBlock>
                           </StackPanel>
 
                           <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
@@ -506,6 +519,9 @@
                                   <Style.Triggers>
                                     <DataTrigger Binding="{Binding IsOnline}" Value="False">
                                       <Setter Property="Fill" Value="{StaticResource BrushStatusOffline}" />
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsReconnecting}" Value="True">
+                                      <Setter Property="Fill" Value="{StaticResource BrushStatusAway}" />
                                     </DataTrigger>
                                   </Style.Triggers>
                                 </Style>

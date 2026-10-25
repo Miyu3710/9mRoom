@@ -67,6 +67,7 @@
 | C → S | `profile.update` | 修改昵称 |
 | C → S | `chat.send` | 发送聊天纯文本（≤ 500 字符，服务端限频） |
 | C → S | `poke.send` | 戳同房间的在线成员，`targetId` 为成员 ID |
+| C → S | `leave` | 显式离开房间，服务端立即移除并广播 `member.left` |
 | C → S | `room.subscribe` | 订阅 / 取消订阅房间 |
 | C → S | `ping` | 应用层心跳 |
 | S → C | `welcome` | 返回 `serverTime`、用户与房间概况 |
@@ -89,6 +90,20 @@
 - 戳一下只发给目标成员，不广播给房间；同一成员 2 秒内最多一次
 - 戳一下要求目标在同一房间且在线；不存在、离线、戳自己均返回 `error`
 - 所有时间字段为 UTC 毫秒时间戳
+
+## 连接恢复
+
+成员视图在原有 `online` 之外增加可选的 `connectionState` 字段，取值为
+`"online"` 或 `"reconnecting"`；旧客户端可以忽略。
+
+- WebSocket 异常断开后，成员不立即移除，保留 120 秒恢复窗口：
+  `online=false`、`connectionState="reconnecting"`，广播一次 `presence.changed`。
+- 同一 `(room, clientId)` 在窗口内重新连接时复用原 `userId`，只广播
+  `presence.changed`，不广播 `member.left` / `member.joined`。
+- 超过窗口未恢复：服务端移除成员并广播一次 `member.left`。
+- 客户端也可以发送 `{ "type": "leave" }` 显式离开：服务端立即移除并广播
+  `member.left`，之后同 `clientId` 重连必须按新成员处理。
+- `room.snapshot` 包含处于重连窗口中的成员，因此新加入者也能看到“重连中”。
 
 ## 戳一下（poke）
 

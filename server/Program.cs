@@ -22,8 +22,19 @@ if (string.IsNullOrWhiteSpace(databasePath))
 }
 
 var database = new ServerDatabase(databasePath);
-var registry = new RoomRegistry();
-app.Logger.LogInformation("database={Path}", databasePath);
+var reconnectGraceMs = 120_000L;
+if (long.TryParse(
+        Environment.GetEnvironmentVariable("NINEMROOM_RECONNECT_GRACE_MS"),
+        out var configuredGrace) &&
+    configuredGrace >= 1_000)
+{
+    reconnectGraceMs = configuredGrace;
+}
+
+var registry = new RoomRegistry(
+    reconnectGraceMs,
+    message => app.Logger.LogInformation("{Event}", message));
+app.Logger.LogInformation("database={Path} reconnectGraceMs={Grace}", databasePath, reconnectGraceMs);
 
 if (!database.HasAdmins())
 {
@@ -331,36 +342,60 @@ app.Map("/v1/ws", async context =>
         return;
     }
 
-    var previous = registry.FindByClientId(room, clientId);
-    if (previous is not null)
+    using var socket = await context.WebSockets.AcceptWebSocketAsync();
+    var result = registry.Connect(room, name, device, role, socket, clientId);
+    var member = result.Member;
+    var connectionId = member.ConnectionId;
+    database.TouchRoom(room);
+
+    if (result.ExpiredMember is { } expired)
     {
-        registry.Remove(previous);
-        await registry.BroadcastLeftAsync(previous);
-        try
-        {
-            await previous.Socket.CloseAsync(
-                WebSocketCloseStatus.PolicyViolation,
-                "replaced",
-                CancellationToken.None);
-        }
-        catch
-        {
-            // 旧连接可能已经断开
-        }
+        app.Logger.LogInformation(
+            "event=expired-left room={Room} clientId={ClientId} memberId={MemberId} connectionId={ConnectionId} reason=expired-on-connect",
+            room,
+            expired.ClientId,
+            expired.Id,
+            expired.ConnectionId);
+        await registry.BroadcastLeftAsync(expired);
+        await RoomRegistry.CloseSocketAsync(expired.Socket, "reconnect expired");
     }
 
-    using var socket = await context.WebSockets.AcceptWebSocketAsync();
-    var member = registry.Add(room, name, device, role, socket, clientId);
-    database.TouchRoom(room);
-    app.Logger.LogInformation("join room={Room} name={Name} id={Id} device={Device}", room, name, member.Id, device);
+    if (result.Resumed)
+    {
+        app.Logger.LogInformation(
+            "event=resume room={Room} clientId={ClientId} memberId={MemberId} connectionId={ConnectionId}",
+            room,
+            member.ClientId,
+            member.Id,
+            connectionId);
+        if (result.PreviousSocket is { } previousSocket)
+        {
+            await RoomRegistry.CloseSocketAsync(previousSocket, "replaced by reconnect");
+        }
+    }
+    else
+    {
+        app.Logger.LogInformation(
+            "event=join room={Room} clientId={ClientId} memberId={MemberId} connectionId={ConnectionId} name={Name} device={Device}",
+            room,
+            member.ClientId,
+            member.Id,
+            connectionId,
+            name,
+            device);
+    }
 
     try
     {
         await registry.SendWelcomeAsync(member);
         await registry.SendSnapshotAsync(member);
         await registry.BroadcastMemberAsync(member, includeSelf: false);
-        await registry.BroadcastJoinedAsync(member);
-        await registry.PumpAsync(member, context.RequestAborted);
+        if (!result.Resumed)
+        {
+            await registry.BroadcastJoinedAsync(member);
+        }
+
+        await registry.PumpAsync(member, socket, connectionId, context.RequestAborted);
     }
     catch (Exception ex) when (ex is WebSocketException or OperationCanceledException)
     {
@@ -368,19 +403,26 @@ app.Map("/v1/ws", async context =>
     }
     finally
     {
-        registry.Remove(member);
-        await registry.BroadcastLeftAsync(member);
-        app.Logger.LogInformation("leave room={Room} name={Name} id={Id}", room, name, member.Id);
+        await registry.DisconnectAsync(member, connectionId);
     }
 });
 
 _ = Task.Run(async () =>
 {
+    var sweepMs = 5_000;
+    if (int.TryParse(
+            Environment.GetEnvironmentVariable("NINEMROOM_SWEEP_MS"),
+            out var configuredSweep) &&
+        configuredSweep >= 100)
+    {
+        sweepMs = configuredSweep;
+    }
+
     while (!app.Lifetime.ApplicationStopping.IsCancellationRequested)
     {
         try
         {
-            await Task.Delay(TimeSpan.FromSeconds(5), app.Lifetime.ApplicationStopping);
+            await Task.Delay(TimeSpan.FromMilliseconds(sweepMs), app.Lifetime.ApplicationStopping);
         }
         catch (OperationCanceledException)
         {

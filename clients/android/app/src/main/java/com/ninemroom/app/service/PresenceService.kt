@@ -464,9 +464,21 @@ class PresenceService : Service() {
             text = buildString {
                 append(if (isSelf) "${member.name}（我）" else member.name)
                 append("    ")
-                append(if (member.online) member.modeLabel else "离线")
+                append(
+                    when {
+                        member.isReconnecting -> "重连中"
+                        member.online -> member.modeLabel
+                        else -> "离线"
+                    },
+                )
             }
-            setTextColor(if (member.online) Color.WHITE else Color.parseColor("#99FFFFFF"))
+            setTextColor(
+                when {
+                    member.isReconnecting -> Color.parseColor("#FFFFB86C")
+                    member.online -> Color.WHITE
+                    else -> Color.parseColor("#99FFFFFF")
+                },
+            )
             setTextSize(TypedValue.COMPLEX_UNIT_SP, 11f)
             maxLines = 1
             ellipsize = TextUtils.TruncateAt.END

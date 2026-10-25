@@ -13,13 +13,16 @@ public sealed class Member
     public required string Device { get; init; }
     public required string Role { get; init; }
     public required string RoomId { get; init; }
-    public required WebSocket Socket { get; init; }
+    public required WebSocket Socket { get; set; }
 
     public JsonElement? Status { get; set; }
     public string? WindowTitle { get; set; }
     public long FocusSecondsToday { get; set; }
     public string Mode { get; set; } = "idle";
     public bool Online { get; set; } = true;
+    public long ConnectionId { get; set; }
+    public string ConnectionState { get; set; } = "online";
+    public bool ExplicitLeave { get; set; }
     public long UpdatedAt { get; set; }
     public long ExpiresAt { get; set; }
     public long LastChatAt { get; set; }
@@ -31,15 +34,30 @@ internal sealed class Room
 {
     public string Kind { get; init; } = "user";
     public ConcurrentDictionary<string, Member> Members { get; } = new();
+    public object SyncRoot { get; } = new();
 }
+
+public sealed record ConnectResult(
+    Member Member,
+    bool Resumed,
+    WebSocket? PreviousSocket,
+    Member? ExpiredMember);
 
 public sealed class RoomRegistry
 {
     private const int MaxMessageBytes = 32 * 1024;
-    private const long TtlMs = 90_000;
+    private const long DefaultReconnectGraceMs = 120_000;
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private readonly ConcurrentDictionary<string, Room> _rooms = new();
+    private readonly long _reconnectGraceMs;
+    private readonly Action<string>? _log;
+
+    public RoomRegistry(long reconnectGraceMs = DefaultReconnectGraceMs, Action<string>? log = null)
+    {
+        _reconnectGraceMs = Math.Max(1_000, reconnectGraceMs);
+        _log = log;
+    }
 
     public int RoomCount => _rooms.Count;
     public int MemberCount => _rooms.Values.Sum(room => room.Members.Count);
@@ -47,21 +65,79 @@ public sealed class RoomRegistry
     public Member Add(string roomId, string name, string device, string role, WebSocket socket, string clientId = "")
     {
         var room = _rooms.GetOrAdd(roomId, _ => new Room());
-        var member = new Member
+        lock (room.SyncRoot)
         {
-            Id = "u_" + Guid.NewGuid().ToString("n")[..8],
-            ClientId = clientId,
-            Name = name,
-            Device = device,
-            Role = role,
-            RoomId = roomId,
-            Socket = socket,
-            UpdatedAt = Now()
-        };
-        member.ExpiresAt = member.UpdatedAt + TtlMs;
-        room.Members[member.Id] = member;
-        return member;
+            var member = CreateMember(roomId, name, device, role, socket, clientId, Now());
+            room.Members[member.Id] = member;
+            return member;
+        }
     }
+
+    public ConnectResult Connect(
+        string roomId,
+        string name,
+        string device,
+        string role,
+        WebSocket socket,
+        string clientId = "")
+    {
+        var room = _rooms.GetOrAdd(roomId, _ => new Room());
+        lock (room.SyncRoot)
+        {
+            var now = Now();
+            var existing = string.IsNullOrWhiteSpace(clientId)
+                ? null
+                : room.Members.Values.FirstOrDefault(member =>
+                    string.Equals(member.ClientId, clientId, StringComparison.Ordinal));
+
+            if (existing is not null && now <= existing.ExpiresAt)
+            {
+                var previousSocket = existing.Socket;
+                existing.Name = name;
+                existing.Socket = socket;
+                existing.ConnectionId++;
+                existing.Online = true;
+                existing.ConnectionState = "online";
+                existing.ExplicitLeave = false;
+                existing.UpdatedAt = now;
+                existing.ExpiresAt = now + _reconnectGraceMs;
+                return new ConnectResult(existing, true, previousSocket, null);
+            }
+
+            Member? expired = null;
+            if (existing is not null)
+            {
+                room.Members.TryRemove(existing.Id, out _);
+                expired = existing;
+            }
+
+            var member = CreateMember(roomId, name, device, role, socket, clientId, now);
+            room.Members[member.Id] = member;
+            return new ConnectResult(member, false, null, expired);
+        }
+    }
+
+    private Member CreateMember(
+        string roomId,
+        string name,
+        string device,
+        string role,
+        WebSocket socket,
+        string clientId,
+        long now) => new()
+    {
+        Id = "u_" + Guid.NewGuid().ToString("n")[..8],
+        ClientId = clientId,
+        Name = name,
+        Device = device,
+        Role = role,
+        RoomId = roomId,
+        Socket = socket,
+        ConnectionId = 1,
+        ConnectionState = "online",
+        UpdatedAt = now,
+        ExpiresAt = now + _reconnectGraceMs
+    };
 
     public Member? FindByClientId(string roomId, string clientId)
     {
@@ -250,6 +326,7 @@ public sealed class RoomRegistry
                 member.Device,
                 member.Role,
                 member.Online,
+                member.ConnectionState,
                 member.Mode,
                 member.UpdatedAt,
                 status = member.Status,
@@ -259,6 +336,101 @@ public sealed class RoomRegistry
         };
     }
 
+    public bool IsCurrent(Member member, long connectionId)
+    {
+        if (!_rooms.TryGetValue(member.RoomId, out var room))
+        {
+            return false;
+        }
+
+        lock (room.SyncRoot)
+        {
+            return room.Members.TryGetValue(member.Id, out var current) &&
+                   ReferenceEquals(current, member) &&
+                   member.ConnectionId == connectionId &&
+                   !member.ExplicitLeave;
+        }
+    }
+
+    public async Task DisconnectAsync(Member member, long connectionId)
+    {
+        if (!_rooms.TryGetValue(member.RoomId, out var room))
+        {
+            return;
+        }
+
+        lock (room.SyncRoot)
+        {
+            if (!room.Members.TryGetValue(member.Id, out var current) ||
+                !ReferenceEquals(current, member) ||
+                member.ConnectionId != connectionId ||
+                member.ExplicitLeave ||
+                !member.Online)
+            {
+                return;
+            }
+
+            member.Online = false;
+            member.ConnectionState = "reconnecting";
+            member.UpdatedAt = Now();
+            member.ExpiresAt = member.UpdatedAt + _reconnectGraceMs;
+        }
+
+        Log($"event=reconnecting room={member.RoomId} clientId={member.ClientId} memberId={member.Id} connectionId={connectionId}");
+        await BroadcastMemberAsync(member, includeSelf: false);
+    }
+
+    public async Task LeaveExplicitAsync(Member member, long connectionId)
+    {
+        if (!_rooms.TryGetValue(member.RoomId, out var room))
+        {
+            return;
+        }
+
+        lock (room.SyncRoot)
+        {
+            if (!room.Members.TryGetValue(member.Id, out var current) ||
+                !ReferenceEquals(current, member) ||
+                member.ConnectionId != connectionId ||
+                member.ExplicitLeave)
+            {
+                return;
+            }
+
+            room.Members.TryRemove(member.Id, out _);
+            member.Online = false;
+            member.ConnectionState = "offline";
+            member.ExplicitLeave = true;
+            member.UpdatedAt = Now();
+        }
+
+        Log($"event=explicit-leave room={member.RoomId} clientId={member.ClientId} memberId={member.Id} connectionId={connectionId}");
+        await BroadcastLeftAsync(member);
+    }
+
+    public static async Task CloseSocketAsync(WebSocket socket, string reason)
+    {
+        try
+        {
+            if (socket.State is WebSocketState.Open or WebSocketState.CloseReceived)
+            {
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(1));
+                await socket.CloseAsync(WebSocketCloseStatus.NormalClosure, reason, cts.Token);
+            }
+        }
+        catch
+        {
+            try
+            {
+                socket.Abort();
+            }
+            catch
+            {
+                // 忽略关闭失败
+            }
+        }
+    }
+
     public async Task SweepAsync()
     {
         var now = Now();
@@ -266,31 +438,72 @@ public sealed class RoomRegistry
         {
             foreach (var member in room.Members.Values.ToArray())
             {
-                if (!member.Online || now <= member.ExpiresAt)
+                var reconnecting = false;
+                var expired = false;
+
+                lock (room.SyncRoot)
                 {
-                    continue;
+                    if (!room.Members.TryGetValue(member.Id, out var current) ||
+                        !ReferenceEquals(current, member) ||
+                        now <= member.ExpiresAt)
+                    {
+                        continue;
+                    }
+
+                    if (member.Online)
+                    {
+                        member.Online = false;
+                        member.ConnectionState = "reconnecting";
+                        member.UpdatedAt = now;
+                        member.ExpiresAt = now + _reconnectGraceMs;
+                        reconnecting = true;
+                    }
+                    else
+                    {
+                        if (!room.Members.TryRemove(member.Id, out _))
+                        {
+                            continue;
+                        }
+
+                        member.ConnectionState = "offline";
+                        member.UpdatedAt = now;
+                        expired = true;
+                    }
                 }
 
-                member.Online = false;
-                member.Mode = "offline";
-                await BroadcastMemberAsync(member, includeSelf: true);
+                if (reconnecting)
+                {
+                    Log($"event=reconnecting room={member.RoomId} clientId={member.ClientId} memberId={member.Id} connectionId={member.ConnectionId}");
+                    await BroadcastMemberAsync(member, includeSelf: false);
+                }
+                else if (expired)
+                {
+                    Log($"event=expired-left room={member.RoomId} clientId={member.ClientId} memberId={member.Id} connectionId={member.ConnectionId}");
+                    await BroadcastLeftAsync(member);
+                    await CloseSocketAsync(member.Socket, "reconnect expired");
+                }
             }
         }
     }
 
-    public async Task PumpAsync(Member member, CancellationToken cancellationToken)
+    public async Task PumpAsync(Member member, WebSocket socket, long connectionId, CancellationToken cancellationToken)
     {
         var buffer = new byte[16 * 1024];
         using var accumulator = new MemoryStream();
 
-        while (!cancellationToken.IsCancellationRequested && member.Socket.State == WebSocketState.Open)
+        while (!cancellationToken.IsCancellationRequested && socket.State == WebSocketState.Open)
         {
             WebSocketReceiveResult result;
             try
             {
-                result = await member.Socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
+                result = await socket.ReceiveAsync(new ArraySegment<byte>(buffer), cancellationToken);
             }
             catch (Exception ex) when (ex is WebSocketException or OperationCanceledException)
+            {
+                break;
+            }
+
+            if (!IsCurrent(member, connectionId))
             {
                 break;
             }
@@ -302,14 +515,14 @@ public sealed class RoomRegistry
 
             if (result.MessageType != WebSocketMessageType.Text)
             {
-                await CloseAsync(member, "text frames only");
+                await CloseSocketAsync(socket, "text frames only");
                 break;
             }
 
             accumulator.Write(buffer, 0, result.Count);
             if (accumulator.Length > MaxMessageBytes)
             {
-                await CloseAsync(member, "message too large");
+                await CloseSocketAsync(socket, "message too large");
                 break;
             }
 
@@ -320,12 +533,24 @@ public sealed class RoomRegistry
 
             var text = Encoding.UTF8.GetString(accumulator.GetBuffer(), 0, (int)accumulator.Length);
             accumulator.SetLength(0);
-            await HandleAsync(member, text);
+            if (!IsCurrent(member, connectionId))
+            {
+                break;
+            }
+
+            if (await HandleAsync(member, connectionId, text))
+            {
+                break;
+            }
         }
     }
 
-    private async Task HandleAsync(Member member, string text)
+    private async Task<bool> HandleAsync(Member member, long connectionId, string text)
     {
+        if (!IsCurrent(member, connectionId))
+        {
+            return false;
+        }
         JsonDocument document;
         try
         {
@@ -334,7 +559,7 @@ public sealed class RoomRegistry
         catch (JsonException)
         {
             await SendErrorAsync(member, "bad_json", "message is not valid json");
-            return;
+            return false;
         }
 
         using (document)
@@ -345,7 +570,7 @@ public sealed class RoomRegistry
                 typeElement.ValueKind != JsonValueKind.String)
             {
                 await SendErrorAsync(member, "bad_envelope", "type is required");
-                return;
+                return false;
             }
 
             switch (typeElement.GetString())
@@ -355,20 +580,24 @@ public sealed class RoomRegistry
                     break;
 
                 case "presence.update":
-                    await HandlePresenceAsync(member, root);
+                    await HandlePresenceAsync(member, connectionId, root);
                     break;
 
                 case "profile.update":
-                    await HandleProfileUpdateAsync(member, root);
+                    await HandleProfileUpdateAsync(member, connectionId, root);
                     break;
 
                 case "chat.send":
-                    await HandleChatAsync(member, root);
+                    await HandleChatAsync(member, connectionId, root);
                     break;
 
                 case "poke.send":
-                    await HandlePokeAsync(member, root);
+                    await HandlePokeAsync(member, connectionId, root);
                     break;
+
+                case "leave":
+                    await LeaveExplicitAsync(member, connectionId);
+                    return true;
 
                 case "hello":
                     await SendJsonAsync(member, Envelope("welcome", new
@@ -385,10 +614,16 @@ public sealed class RoomRegistry
                     break;
             }
         }
+
+        return false;
     }
 
-    private async Task HandleChatAsync(Member member, JsonElement root)
+    private async Task HandleChatAsync(Member member, long connectionId, JsonElement root)
     {
+        if (!IsCurrent(member, connectionId))
+        {
+            return;
+        }
         if (!root.TryGetProperty("payload", out var payload) ||
             payload.ValueKind != JsonValueKind.Object ||
             !payload.TryGetProperty("text", out var textElement) ||
@@ -422,8 +657,13 @@ public sealed class RoomRegistry
         await BroadcastChatAsync(member, text);
     }
 
-    private async Task HandlePokeAsync(Member member, JsonElement root)
+    private async Task HandlePokeAsync(Member member, long connectionId, JsonElement root)
     {
+        if (!IsCurrent(member, connectionId))
+        {
+            return;
+        }
+
         if (!root.TryGetProperty("payload", out var payload) ||
             payload.ValueKind != JsonValueKind.Object ||
             !payload.TryGetProperty("targetId", out var targetElement) ||
@@ -477,7 +717,13 @@ public sealed class RoomRegistry
         }));
     }
 
-    private async Task HandleProfileUpdateAsync(Member member, JsonElement root)    {
+    private async Task HandleProfileUpdateAsync(Member member, long connectionId, JsonElement root)
+    {
+        if (!IsCurrent(member, connectionId))
+        {
+            return;
+        }
+
         if (!root.TryGetProperty("payload", out var payload) ||
             payload.ValueKind != JsonValueKind.Object ||
             !payload.TryGetProperty("name", out var nameElement) ||
@@ -496,12 +742,17 @@ public sealed class RoomRegistry
 
         member.Name = name;
         member.UpdatedAt = Now();
-        member.ExpiresAt = member.UpdatedAt + TtlMs;
+        member.ExpiresAt = member.UpdatedAt + _reconnectGraceMs;
         await BroadcastMemberAsync(member, includeSelf: true);
     }
 
-    private async Task HandlePresenceAsync(Member member, JsonElement root)
+    private async Task HandlePresenceAsync(Member member, long connectionId, JsonElement root)
     {
+        if (!IsCurrent(member, connectionId))
+        {
+            return;
+        }
+
         if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
         {
             await SendErrorAsync(member, "bad_payload", "payload object is required");
@@ -555,8 +806,9 @@ public sealed class RoomRegistry
         }
 
         member.Online = true;
+        member.ConnectionState = "online";
         member.UpdatedAt = Now();
-        member.ExpiresAt = member.UpdatedAt + TtlMs;
+        member.ExpiresAt = member.UpdatedAt + _reconnectGraceMs;
         await BroadcastMemberAsync(member, includeSelf: true);
     }
 
@@ -605,18 +857,6 @@ public sealed class RoomRegistry
         return null;
     }
 
-    private static async Task CloseAsync(Member member, string reason)
-    {
-        try
-        {
-            await member.Socket.CloseAsync(WebSocketCloseStatus.PolicyViolation, reason, CancellationToken.None);
-        }
-        catch
-        {
-            // ignore
-        }
-    }
-
     private Task SendErrorAsync(Member member, string code, string message) =>
         SendJsonAsync(member, Envelope("error", new { code, message }));
 
@@ -653,12 +893,15 @@ public sealed class RoomRegistry
         device = member.Device,
         role = member.Role,
         online = member.Online,
+        connectionState = member.ConnectionState,
         mode = member.Mode,
         status = member.Status,
         windowTitle = member.WindowTitle,
         focusSecondsToday = member.FocusSecondsToday,
         updatedAt = member.UpdatedAt
     };
+
+    private void Log(string message) => _log?.Invoke(message);
 
     private static string Envelope(string type, object payload) => JsonSerializer.Serialize(new
     {

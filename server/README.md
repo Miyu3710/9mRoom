@@ -34,7 +34,7 @@ $env:NINEMROOM_ADMIN_PASSWORD = '换成一个强密码'
 GitHub Release 中的 `9mRoom-Server-<version>-linux-x64.tar.gz` 是自包含包：
 
 ```bash
-tar xzf 9mRoom-Server-1.1.0-linux-x64.tar.gz -C /opt/9mroom
+tar xzf 9mRoom-Server-1.2.0-linux-x64.tar.gz -C /opt/9mroom
 cd /opt/9mroom
 NINEMROOM_ADMIN_PASSWORD='...' NINEMROOM_DB=/var/lib/9mroom/9mroom.db bash run-server.sh
 ```
@@ -88,7 +88,18 @@ docker compose up -d --build
 
 WebSocket 消息定义见 [`shared/protocol/`](../shared/protocol/README.md)，
 当前实现 `welcome` / `room.snapshot` / `presence.changed` / `member.joined` / `member.left` /
-`chat.message` / `poke.received` / `poke.sent` / `pong` / `error`。
+`chat.message` / `poke.received` / `poke.sent` / `pong` / `error`，并接收 `leave`。
+
+## 断线恢复
+
+- WebSocket 异常断开后成员保留 **120 秒**：`online=false`、`connectionState="reconnecting"`，
+  广播一次 `presence.changed`，不广播 `member.left`。
+- 同 `(room, clientId)` 在窗口内重连时复用原 `userId`，只广播 `presence.changed`；
+  旧连接通过 `connectionId` 判定，不能删除新连接。
+- 超过窗口由 sweep 移除并广播一次 `member.left`。
+- 显式 `leave` 立即移除并广播 `member.left`，不进入恢复窗口。
+- 日志事件：`join` / `resume` / `reconnecting` / `expired-left` / `explicit-leave`，
+  均包含 `room`、`clientId`、`memberId`、`connectionId`。
 
 ## 数据
 
@@ -122,6 +133,18 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\poke-smoke.ps1 -Serv
 ```
 
 需要目标房间已存在；覆盖 `poke.received` / `poke.sent`、2 秒限频、戳自己、目标不存在。
+
+断线恢复：
+
+```bash
+NINEMROOM_RECONNECT_GRACE_MS=3000 NINEMROOM_SWEEP_MS=200 ./run-server.sh
+```
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\reconnect-smoke.ps1 -Server http://127.0.0.1:5080 -Room demo -GraceSeconds 3
+```
+
+测试需要短恢复窗口；覆盖静默恢复、重连中快照、只广播一次离开、旧连接不删除新成员、显式离开后重新加入。
 
 ## 本地构建环境
 

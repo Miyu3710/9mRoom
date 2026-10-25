@@ -12,6 +12,7 @@ public sealed class MemberItem : ObservableObject
     private string _todayFocusText = string.Empty;
     private bool _isOnline = true;
     private bool _canPoke;
+    private string _connectionState = "online";
 
     public string Id { get; init; } = string.Empty;
 
@@ -80,6 +81,29 @@ public sealed class MemberItem : ObservableObject
     public bool IsOnline
     {
         get => _isOnline;
-        set => SetProperty(ref _isOnline, value);
+        set
+        {
+            if (SetProperty(ref _isOnline, value))
+            {
+                OnPropertyChanged(nameof(PresenceLabel));
+            }
+        }
     }
+
+    public string ConnectionState
+    {
+        get => _connectionState;
+        set
+        {
+            if (SetProperty(ref _connectionState, value ?? "online"))
+            {
+                OnPropertyChanged(nameof(IsReconnecting));
+                OnPropertyChanged(nameof(PresenceLabel));
+            }
+        }
+    }
+
+    public bool IsReconnecting => string.Equals(_connectionState, "reconnecting", StringComparison.Ordinal);
+
+    public string PresenceLabel => IsReconnecting ? "重连中" : (IsOnline ? string.Empty : "离线");
 }

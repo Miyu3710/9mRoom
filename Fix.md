@@ -575,6 +575,16 @@
   - **验证**：Release 构建 0 错误；125% 深色/浅色实际启动；服务器地址、待办输入框已通过键盘消息验证输入。
   - **已包含在 1.2.0 MSI**。
 
+## 服务端断线静默恢复（2026-10-25）
+
+- **FIX-069 120 秒恢复窗口与重连中状态**：
+  - WebSocket 异常断开后保留成员 120 秒，`online=false`、`connectionState="reconnecting"`；不立即移除或广播离开。
+  - 同一 `(room, clientId)` 在窗口内重连时保留 `userId`、递增 `connectionId`、替换 socket；只广播 `presence.changed`，不广播 `member.left` / `member.joined`。
+  - 旧连接 finally 通过 `connectionId` 识别，不能删除新连接恢复出来的成员。
+  - 窗口过期后 sweep 移除并只广播一次 `member.left`；显式 `leave` 立即移除并广播，之后按新成员处理。
+  - 快照包含重连中成员；Windows / Android 客户端解析并显示“重连中”，并新增显式离开发送。
+  - **已完成**：本地 3 秒窗口冒烟测试 20/20 通过（静默恢复、快照、过期离开、旧连接竞态、显式离开）；服务端版本提升到 `1.2.0`。
+
 ## Windows 1.2.0 更新日志（2026-10-24）
 
 依据 `windows-v1.1.1..windows-v1.2.0` 的代码差异重新整理。此前分散在 FIX-055～068 的改动，均已包含在 1.2.0 MSI 中。

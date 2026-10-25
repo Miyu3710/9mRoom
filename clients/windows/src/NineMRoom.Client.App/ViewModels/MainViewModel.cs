@@ -3079,6 +3079,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             var client = _client;
             _client = null;
+            await client.SendLeaveAsync();
             await client.DisposeAsync();
         }
 
@@ -3588,9 +3589,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             {
                 if (_memberMap.TryGetValue(member.Id, out var item))
                 {
-                    item.StatusText = member.Mode == "invisible"
-                        ? "隐身中"
-                        : StatusRenderer.Render(member.Status, now, ResolveAppName);
+                    item.ConnectionState = member.ConnectionState;
+                    item.StatusText = member.ConnectionState == "reconnecting"
+                        ? "重连中"
+                        : member.Mode == "invisible"
+                            ? "隐身中"
+                            : StatusRenderer.Render(member.Status, now, ResolveAppName);
                     item.AgoText = AgoText(now - member.UpdatedAt);
                     item.IsOnline = member.Online && _client.IsConnected;
                 }
@@ -3609,7 +3613,6 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private void SyncMembers()
     {
         var members = (_client?.Members ?? Array.Empty<RoomMember>())
-            .Where(member => member.Online)
             .ToArray();
         var live = new HashSet<string>(members.Select(member => member.Id));
 
@@ -3639,7 +3642,10 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             item.DeviceLabel = member.Device == "android" ? "Android" : "Windows";
             item.Initial = string.IsNullOrEmpty(member.Name) ? "?" : member.Name[..1];
             item.IsOnline = member.Online;
-            item.CanPoke = !string.Equals(member.Id, _client?.SelfId, StringComparison.Ordinal);
+            item.ConnectionState = member.ConnectionState;
+            item.CanPoke = !string.Equals(member.Id, _client?.SelfId, StringComparison.Ordinal) &&
+                           member.Online &&
+                           member.ConnectionState != "reconnecting";
             item.WindowTitle = member.WindowTitle;
             item.ModeText = member.Mode switch
             {

@@ -756,6 +756,7 @@ class RoomController(
         networkProbeJob?.cancel()
         heartbeatJob?.cancel()
         heartbeatJob = null
+        socket?.sendLeave()
         socket?.close()
         socket = null
         opened = false

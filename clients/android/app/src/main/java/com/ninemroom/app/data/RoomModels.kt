@@ -33,12 +33,23 @@ data class RoomMember(
     val updatedAt: Long,
     val statusText: String,
     val focusSecondsToday: Long,
+    val connectionState: String = "online",
 ) {
     val initial: String
         get() = name.trim().take(1).ifBlank { "?" }
 
     val modeLabel: String
         get() = modeLabel(mode)
+
+    val isReconnecting: Boolean
+        get() = connectionState == "reconnecting"
+
+    val connectionLabel: String?
+        get() = when {
+            isReconnecting -> "重连中"
+            !online -> "离线"
+            else -> null
+        }
 
     val agoText: String
         get() = agoText(updatedAt)
@@ -100,6 +111,10 @@ fun parseMember(json: JSONObject): RoomMember? {
         updatedAt = json.optLong("updatedAt", 0),
         statusText = renderStatus(json.optJSONObject("status")),
         focusSecondsToday = json.optLong("focusSecondsToday", 0),
+        connectionState = json.optString(
+            "connectionState",
+            if (json.optBoolean("online", true)) "online" else "offline",
+        ),
     )
 }
 
