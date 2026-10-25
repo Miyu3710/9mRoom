@@ -175,8 +175,8 @@
   <Style x:Key="M3OutlinedButton" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3FilledButton}">
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource BrushPrimary}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource BrushOutline}" />
-    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
   </Style>
 
   <!-- Text: low emphasis action, also used for dialog actions. -->
@@ -213,8 +213,8 @@
   </Style>
 
   <Style x:Key="M3IconButtonOutlined" TargetType="{x:Type controls:M3Button}" BasedOn="{StaticResource M3IconButton}">
-    <Setter Property="BorderBrush" Value="{DynamicResource BrushOutlineVariant}" />
-    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
   </Style>
 
   <!-- Window caption buttons keep the Windows hit area but use M3 state layers. -->
@@ -241,8 +241,8 @@
     <Setter Property="Padding" Value="12,0" />
     <Setter Property="Background" Value="Transparent" />
     <Setter Property="Foreground" Value="{DynamicResource BrushOnSurfaceVariant}" />
-    <Setter Property="BorderBrush" Value="{DynamicResource BrushOutlineVariant}" />
-    <Setter Property="BorderThickness" Value="1" />
+    <Setter Property="BorderBrush" Value="Transparent" />
+    <Setter Property="BorderThickness" Value="0" />
     <Setter Property="FontSize" Value="{DynamicResource TypeLabelLargeSize}" />
     <Setter Property="controls:M3Button.CornerRadius" Value="{DynamicResource ShapeSmall}" />
   </Style>
