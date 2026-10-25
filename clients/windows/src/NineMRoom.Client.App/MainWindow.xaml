@@ -350,7 +350,6 @@
                     </Button>
                     <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
                       <TextBlock Text="我的状态" Style="{StaticResource SectionTitle}" />
-                      <TextBlock Text="点击头像更换" Style="{StaticResource ItemSupporting}" Margin="0,2,0,0" />
                     </StackPanel>
                   </StackPanel>
 
