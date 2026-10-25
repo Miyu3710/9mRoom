@@ -352,6 +352,9 @@
                     BorderThickness="1"
                     CornerRadius="{TemplateBinding CornerRadius}"
                     SnapsToDevicePixels="True">
+                    <Border.Effect>
+                      <DropShadowEffect Color="{StaticResource ColorPrimary}" ShadowDepth="0" BlurRadius="16" Opacity="0" />
+                    </Border.Effect>
               <Grid>
                 <Border x:Name="StateLayer"
                         Background="{TemplateBinding Foreground}"
@@ -403,6 +406,11 @@
                         <CubicEase EasingMode="EaseOut" />
                       </DoubleAnimation.EasingFunction>
                     </DoubleAnimation>
+                  <DoubleAnimation Storyboard.TargetName="Segment"
+                                   Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Opacity)"
+                                   To="0.5" Duration="0:0:0.22">
+                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                  </DoubleAnimation>
                   </Storyboard>
                 </BeginStoryboard>
               </Trigger.EnterActions>
@@ -415,6 +423,11 @@
                         <CubicEase EasingMode="EaseOut" />
                       </DoubleAnimation.EasingFunction>
                     </DoubleAnimation>
+                  <DoubleAnimation Storyboard.TargetName="Segment"
+                                   Storyboard.TargetProperty="(UIElement.Effect).(DropShadowEffect.Opacity)"
+                                   To="0" Duration="0:0:0.26">
+                    <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                  </DoubleAnimation>
                   </Storyboard>
                 </BeginStoryboard>
               </Trigger.ExitActions>
