@@ -598,6 +598,12 @@
   - 发布 `server-v1.2.0` Release，上传 tar、SHA256、两个清单。
   - **已完成**：SHA-256 `24226E4D682D8D1C0EBEE1A912DBB203DD5BA0855F3C328172BC699B46D89B87`；tar 已确认不包含自身；清空旧 `dist` 测试 exe，并移除 Windows 构建的 `publish` 中间目录；`artifacts/` 仅保留 Windows 1.2.0 MSI 与服务端 1.2.0 tar。
 
+- **FIX-072 Android 1.1.5 发布**：
+  - 新增 512×512 本地头像缓存、圆形裁剪预览与 `member.avatar` 同步；聊天气泡和成员详情显示头像。
+  - 聊天默认定位最新消息、发送后自动滚动，修复输入框与键盘之间留白。
+  - 启动时静默检查更新并提示；补齐 120 秒重连、离开房间失败清理与成员抽屉动画。
+  - **已完成**：APK 版本 `1.1.5`（versionCode 7），调试签名；发布 `android-v1.1.5`，SHA-256 `73F786890D9BEFD75CC55E7ECCFE69AB81C4CAE467B6A6651C119285B4FC6850`；`update-android.json` 与 `update.json` 已更新。
+
 ## Windows 1.2.0 更新日志（2026-10-24）
 
 依据 `windows-v1.1.1..windows-v1.2.0` 的代码差异重新整理。此前分散在 FIX-055～068 的改动，均已包含在 1.2.0 MSI 中。

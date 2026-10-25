@@ -11,8 +11,8 @@
 > 当前 Windows / Android 客户端与服务端（SQLite 房间 / 管理员、聊天、状态同步）均已可用。
 > Windows 1.2.0 已完成 Material Design 3 重构，安装包改为 per-machine / x64。
 > 下载与版本历史：[Windows](https://github.com/Miyu3710/9mRoom/releases/tag/windows-v1.2.0) ·
-> [Linux 服务端](https://github.com/Miyu3710/9mRoom/releases/tag/server-v1.1.0) ·
-> [Android](https://github.com/Miyu3710/9mRoom/releases/tag/android-v1.1.4)
+> [Linux 服务端](https://github.com/Miyu3710/9mRoom/releases/tag/server-v1.2.0) ·
+> [Android](https://github.com/Miyu3710/9mRoom/releases/tag/android-v1.1.5)
 > 先读 [Structure.md](Structure.md) 了解目录，再看 [docs/development-approach.md](docs/development-approach.md) 了解开发思路。
 > Windows 端待办与功能提议见 [ToDo.md](ToDo.md)，用户提出的问题与需求见 [Fix.md](Fix.md)。
 
