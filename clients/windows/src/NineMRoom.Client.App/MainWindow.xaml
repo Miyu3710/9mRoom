@@ -737,6 +737,7 @@
                                  Content="戳一下"
                                  VerticalAlignment="Center"
                                  AutomationProperties.Name="戳一下该成员"
+                                 Margin="0,0,16,0"
                                  Click="PokeMember_Click"
                                  Visibility="{Binding CanPoke, Converter={StaticResource BoolToVisibility}}" />
             </Grid>
