@@ -128,7 +128,6 @@
         </DataTrigger.ExitActions>
       </DataTrigger>
       <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
-        <Setter TargetName="PillBg" Property="Background" Value="{DynamicResource BrushPrimaryContainer}" />
         <Setter TargetName="HoverBg" Property="Visibility" Value="Collapsed" />
         <Setter TargetName="NavIcon" Property="Foreground" Value="{DynamicResource BrushOnPrimaryContainer}" />
         <Setter TargetName="NavLabel" Property="Foreground" Value="{DynamicResource BrushOnPrimaryContainer}" />
@@ -186,7 +185,11 @@
               <ScrollViewer Grid.Row="1" Focusable="False" VerticalScrollBarVisibility="Auto"
                             HorizontalScrollBarVisibility="Disabled"
                             Padding="{TemplateBinding Padding}">
-                <ItemsPresenter />
+                <Grid>
+                  <!-- 选中背景由这一层统一绘制，切换时在菜单项之间滑动。 -->
+                  <Canvas x:Name="PART_SelectionLayer" IsHitTestVisible="False" ClipToBounds="True" />
+                  <ItemsPresenter />
+                </Grid>
               </ScrollViewer>
             </Grid>
           </Border>
