@@ -43,6 +43,8 @@ public partial class MainWindow : Window
     private readonly TrayIcon _tray;
     private readonly OverlayWindow _overlay;
     private UIElement? _visiblePage;
+    private int _roomTabIndex;
+    private int _roomTabTransition;
     private HwndSource? _hotkeySource;
     private bool _exiting;
     private bool _suppressMemberSelection;
@@ -577,16 +579,89 @@ public partial class MainWindow : Window
     private void RoomTabs_SelectionChanged(object sender, SelectionChangedEventArgs e)
     {
         if (StateTabContent is null || RoomTabContent is null ||
-            LogTabContent is null || ChatTabContent is null)
+            LogTabContent is null || ChatTabContent is null || RoomTabHost is null)
         {
             return;
         }
 
-        var index = RoomTabs.SelectedIndex;
-        StateTabContent.Visibility = index == 0 ? Visibility.Visible : Visibility.Collapsed;
-        RoomTabContent.Visibility = index == 1 ? Visibility.Visible : Visibility.Collapsed;
-        LogTabContent.Visibility = index == 2 ? Visibility.Visible : Visibility.Collapsed;
-        ChatTabContent.Visibility = index == 3 ? Visibility.Visible : Visibility.Collapsed;
+        var index = Math.Clamp(RoomTabs.SelectedIndex, 0, 3);
+        if (index == _roomTabIndex)
+        {
+            return;
+        }
+
+        var pages = new UIElement[] { StateTabContent, RoomTabContent, LogTabContent, ChatTabContent };
+        var previousIndex = _roomTabIndex;
+        _roomTabIndex = index;
+        var oldPage = pages[previousIndex];
+        var newPage = pages[index];
+
+        // 点击右侧标签时旧页面向左滑出、新页面从右滑入；反向则相反。
+        var direction = index > previousIndex ? 1 : -1;
+        var width = RoomTabHost.ActualWidth > 1 ? RoomTabHost.ActualWidth : 800;
+        var transition = ++_roomTabTransition;
+
+        foreach (var candidate in pages)
+        {
+            if (!ReferenceEquals(candidate, oldPage) && !ReferenceEquals(candidate, newPage))
+            {
+                candidate.Visibility = Visibility.Collapsed;
+                candidate.IsHitTestVisible = true;
+            }
+        }
+
+        newPage.Visibility = Visibility.Visible;
+        newPage.IsHitTestVisible = true;
+        oldPage.IsHitTestVisible = false;
+
+        var oldTransform = EnsureTranslate(oldPage);
+        var newTransform = EnsureTranslate(newPage);
+        oldTransform.BeginAnimation(TranslateTransform.XProperty, null);
+        newTransform.BeginAnimation(TranslateTransform.XProperty, null);
+        oldTransform.X = 0;
+        newTransform.X = direction * width;
+
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        oldTransform.BeginAnimation(
+            TranslateTransform.XProperty,
+            new DoubleAnimation(-direction * width, TimeSpan.FromMilliseconds(220))
+            {
+                EasingFunction = ease,
+                FillBehavior = FillBehavior.HoldEnd
+            });
+        var slideIn = new DoubleAnimation(0, TimeSpan.FromMilliseconds(220))
+        {
+            From = direction * width,
+            EasingFunction = ease,
+            FillBehavior = FillBehavior.HoldEnd
+        };
+        slideIn.Completed += (_, _) =>
+        {
+            if (transition != _roomTabTransition)
+            {
+                return;
+            }
+
+            oldPage.Visibility = Visibility.Collapsed;
+            oldPage.IsHitTestVisible = true;
+            oldTransform.BeginAnimation(TranslateTransform.XProperty, null);
+            newTransform.BeginAnimation(TranslateTransform.XProperty, null);
+            oldTransform.X = 0;
+            newTransform.X = 0;
+        };
+        newTransform.BeginAnimation(TranslateTransform.XProperty, slideIn);
+    }
+
+    private static TranslateTransform EnsureTranslate(UIElement element)
+    {
+        if (element.RenderTransform is TranslateTransform transform)
+        {
+            return transform;
+        }
+
+        transform = new TranslateTransform();
+        element.RenderTransform = transform;
+        return transform;
     }
 
     // ==================== 连接与房间 ====================

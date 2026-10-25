@@ -23,7 +23,17 @@ public partial class InfoHint : UserControl
     public InfoHint()
     {
         InitializeComponent();
-        Loaded += (_, _) => EnsureToolTip();
+        Loaded += (_, _) =>
+        {
+            EnsureToolTip();
+            HintButton.MouseLeave += (_, _) =>
+            {
+                if (_toolTip is not null)
+                {
+                    _toolTip.IsOpen = false;
+                }
+            };
+        };
     }
 
     public string Text
@@ -48,7 +58,6 @@ public partial class InfoHint : UserControl
             return;
         }
 
-        _toolTip.IsOpen = false;
         _toolTip.IsOpen = true;
     }
 
@@ -63,7 +72,6 @@ public partial class InfoHint : UserControl
         {
             Placement = PlacementMode.Bottom,
             PlacementTarget = HintButton,
-            StaysOpen = false,
             Content = new TextBlock
             {
                 Text = Text,

@@ -56,7 +56,8 @@ public sealed class InputMode : INotifyPropertyChanged
                 break;
             case KeyEventArgs keyArgs:
                 // Alt / Ctrl / Shift 等纯修饰键不算键盘操作，避免按 Alt 时弹出焦点框。
-                if (!IsModifier(keyArgs.Key))
+                var key = keyArgs.Key == Key.System ? keyArgs.SystemKey : keyArgs.Key;
+                if (!IsModifier(key))
                 {
                     IsKeyboard = true;
                 }

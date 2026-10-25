@@ -91,13 +91,6 @@
           </StackPanel>
         </Grid>
       </Border>
-      <Border x:Name="FocusRing"
-              BorderBrush="{DynamicResource BrushPrimary}"
-              BorderThickness="3"
-              CornerRadius="12"
-              Margin="10,2,10,2"
-              Visibility="Collapsed"
-              IsHitTestVisible="False" />
     </Grid>
     <DataTemplate.Triggers>
       <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
@@ -136,13 +129,6 @@
         <Setter TargetName="PillBg" Property="Width" Value="48" />
         <Setter TargetName="NavLabel" Property="Opacity" Value="0" />
       </DataTrigger>
-      <MultiDataTrigger>
-        <MultiDataTrigger.Conditions>
-          <Condition Binding="{Binding IsKeyboardFocused, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True" />
-          <Condition Binding="{Binding Cue, Source={x:Static local:InputMode.Instance}}" Value="True" />
-        </MultiDataTrigger.Conditions>
-        <Setter TargetName="FocusRing" Property="Visibility" Value="Visible" />
-      </MultiDataTrigger>
     </DataTemplate.Triggers>
   </DataTemplate>
 

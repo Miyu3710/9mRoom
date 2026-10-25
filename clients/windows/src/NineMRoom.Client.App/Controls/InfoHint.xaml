@@ -6,9 +6,10 @@
              Focusable="False">
   <controls:M3Button x:Name="HintButton"
           Style="{StaticResource M3IconButton}"
-          Width="22" Height="22"
+          Width="18" Height="18"
           MinWidth="0" MinHeight="0"
           Padding="0"
+          VerticalContentAlignment="Center" HorizontalContentAlignment="Center"
           Background="Transparent"
           ToolTipService.InitialShowDelay="220"
           AutomationProperties.Name="查看说明"
