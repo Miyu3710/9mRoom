@@ -61,10 +61,6 @@
                   </BeginStoryboard>
                 </Trigger.ExitActions>
               </Trigger>
-              <Trigger Property="IsSelected" Value="True">
-                <Setter TargetName="Tile" Property="Background" Value="{DynamicResource BrushPrimaryContainer}" />
-                <Setter TargetName="HoverLayer" Property="Visibility" Value="Collapsed" />
-              </Trigger>
             </ControlTemplate.Triggers>
           </ControlTemplate>
         </Setter.Value>
