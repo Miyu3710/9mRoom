@@ -33,6 +33,12 @@
                   Execute="immediate"
                   Impersonate="no"
                   Return="ignore" />
+    <CustomAction Id="FindInstalledFolder"
+                  Script="jscript"
+                  ScriptSourceFile="$(var.ScriptsDir)\find-install-dir.js"
+                  Execute="immediate"
+                  Impersonate="no"
+                  Return="ignore" />
 
     <Icon Id="AppIcon" SourceFile="$(var.IconPath)" />
     <Property Id="ARPPRODUCTICON" Value="AppIcon" />
@@ -52,7 +58,12 @@
 
     <StandardDirectory Id="DesktopFolder" />
 
+    <InstallUISequence>
+      <Custom Action="FindInstalledFolder" Before="CostFinalize" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
+    </InstallUISequence>
+
     <InstallExecuteSequence>
+      <Custom Action="FindInstalledFolder" Before="CostFinalize" Condition="NOT Installed OR WIX_UPGRADE_DETECTED" />
       <Custom Action="StopRunningApp" Before="InstallValidate" Condition="WIX_UPGRADE_DETECTED" />
     </InstallExecuteSequence>
 

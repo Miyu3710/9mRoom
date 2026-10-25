@@ -101,6 +101,7 @@ $msi = Join-Path $dist "9mRoom-Setup-$Version.msi"
     -d "IconPath=$icon" `
     -d "LicensePath=$license" `
     -d "TaskKillPath=$(Join-Path $env:SystemRoot 'System32\taskkill.exe')" `
+    -d "ScriptsDir=$PSScriptRoot" `
     -o $msi
 if ($LASTEXITCODE -ne 0) { throw 'WiX MSI build failed' }
 
