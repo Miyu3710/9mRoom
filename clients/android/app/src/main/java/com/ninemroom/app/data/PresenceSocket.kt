@@ -69,6 +69,18 @@ class PresenceSocket(
         sendEnvelope("poke.send", JSONObject().put("targetId", targetId))
     }
 
+    fun sendAvatar(avatar: AvatarData) {
+        sendEnvelope(
+            "avatar.update",
+            JSONObject()
+                .put("mime", avatar.mime)
+                .put("hash", avatar.hash)
+                .put("width", avatar.width)
+                .put("height", avatar.height)
+                .put("data", avatar.data),
+        )
+    }
+
     fun sendLeave() {
         try {
             sendEnvelope("leave", JSONObject())

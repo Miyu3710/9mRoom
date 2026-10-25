@@ -65,6 +65,7 @@
 | C → S | `hello` | 连接后声明版本、设备、房间 |
 | C → S | `presence.update` | 上报最新状态（全量，不做增量补丁） |
 | C → S | `profile.update` | 修改昵称 |
+| C → S | `avatar.update` | 更新头像；512×512 JPEG，解码后 ≤128 KiB |
 | C → S | `chat.send` | 发送聊天纯文本（≤ 500 字符，服务端限频） |
 | C → S | `poke.send` | 戳同房间的在线成员，`targetId` 为成员 ID |
 | C → S | `leave` | 显式离开房间，服务端立即移除并广播 `member.left` |
@@ -75,6 +76,7 @@
 | S → C | `presence.changed` | 单个成员状态变化 |
 | S → C | `member.joined` | 成员加入房间 |
 | S → C | `member.left` | 成员离开 / 超时 |
+| S → C | `member.avatar` | 单个成员头像数据；snapshot 中只带 `hasAvatar` / `avatarHash` |
 | S → C | `chat.message` | 房间聊天消息（只广播，不持久化） |
 | S → C | `poke.received` | 只发给被戳者；包含 `from` 成员摘要与 `at` |
 | S → C | `poke.sent` | 只发给发起者；确认 `targetId` / `targetName` / `at` |
@@ -104,6 +106,45 @@
 - 客户端也可以发送 `{ "type": "leave" }` 显式离开：服务端立即移除并广播
   `member.left`，之后同 `clientId` 重连必须按新成员处理。
 - `room.snapshot` 包含处于重连窗口中的成员，因此新加入者也能看到“重连中”。
+
+## 头像
+
+客户端本地缓存 512×512 JPEG（目标 ≤96 KiB，服务端硬上限 128 KiB），
+连接或重连时自动发送；服务端只在内存保存，不落库。
+
+```jsonc
+// C → S；data 为空表示清除头像
+{
+  "v": 1, "type": "avatar.update", "id": "a1",
+  "payload": {
+    "mime": "image/jpeg",
+    "width": 512,
+    "height": 512,
+    "data": "<base64>"
+  }
+}
+
+// S → C；只发给头像变化的房间成员
+{
+  "v": 1, "type": "member.avatar",
+  "payload": {
+    "memberId": "u_1a2b3c4d",
+    "avatar": {
+      "mime": "image/jpeg",
+      "hash": "<sha256>",
+      "width": 512,
+      "height": 512,
+      "data": "<base64>"
+    }
+  }
+}
+```
+
+- `room.snapshot` / `member.joined` 中的成员只带 `hasAvatar` 和 `avatarHash`，不内嵌图片
+- 新成员收到 `room.snapshot` 后，服务端再逐条发送 `member.avatar`
+- 头像更新限频 2 秒；MIME 只接受 `image/jpeg` / `image/png` / `image/webp`
+- 服务端会校验图片 magic、尺寸（≤512）与字节数（≤128 KiB）
+- 旧客户端忽略新字段，不影响状态同步
 
 ## 戳一下（poke）
 

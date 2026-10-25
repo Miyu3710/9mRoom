@@ -389,6 +389,7 @@ app.Map("/v1/ws", async context =>
     {
         await registry.SendWelcomeAsync(member);
         await registry.SendSnapshotAsync(member);
+        await registry.SendRoomAvatarsAsync(member);
         await registry.BroadcastMemberAsync(member, includeSelf: false);
         if (!result.Resumed)
         {

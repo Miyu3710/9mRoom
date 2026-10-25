@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Net.WebSockets;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 
@@ -27,6 +28,8 @@ public sealed class Member
     public long ExpiresAt { get; set; }
     public long LastChatAt { get; set; }
     public long LastPokeAt { get; set; }
+    public long LastAvatarAt { get; set; }
+    public AvatarPayload? Avatar { get; set; }
     public SemaphoreSlim SendLock { get; } = new(1, 1);
 }
 
@@ -43,10 +46,18 @@ public sealed record ConnectResult(
     WebSocket? PreviousSocket,
     Member? ExpiredMember);
 
+public sealed record AvatarPayload(
+    string Mime,
+    string Hash,
+    int Width,
+    int Height,
+    string Data);
+
 public sealed class RoomRegistry
 {
-    private const int MaxMessageBytes = 32 * 1024;
-    private const long DefaultReconnectGraceMs = 120_000;
+    private const int MaxMessageBytes = 256 * 1024;
+    private const long MaxAvatarBytes = 128 * 1024;
+    private const int DefaultReconnectGraceMs = 120_000;
 
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private readonly ConcurrentDictionary<string, Room> _rooms = new();
@@ -235,6 +246,42 @@ public sealed class RoomRegistry
             members
         }));
     }
+
+    public async Task SendRoomAvatarsAsync(Member recipient)
+    {
+        if (!_rooms.TryGetValue(recipient.RoomId, out var room))
+        {
+            return;
+        }
+
+        foreach (var member in room.Members.Values.ToArray())
+        {
+            if (member.Avatar is { } avatar)
+            {
+                await SendAvatarAsync(recipient, member, avatar);
+            }
+        }
+    }
+
+    public async Task BroadcastAvatarAsync(Member member)
+    {
+        if (!_rooms.TryGetValue(member.RoomId, out var room))
+        {
+            return;
+        }
+
+        foreach (var other in room.Members.Values.ToArray())
+        {
+            await SendAvatarAsync(other, member, member.Avatar);
+        }
+    }
+
+    private Task SendAvatarAsync(Member recipient, Member owner, AvatarPayload? avatar) =>
+        SendJsonAsync(recipient, Envelope("member.avatar", new
+        {
+            memberId = owner.Id,
+            avatar
+        }));
 
     public async Task BroadcastMemberAsync(Member member, bool includeSelf)
     {
@@ -587,6 +634,10 @@ public sealed class RoomRegistry
                     await HandleProfileUpdateAsync(member, connectionId, root);
                     break;
 
+                case "avatar.update":
+                    await HandleAvatarAsync(member, connectionId, root);
+                    break;
+
                 case "chat.send":
                     await HandleChatAsync(member, connectionId, root);
                     break;
@@ -746,6 +797,108 @@ public sealed class RoomRegistry
         await BroadcastMemberAsync(member, includeSelf: true);
     }
 
+    private async Task HandleAvatarAsync(Member member, long connectionId, JsonElement root)
+    {
+        if (!IsCurrent(member, connectionId))
+        {
+            return;
+        }
+
+        if (!root.TryGetProperty("payload", out var payload) || payload.ValueKind != JsonValueKind.Object)
+        {
+            await SendErrorAsync(member, "bad_avatar", "payload object is required");
+            return;
+        }
+
+        var data = payload.TryGetProperty("data", out var dataElement) && dataElement.ValueKind == JsonValueKind.String
+            ? dataElement.GetString() ?? string.Empty
+            : string.Empty;
+
+        if (data.Length == 0)
+        {
+            member.Avatar = null;
+            member.LastAvatarAt = Now();
+            await BroadcastAvatarAsync(member);
+            return;
+        }
+
+        if (data.Length > (MaxAvatarBytes * 4 / 3) + 16)
+        {
+            await SendErrorAsync(member, "avatar_too_large", "avatar is too large");
+            return;
+        }
+
+        byte[] bytes;
+        try
+        {
+            bytes = Convert.FromBase64String(data);
+        }
+        catch (FormatException)
+        {
+            await SendErrorAsync(member, "bad_avatar", "avatar data is not base64");
+            return;
+        }
+
+        if (bytes.Length > MaxAvatarBytes)
+        {
+            await SendErrorAsync(member, "avatar_too_large", "avatar is too large");
+            return;
+        }
+
+        var mime = payload.TryGetProperty("mime", out var mimeElement) && mimeElement.ValueKind == JsonValueKind.String
+            ? (mimeElement.GetString() ?? string.Empty).Trim().ToLowerInvariant()
+            : string.Empty;
+        if (mime is not ("image/jpeg" or "image/png" or "image/webp") ||
+            !HasImageSignature(bytes, mime))
+        {
+            await SendErrorAsync(member, "bad_avatar", "unsupported image");
+            return;
+        }
+
+        var width = ReadImageDimension(payload, "width");
+        var height = ReadImageDimension(payload, "height");
+        if (width is < 0 or > 512 || height is < 0 or > 512)
+        {
+            await SendErrorAsync(member, "bad_avatar", "avatar dimensions must be <= 512");
+            return;
+        }
+
+        var now = Now();
+        if (now - member.LastAvatarAt < 2_000)
+        {
+            await SendErrorAsync(member, "slow_down", "updating avatar too fast");
+            return;
+        }
+
+        member.LastAvatarAt = now;
+        member.Avatar = new AvatarPayload(
+            mime,
+            Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant(),
+            width,
+            height,
+            Convert.ToBase64String(bytes));
+        await BroadcastAvatarAsync(member);
+    }
+
+    private static int ReadImageDimension(JsonElement payload, string name) =>
+        payload.TryGetProperty(name, out var element) &&
+        element.ValueKind == JsonValueKind.Number &&
+        element.TryGetInt32(out var value)
+            ? value
+            : 0;
+
+    private static bool HasImageSignature(byte[] bytes, string mime) => mime switch
+    {
+        "image/jpeg" => bytes.Length >= 3 && bytes[0] == 0xFF && bytes[1] == 0xD8 && bytes[2] == 0xFF,
+        "image/png" => bytes.Length >= 8 &&
+                       bytes[0] == 0x89 && bytes[1] == 0x50 && bytes[2] == 0x4E && bytes[3] == 0x47 &&
+                       bytes[4] == 0x0D && bytes[5] == 0x0A && bytes[6] == 0x1A && bytes[7] == 0x0A,
+        "image/webp" => bytes.Length >= 12 &&
+                        bytes[0] == 0x52 && bytes[1] == 0x49 && bytes[2] == 0x46 && bytes[3] == 0x46 &&
+                        bytes[8] == 0x57 && bytes[9] == 0x45 && bytes[10] == 0x42 && bytes[11] == 0x50,
+        _ => false
+    };
+
     private async Task HandlePresenceAsync(Member member, long connectionId, JsonElement root)
     {
         if (!IsCurrent(member, connectionId))
@@ -898,7 +1051,9 @@ public sealed class RoomRegistry
         status = member.Status,
         windowTitle = member.WindowTitle,
         focusSecondsToday = member.FocusSecondsToday,
-        updatedAt = member.UpdatedAt
+        updatedAt = member.UpdatedAt,
+        hasAvatar = member.Avatar is not null,
+        avatarHash = member.Avatar?.Hash
     };
 
     private void Log(string message) => _log?.Invoke(message);

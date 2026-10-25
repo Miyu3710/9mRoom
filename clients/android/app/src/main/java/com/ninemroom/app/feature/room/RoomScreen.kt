@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -52,6 +53,7 @@ import com.ninemroom.app.data.ChatLine
 import com.ninemroom.app.data.LogLine
 import com.ninemroom.app.data.RoomMember
 import com.ninemroom.app.data.chatTime
+import com.ninemroom.app.ui.MemberAvatar
 import kotlin.math.roundToInt
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -64,6 +66,7 @@ fun RoomScreen(
     logs: List<LogLine>,
     onSendChat: (String) -> Unit,
     onPoke: (String) -> Unit,
+    onChangeAvatar: () -> Unit,
 ) {
     var tab by rememberSaveable { mutableIntStateOf(0) }
     var selectedMember by remember { mutableStateOf<RoomMember?>(null) }
@@ -127,9 +130,19 @@ fun RoomScreen(
             onDismissRequest = { selectedMember = null },
             sheetState = sheetState,
         ) {
-            MemberDetail(member, member.id == selfId) {
-                onPoke(member.id)
-            }
+            MemberDetail(
+                member = member,
+                isSelf = member.id == selfId,
+                onChangeAvatar = if (member.id == selfId) {
+                    {
+                        selectedMember = null
+                        onChangeAvatar()
+                    }
+                } else {
+                    null
+                },
+                onPoke = { onPoke(member.id) },
+            )
         }
     }
 }
@@ -160,19 +173,11 @@ private fun MemberList(
                     Modifier.padding(14.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Surface(
-                        shape = CircleShape,
-                        color = MaterialTheme.colorScheme.secondaryContainer,
-                        modifier = Modifier.size(46.dp),
-                    ) {
-                        Row(
-                            Modifier.fillMaxSize(),
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically,
-                        ) {
-                            Text(member.initial, style = MaterialTheme.typography.titleMedium)
-                        }
-                    }
+                    MemberAvatar(
+                        avatar = member.avatar,
+                        initial = member.initial,
+                        size = 46.dp,
+                    )
                     Column(
                         Modifier
                             .weight(1f)
@@ -374,21 +379,34 @@ private fun ChatComposer(
 internal fun MemberDetail(
     member: RoomMember,
     isSelf: Boolean,
+    onChangeAvatar: (() -> Unit)? = null,
     onPoke: () -> Unit,
 ) {
     Column(Modifier.padding(horizontal = 24.dp, vertical = 8.dp)) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Surface(
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.secondaryContainer,
-                modifier = Modifier.size(58.dp),
-            ) {
-                Row(
-                    Modifier.fillMaxSize(),
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text(member.initial, style = MaterialTheme.typography.headlineSmall)
+            Box {
+                MemberAvatar(
+                    avatar = member.avatar,
+                    initial = member.initial,
+                    size = 58.dp,
+                    onClick = if (isSelf) onChangeAvatar else null,
+                )
+                if (isSelf && onChangeAvatar != null) {
+                    Surface(
+                        shape = CircleShape,
+                        color = MaterialTheme.colorScheme.surfaceContainerHighest,
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .size(22.dp),
+                    ) {
+                        Icon(
+                            Icons.Outlined.PhotoCamera,
+                            contentDescription = "更换头像",
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(4.dp),
+                        )
+                    }
                 }
             }
             Column(Modifier.padding(start = 14.dp)) {

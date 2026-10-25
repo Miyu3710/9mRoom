@@ -9,6 +9,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Data;
+using System.Windows.Media;
 using System.Windows.Threading;
 using System.Xml.Linq;
 using NineMRoom.Client.Core;
@@ -23,6 +24,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private readonly ForegroundWatcher _foreground;
     private readonly Dispatcher _dispatcher;
     private readonly Dictionary<string, MemberItem> _memberMap = new();
+    private readonly Dictionary<string, ImageSource> _avatarImageCache = new(StringComparer.Ordinal);
     private readonly Dictionary<string, AppRuleItem> _appRuleMap = new(StringComparer.Ordinal);
     private readonly Dictionary<string, AppCategoryItem> _appCategoryMap = new(StringComparer.Ordinal);
     private readonly ScriptRunner _scriptRunner = new();
@@ -44,6 +46,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private int _reconnectAttempt;
     private bool _isServerConnected;
     private string _connectionState = "offline";
+    private AvatarPayload? _avatar;
+    private ImageSource? _myAvatarImage;
     private bool _isJoinDialogOpen;
     private string _joinRoomCode = string.Empty;
     private string _joinRoomName = string.Empty;
@@ -120,6 +124,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
 
         _dispatcher = WpfApplication.Current.Dispatcher;
+        _avatar = AvatarStore.LoadCached();
+        _myAvatarImage = AvatarStore.ToImage(_avatar, 128);
         _catalog = AppCatalog.Load(Path.Combine(AppContext.BaseDirectory, "catalog.json"));
         _customTheme = LoadCustomTheme(settings.OverlayThemeJson);
         _foreground = new ForegroundWatcher();
@@ -386,6 +392,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             _settings.Name = value;
             SettingsStore.Save(_settings);
             OnPropertyChanged();
+            OnPropertyChanged(nameof(MyAvatarInitial));
 
             // 构造函数里已经创建该定时器；这里只是重启防抖。
             _nameDebounce!.Stop();
@@ -2239,6 +2246,47 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         Refresh();
     }
 
+    public ImageSource? MyAvatarImage
+    {
+        get => _myAvatarImage;
+        private set
+        {
+            if (SetProperty(ref _myAvatarImage, value))
+            {
+                OnPropertyChanged(nameof(HasMyAvatar));
+            }
+        }
+    }
+
+    public bool HasMyAvatar => _myAvatarImage is not null;
+
+    public string MyAvatarInitial => string.IsNullOrWhiteSpace(_settings.Name) ? "?" : _settings.Name[..1];
+
+    public async Task ChangeAvatarAsync(string path)
+    {
+        var avatar = AvatarStore.CreateFromFile(path);
+        if (avatar is null)
+        {
+            ShowNotice("无法读取或压缩该图片，请换一张不超过 512×512 的图片。");
+            return;
+        }
+
+        if (!AvatarStore.Save(avatar))
+        {
+            ShowNotice("头像保存失败，请检查本地缓存目录。");
+            return;
+        }
+
+        _avatar = avatar;
+        MyAvatarImage = AvatarStore.ToImage(avatar, 128);
+        OnPropertyChanged(nameof(MyAvatarInitial));
+
+        if (_client is { IsConnected: true } client)
+        {
+            await client.SendAvatarAsync(avatar);
+        }
+    }
+
     public string MyStatusText
     {
         get => _myStatusText;
@@ -3351,6 +3399,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         {
             await client.ConnectAsync(CancellationToken.None);
             await client.UpdateNameAsync(name);
+            if (_avatar is not null)
+            {
+                await client.SendAvatarAsync(_avatar);
+            }
+
             _reconnectAttempt = 0;
         }
         catch (WebSocketException ex) when (
@@ -3598,6 +3651,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 if (_memberMap.TryGetValue(member.Id, out var item))
                 {
                     item.ConnectionState = member.ConnectionState;
+                    item.Avatar = GetAvatarImage(member);
                     item.StatusText = member.ConnectionState == "reconnecting"
                         ? "重连中"
                         : member.Mode == "invisible"
@@ -3651,6 +3705,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             item.Initial = string.IsNullOrEmpty(member.Name) ? "?" : member.Name[..1];
             item.IsOnline = member.Online;
             item.ConnectionState = member.ConnectionState;
+            item.Avatar = GetAvatarImage(member);
             item.CanPoke = !string.Equals(member.Id, _client?.SelfId, StringComparison.Ordinal) &&
                            member.Online &&
                            member.ConnectionState != "reconnecting";
@@ -3671,6 +3726,29 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         Members.Clear();
         _memberMap.Clear();
+        _avatarImageCache.Clear();
+    }
+
+    private ImageSource? GetAvatarImage(RoomMember member)
+    {
+        var avatar = member.Avatar;
+        if (avatar is null || string.IsNullOrWhiteSpace(avatar.Hash))
+        {
+            return null;
+        }
+
+        if (_avatarImageCache.TryGetValue(avatar.Hash, out var cached))
+        {
+            return cached;
+        }
+
+        var image = AvatarStore.ToImage(avatar, 128);
+        if (image is not null)
+        {
+            _avatarImageCache[avatar.Hash] = image;
+        }
+
+        return image;
     }
 
     private object BuildPayload()

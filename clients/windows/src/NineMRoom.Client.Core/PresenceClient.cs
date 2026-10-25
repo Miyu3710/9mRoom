@@ -5,6 +5,13 @@ using System.Text.Json;
 
 namespace NineMRoom.Client.Core;
 
+public sealed record AvatarPayload(
+    string Mime,
+    string Hash,
+    int Width,
+    int Height,
+    string Data);
+
 public sealed record RoomMember(
     string Id,
     string Name,
@@ -16,7 +23,9 @@ public sealed record RoomMember(
     JsonElement? Status,
     string WindowTitle,
     long FocusSecondsToday,
-    string ConnectionState);
+    string ConnectionState,
+    AvatarPayload? Avatar,
+    string? AvatarHash);
 
 public sealed record ChatMessage(
     string Id,
@@ -175,6 +184,34 @@ public sealed class PresenceClient : IAsyncDisposable
         });
     }
 
+    private void UpsertMember(RoomMember parsed)
+    {
+        if (_members.TryGetValue(parsed.Id, out var existing) &&
+            parsed.Avatar is null &&
+            string.Equals(parsed.AvatarHash, existing.AvatarHash, StringComparison.Ordinal))
+        {
+            parsed = parsed with { Avatar = existing.Avatar };
+        }
+
+        _members[parsed.Id] = parsed;
+    }
+
+    public Task SendAvatarAsync(AvatarPayload avatar) =>
+        SendMessageAsync(new
+        {
+            v = 1,
+            type = "avatar.update",
+            ts = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds(),
+            payload = new
+            {
+                mime = avatar.Mime,
+                hash = avatar.Hash,
+                width = avatar.Width,
+                height = avatar.Height,
+                data = avatar.Data
+            }
+        });
+
     public Task SendLeaveAsync() =>
         SendMessageAsync(new
         {
@@ -314,7 +351,7 @@ public sealed class PresenceClient : IAsyncDisposable
                             var parsed = ParseMember(member);
                             if (parsed is not null)
                             {
-                                _members[parsed.Id] = parsed;
+                                UpsertMember(parsed);
                             }
                         }
                     }
@@ -329,7 +366,7 @@ public sealed class PresenceClient : IAsyncDisposable
                         var parsed = ParseMember(changedMember);
                         if (parsed is not null)
                         {
-                            _members[parsed.Id] = parsed;
+                            UpsertMember(parsed);
                             MembersChanged?.Invoke();
                         }
                     }
@@ -343,7 +380,7 @@ public sealed class PresenceClient : IAsyncDisposable
                         var parsed = ParseMember(joinedMember);
                         if (parsed is not null)
                         {
-                            _members[parsed.Id] = parsed;
+                            UpsertMember(parsed);
                             MembersChanged?.Invoke();
                         }
                     }
@@ -356,6 +393,26 @@ public sealed class PresenceClient : IAsyncDisposable
                         _members.TryRemove(leftId.GetString() ?? string.Empty, out _))
                     {
                         MembersChanged?.Invoke();
+                    }
+
+                    break;
+
+                case "member.avatar":
+                    if (root.TryGetProperty("payload", out var avatarPayload) &&
+                        avatarPayload.ValueKind == JsonValueKind.Object)
+                    {
+                        var memberId = Str(avatarPayload, "memberId");
+                        if (!string.IsNullOrEmpty(memberId) &&
+                            _members.TryGetValue(memberId, out var avatarMember))
+                        {
+                            var avatar = ParseAvatar(avatarPayload);
+                            _members[memberId] = avatarMember with
+                            {
+                                Avatar = avatar,
+                                AvatarHash = avatar?.Hash
+                            };
+                            MembersChanged?.Invoke();
+                        }
                     }
 
                     break;
@@ -470,8 +527,43 @@ public sealed class PresenceClient : IAsyncDisposable
             focusSeconds,
             string.IsNullOrWhiteSpace(Str(member, "connectionState"))
                 ? (online ? "online" : "offline")
-                : Str(member, "connectionState"));
+                : Str(member, "connectionState"),
+            ParseAvatar(member),
+            StrOrNull(member, "avatarHash"));
     }
+
+    private static AvatarPayload? ParseAvatar(JsonElement member)
+    {
+        if (!member.TryGetProperty("avatar", out var avatar) || avatar.ValueKind != JsonValueKind.Object)
+        {
+            return null;
+        }
+
+        var data = Str(avatar, "data");
+        if (data.Length == 0)
+        {
+            return null;
+        }
+
+        return new AvatarPayload(
+            Str(avatar, "mime"),
+            Str(avatar, "hash"),
+            ReadInt(avatar, "width"),
+            ReadInt(avatar, "height"),
+            data);
+    }
+
+    private static int ReadInt(JsonElement element, string name) =>
+        element.TryGetProperty(name, out var value) &&
+        value.ValueKind == JsonValueKind.Number &&
+        value.TryGetInt32(out var number)
+            ? number
+            : 0;
+
+    private static string? StrOrNull(JsonElement element, string name) =>
+        element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString()
+            : null;
 
     private static string Str(JsonElement element, string name) =>
         element.TryGetProperty(name, out var value) && value.ValueKind == JsonValueKind.String

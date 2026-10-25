@@ -23,6 +23,14 @@ data class RoomInfo(
     val kind: String = "",
 )
 
+data class AvatarData(
+    val mime: String,
+    val hash: String,
+    val width: Int,
+    val height: Int,
+    val data: String,
+)
+
 data class RoomMember(
     val id: String,
     val name: String,
@@ -34,6 +42,8 @@ data class RoomMember(
     val statusText: String,
     val focusSecondsToday: Long,
     val connectionState: String = "online",
+    val avatar: AvatarData? = null,
+    val avatarHash: String? = null,
 ) {
     val initial: String
         get() = name.trim().take(1).ifBlank { "?" }
@@ -115,6 +125,21 @@ fun parseMember(json: JSONObject): RoomMember? {
             "connectionState",
             if (json.optBoolean("online", true)) "online" else "offline",
         ),
+        avatar = parseAvatar(json.optJSONObject("avatar")),
+        avatarHash = json.optString("avatarHash").takeIf { it.isNotBlank() && it != "null" },
+    )
+}
+
+fun parseAvatar(json: JSONObject?): AvatarData? {
+    if (json == null) return null
+    val data = json.optString("data")
+    if (data.isBlank()) return null
+    return AvatarData(
+        mime = json.optString("mime").ifBlank { "image/jpeg" },
+        hash = json.optString("hash"),
+        width = json.optInt("width", 0),
+        height = json.optInt("height", 0),
+        data = data,
     )
 }
 

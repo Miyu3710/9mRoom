@@ -302,7 +302,56 @@
 
                 <!-- 我的状态 -->
                 <StackPanel Visibility="{Binding IsInRoom, Converter={StaticResource BoolToVisibility}}">
-                  <TextBlock Text="我的状态" Style="{StaticResource SectionTitle}" Margin="0,32,0,0" />
+                  <StackPanel Orientation="Horizontal" Margin="0,32,0,8">
+                    <Button Click="ChangeAvatar_Click" Width="64" Height="64" Padding="0"
+                            Background="Transparent" BorderThickness="0" Cursor="Hand"
+                            ToolTip="更换头像" AutomationProperties.Name="更换头像">
+                      <Grid Width="64" Height="64">
+                        <Ellipse Fill="{StaticResource BrushPrimaryContainer}" />
+                        <TextBlock Text="{Binding MyAvatarInitial}"
+                                   Foreground="{StaticResource BrushOnPrimaryContainer}"
+                                   FontSize="{StaticResource TypeTitleLargeSize}"
+                                   FontWeight="SemiBold"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center">
+                          <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasMyAvatar}" Value="True">
+                                  <Setter Property="Visibility" Value="Collapsed" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </TextBlock.Style>
+                        </TextBlock>
+                        <Ellipse>
+                          <Ellipse.Style>
+                            <Style TargetType="Ellipse">
+                              <Setter Property="Visibility" Value="Collapsed" />
+                              <Style.Triggers>
+                                <DataTrigger Binding="{Binding HasMyAvatar}" Value="True">
+                                  <Setter Property="Visibility" Value="Visible" />
+                                </DataTrigger>
+                              </Style.Triggers>
+                            </Style>
+                          </Ellipse.Style>
+                          <Ellipse.Fill>
+                            <ImageBrush ImageSource="{Binding MyAvatarImage}" Stretch="UniformToFill" />
+                          </Ellipse.Fill>
+                        </Ellipse>
+                        <Border Width="22" Height="22" CornerRadius="11"
+                                Background="{StaticResource BrushSurfaceContainerHigh}"
+                                HorizontalAlignment="Right" VerticalAlignment="Bottom">
+                          <materialDesign:PackIcon Kind="Camera" Width="13" Height="13"
+                                                   Foreground="{StaticResource BrushOnSurfaceVariant}"
+                                                   HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                      </Grid>
+                    </Button>
+                    <StackPanel VerticalAlignment="Center" Margin="14,0,0,0">
+                      <TextBlock Text="我的状态" Style="{StaticResource SectionTitle}" />
+                      <TextBlock Text="点击头像更换" Style="{StaticResource ItemSupporting}" Margin="0,2,0,0" />
+                    </StackPanel>
+                  </StackPanel>
 
                   <Grid Margin="0,8,0,0">
                     <Grid.ColumnDefinitions>
@@ -467,11 +516,37 @@
                           <Border Width="40" Height="40" CornerRadius="10"
                                   Background="{StaticResource BrushPrimaryContainer}"
                                   Margin="0,0,12,0" VerticalAlignment="Center">
-                            <TextBlock Text="{Binding Initial}"
-                                       Foreground="{StaticResource BrushOnPrimaryContainer}"
-                                       FontSize="{StaticResource TypeTitleMediumSize}"
-                                       FontWeight="SemiBold"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <Grid>
+                              <TextBlock Text="{Binding Initial}"
+                                         Foreground="{StaticResource BrushOnPrimaryContainer}"
+                                         FontSize="{StaticResource TypeTitleMediumSize}"
+                                         FontWeight="SemiBold"
+                                         HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                  <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                      <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                                        <Setter Property="Visibility" Value="Collapsed" />
+                                      </DataTrigger>
+                                    </Style.Triggers>
+                                  </Style>
+                                </TextBlock.Style>
+                              </TextBlock>
+                              <Border CornerRadius="10" ClipToBounds="True">
+                                <Border.Style>
+                                  <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                      <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible" />
+                                      </DataTrigger>
+                                    </Style.Triggers>
+                                  </Style>
+                                </Border.Style>
+                                <Image Source="{Binding Avatar}" Stretch="UniformToFill"
+                                       RenderOptions.BitmapScalingMode="HighQuality" />
+                              </Border>
+                            </Grid>
                           </Border>
 
                           <StackPanel Grid.Column="1" VerticalAlignment="Center" Margin="0,0,12,0">

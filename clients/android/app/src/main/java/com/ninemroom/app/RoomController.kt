@@ -2,6 +2,9 @@ package com.ninemroom.app
 
 import android.app.KeyguardManager
 import android.content.Context
+import android.net.Uri
+import com.ninemroom.app.data.AvatarData
+import com.ninemroom.app.data.AvatarStore
 import android.os.PowerManager
 import android.os.SystemClock
 import androidx.core.content.ContextCompat
@@ -26,6 +29,7 @@ import com.ninemroom.app.data.defaultStatusTemplate
 import com.ninemroom.app.data.nowTime
 import com.ninemroom.app.data.parseMember
 import com.ninemroom.app.data.parseMembers
+import com.ninemroom.app.data.parseAvatar
 import com.ninemroom.app.service.NotificationCenter
 import com.ninemroom.app.service.PresenceService
 import kotlinx.coroutines.CoroutineScope
@@ -73,6 +77,7 @@ data class RoomUiState(
     val overlayOpacity: Float = 0.9f,
     val overlaySize: Int = 140,
     val overlayMargin: Int = 8,
+    val selfAvatar: AvatarData? = null,
 ) {
     val isServerRoom: Boolean
         get() = roomKind == "server"
@@ -129,11 +134,13 @@ class RoomController(
             overlayOpacity = settings.overlayOpacity,
             overlaySize = settings.overlaySize,
             overlayMargin = settings.overlayMargin,
+            selfAvatar = AvatarStore.load(appContext),
         ),
     )
     val state: StateFlow<RoomUiState> = _state.asStateFlow()
 
     private var socket: PresenceSocket? = null
+    private var cachedAvatar: AvatarData? = AvatarStore.load(appContext)
     private var heartbeatJob: Job? = null
     private var reconnectJob: Job? = null
     private var networkProbeJob: Job? = null
@@ -297,6 +304,7 @@ class RoomController(
                 }
                 startHeartbeat()
                 sendPresence()
+                cachedAvatar?.let { avatar -> socket?.sendAvatar(avatar) }
                 startPresenceServiceIfNeeded()
             }
 
@@ -748,6 +756,33 @@ class RoomController(
         }
     }
 
+    fun setAvatar(uri: Uri) {
+        scope.launch {
+            val avatar = AvatarStore.create(appContext, uri)
+            if (avatar == null) {
+                _state.update { it.copy(error = "无法读取头像，请换一张图片") }
+                return@launch
+            }
+
+            AvatarStore.save(appContext, avatar)
+            cachedAvatar = avatar
+            _state.update { state ->
+                state.copy(
+                    selfAvatar = avatar,
+                    error = null,
+                    members = state.members.map { member ->
+                        if (member.id == state.selfId) {
+                            member.copy(avatar = avatar, avatarHash = avatar.hash)
+                        } else {
+                            member
+                        }
+                    },
+                )
+            }
+            socket?.sendAvatar(avatar)
+        }
+    }
+
     fun disconnect() {
         intentionalClose = true
         connecting = false
@@ -819,6 +854,25 @@ class RoomController(
                 }
             }
 
+            "member.avatar" -> {
+                val payload = message.optJSONObject("payload") ?: return
+                val id = payload.optString("memberId")
+                if (id.isBlank()) return
+                val avatar = parseAvatar(payload.optJSONObject("avatar"))
+                _state.update { state ->
+                    state.copy(
+                        members = state.members.map { member ->
+                            if (member.id == id) {
+                                member.copy(avatar = avatar, avatarHash = avatar?.hash)
+                            } else {
+                                member
+                            }
+                        },
+                        selfAvatar = if (id == state.selfId) avatar else state.selfAvatar,
+                    )
+                }
+            }
+
             "chat.message" -> {
                 val payload = message.optJSONObject("payload") ?: return
                 val line = ChatLine(
@@ -867,8 +921,14 @@ class RoomController(
     }
 
     private fun upsertMember(json: JSONObject) {
-        val member = parseMember(json) ?: return
+        var member = parseMember(json) ?: return
         _state.update { state ->
+            val existing = state.members.firstOrNull { it.id == member.id }
+            val existingAvatar = existing?.avatar
+            if (member.avatar == null && existingAvatar?.hash == member.avatarHash) {
+                member = member.copy(avatar = existingAvatar)
+            }
+
             val members = (state.members.filterNot { it.id == member.id } + member)
                 .sortedWith(compareByDescending<RoomMember> { it.online }.thenBy { it.name })
             state.copy(

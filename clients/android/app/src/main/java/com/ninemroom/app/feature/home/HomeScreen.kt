@@ -53,6 +53,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.ninemroom.app.NineRoomApplication
 import com.ninemroom.app.data.RoomMember
 import com.ninemroom.app.feature.room.MemberDetail
+import com.ninemroom.app.ui.MemberAvatar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -67,6 +68,7 @@ fun HomeScreen(
     onModeChange: (String) -> Unit,
     onEditStatus: () -> Unit,
     onPoke: (String) -> Unit,
+    onChangeAvatar: () -> Unit,
     onTimerChanged: () -> Unit,
 ) {
     val self = members.firstOrNull { it.id == selfId }
@@ -114,9 +116,19 @@ fun HomeScreen(
             onDismissRequest = { selectedMember = null },
             sheetState = memberSheetState,
         ) {
-            MemberDetail(member, member.id == selfId) {
-                onPoke(member.id)
-            }
+            MemberDetail(
+                member = member,
+                isSelf = member.id == selfId,
+                onChangeAvatar = if (member.id == selfId) {
+                    {
+                        selectedMember = null
+                        onChangeAvatar()
+                    }
+                } else {
+                    null
+                },
+                onPoke = { onPoke(member.id) },
+            )
         }
     }
 }
@@ -205,25 +217,11 @@ private fun MemberRow(
                     .width(64.dp)
                     .clickable { onMemberClick(member) },
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(48.dp)
-                        .clip(CircleShape)
-                        .background(
-                            if (member.online) {
-                                MaterialTheme.colorScheme.secondaryContainer
-                            } else {
-                                MaterialTheme.colorScheme.surfaceContainerHigh
-                            },
-                        ),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text(
-                        member.initial,
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    MemberAvatar(
+                        avatar = member.avatar,
+                        initial = member.initial,
+                        size = 48.dp,
                     )
-                }
                 Text(
                     member.name,
                     style = MaterialTheme.typography.labelMedium,

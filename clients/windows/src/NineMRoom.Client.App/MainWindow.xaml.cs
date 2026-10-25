@@ -7,6 +7,8 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using MaterialDesignThemes.Wpf;
+using Microsoft.Win32;
+using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using KeyEventArgs = System.Windows.Input.KeyEventArgs;
 using ContextMenu = System.Windows.Controls.ContextMenu;
 using MenuItem = System.Windows.Controls.MenuItem;
@@ -730,9 +732,22 @@ public partial class MainWindow : Window
         }
     }
 
-    private void Mode_Checked(object sender, RoutedEventArgs e)
+    private async void ChangeAvatar_Click(object sender, RoutedEventArgs e)
     {
-        if (sender is RadioButton { Tag: string mode } && _viewModel is not null)
+        var dialog = new OpenFileDialog
+        {
+            Title = "更换头像",
+            Filter = "图片 (*.png;*.jpg;*.jpeg;*.webp)|*.png;*.jpg;*.jpeg;*.webp|所有文件 (*.*)|*.*"
+        };
+
+        if (dialog.ShowDialog(this) == true)
+        {
+            await _viewModel.ChangeAvatarAsync(dialog.FileName);
+        }
+    }
+
+    private void Mode_Checked(object sender, RoutedEventArgs e)
+    {        if (sender is RadioButton { Tag: string mode } && _viewModel is not null)
         {
             _viewModel.SetManualMode(mode);
         }

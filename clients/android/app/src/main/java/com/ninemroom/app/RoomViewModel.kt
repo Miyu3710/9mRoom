@@ -22,6 +22,8 @@ class RoomViewModel(application: Application) : AndroidViewModel(application) {
 
     fun sendPoke(targetId: String) = controller.sendPoke(targetId)
 
+    fun setAvatar(uri: android.net.Uri) = controller.setAvatar(uri)
+
     fun disconnect() = controller.disconnect()
 
     fun setKeepOnline(enabled: Boolean) = controller.setKeepOnline(enabled)

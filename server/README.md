@@ -88,7 +88,8 @@ docker compose up -d --build
 
 WebSocket 消息定义见 [`shared/protocol/`](../shared/protocol/README.md)，
 当前实现 `welcome` / `room.snapshot` / `presence.changed` / `member.joined` / `member.left` /
-`chat.message` / `poke.received` / `poke.sent` / `pong` / `error`，并接收 `leave`。
+`member.avatar` / `chat.message` / `poke.received` / `poke.sent` / `pong` / `error`，并接收
+`avatar.update` / `leave`。
 
 ## 断线恢复
 
@@ -98,6 +99,8 @@ WebSocket 消息定义见 [`shared/protocol/`](../shared/protocol/README.md)，
   旧连接通过 `connectionId` 判定，不能删除新连接。
 - 超过窗口由 sweep 移除并广播一次 `member.left`。
 - 显式 `leave` 立即移除并广播 `member.left`，不进入恢复窗口。
+- 头像只存在内存：512×512 JPEG，解码后 ≤128 KiB；`room.snapshot` 只带头像 hash，
+  再通过 `member.avatar` 单独发送，客户端本地缓存自己的头像。
 - 日志事件：`join` / `resume` / `reconnecting` / `expired-left` / `explicit-leave`，
   均包含 `room`、`clientId`、`memberId`、`connectionId`。
 
@@ -133,6 +136,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\poke-smoke.ps1 -Serv
 ```
 
 需要目标房间已存在；覆盖 `poke.received` / `poke.sent`、2 秒限频、戳自己、目标不存在。
+
+头像：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\avatar-smoke.ps1 -Server http://127.0.0.1:5080 -Room demo
+```
+
+覆盖头像事件广播、SHA-256、快照只带 hash、新成员补发、非法 MIME 拒绝。
 
 断线恢复：
 

@@ -1,5 +1,7 @@
 namespace NineMRoom.Client.App;
 
+using System.Windows.Media;
+
 public sealed class MemberItem : ObservableObject
 {
     private string _name = string.Empty;
@@ -13,6 +15,7 @@ public sealed class MemberItem : ObservableObject
     private bool _isOnline = true;
     private bool _canPoke;
     private string _connectionState = "online";
+    private ImageSource? _avatar;
 
     public string Id { get; init; } = string.Empty;
 
@@ -33,6 +36,20 @@ public sealed class MemberItem : ObservableObject
         get => _initial;
         set => SetProperty(ref _initial, value);
     }
+
+    public ImageSource? Avatar
+    {
+        get => _avatar;
+        set
+        {
+            if (SetProperty(ref _avatar, value))
+            {
+                OnPropertyChanged(nameof(HasAvatar));
+            }
+        }
+    }
+
+    public bool HasAvatar => _avatar is not null;
 
     public string StatusText
     {

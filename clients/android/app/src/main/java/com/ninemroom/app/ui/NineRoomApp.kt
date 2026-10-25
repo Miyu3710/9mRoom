@@ -167,6 +167,9 @@ fun NineRoomApp(
     val overlayLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { roomViewModel.refreshOverlay() }
+    val avatarPicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent(),
+    ) { uri: Uri? -> uri?.let(roomViewModel::setAvatar) }
     val usageAccessLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { roomViewModel.refreshPresence() }
@@ -333,6 +336,7 @@ fun NineRoomApp(
                                 navController.navigate(Destination.SyncList.route)
                             },
                             onPoke = roomViewModel::sendPoke,
+                            onChangeAvatar = { avatarPicker.launch("image/*") },
                             onTimerChanged = roomViewModel::refreshPresence,
                         )
                     }
@@ -349,6 +353,7 @@ fun NineRoomApp(
                             logs = state.logs,
                             onSendChat = roomViewModel::sendChat,
                             onPoke = roomViewModel::sendPoke,
+                            onChangeAvatar = { avatarPicker.launch("image/*") },
                         )
                     }
                     composable(Destination.Settings.route) {
