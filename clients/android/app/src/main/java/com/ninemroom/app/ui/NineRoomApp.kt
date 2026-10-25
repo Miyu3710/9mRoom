@@ -68,8 +68,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.ninemroom.app.RoomViewModel
+import com.ninemroom.app.data.AppSettings
 import com.ninemroom.app.data.ConnectionStatus
 import com.ninemroom.app.data.ThemeMode
+import com.ninemroom.app.data.UpdateChecker
+import com.ninemroom.app.data.UpdateInfo
 import com.ninemroom.app.feature.apps.AppRulesScreen
 import com.ninemroom.app.feature.apps.CategoryManagerScreen
 import com.ninemroom.app.feature.connect.ConnectScreen
@@ -79,7 +82,9 @@ import com.ninemroom.app.feature.room.RoomScreen
 import com.ninemroom.app.feature.settings.SettingsScreen
 import com.ninemroom.app.feature.sync.SyncListScreen
 import com.ninemroom.app.feature.todo.TodoScreen
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 enum class Destination(
     val route: String,
@@ -161,6 +166,27 @@ fun NineRoomApp(
 ) {
     val state by roomViewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val appSettings = remember { AppSettings(context) }
+    val currentVersion = remember {
+        runCatching {
+            context.packageManager.getPackageInfo(context.packageName, 0).versionName
+        }.getOrNull().orEmpty().ifBlank { "0" }
+    }
+    var availableUpdate by remember { mutableStateOf<UpdateInfo?>(null) }
+
+    LaunchedEffect(Unit) {
+        if (appSettings.ignoredUpdateForAppVersion.isNotBlank() &&
+            appSettings.ignoredUpdateForAppVersion != currentVersion
+        ) {
+            appSettings.clearIgnoredUpdate()
+        }
+        val update = withContext(Dispatchers.IO) {
+            runCatching { UpdateChecker.check(currentVersion) }.getOrNull()
+        }
+        if (update != null && appSettings.ignoredUpdateVersion != update.latestVersion) {
+            availableUpdate = update
+        }
+    }
     val notificationPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission(),
     ) { }
@@ -486,6 +512,27 @@ fun NineRoomApp(
             onConfirm = { bitmap ->
                 avatarCropUri = null
                 roomViewModel.setAvatar(bitmap)
+            },
+        )
+    }
+
+    availableUpdate?.let { update ->
+        UpdateAvailableDialog(
+            currentVersion = currentVersion,
+            latestVersion = update.latestVersion,
+            onUpdate = {
+                availableUpdate = null
+                runCatching {
+                    context.startActivity(
+                        Intent(Intent.ACTION_VIEW, Uri.parse(update.releaseUrl)),
+                    )
+                }
+            },
+            onCancel = { availableUpdate = null },
+            onNever = {
+                appSettings.ignoredUpdateVersion = update.latestVersion
+                appSettings.ignoredUpdateForAppVersion = currentVersion
+                availableUpdate = null
             },
         )
     }

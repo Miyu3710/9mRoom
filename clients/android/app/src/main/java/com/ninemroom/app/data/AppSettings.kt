@@ -56,6 +56,23 @@ class AppSettings(context: Context) {
         }.getOrDefault(ThemeMode.SYSTEM)
         set(value) = preferences.edit().putString("theme_mode", value.name).apply()
 
+    var ignoredUpdateVersion: String
+        get() = preferences.getString("ignored_update_version", "").orEmpty()
+        set(value) = preferences.edit().putString("ignored_update_version", value).apply()
+
+    var ignoredUpdateForAppVersion: String
+        get() = preferences.getString("ignored_update_for_app_version", "").orEmpty()
+        set(value) = preferences.edit()
+            .putString("ignored_update_for_app_version", value)
+            .apply()
+
+    fun clearIgnoredUpdate() {
+        preferences.edit()
+            .remove("ignored_update_version")
+            .remove("ignored_update_for_app_version")
+            .apply()
+    }
+
     var shareApp: Boolean
         get() = preferences.getBoolean("share_app", true)
         set(value) = preferences.edit().putBoolean("share_app", value).apply()
