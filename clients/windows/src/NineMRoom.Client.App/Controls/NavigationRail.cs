@@ -30,11 +30,11 @@ public class NavigationRail : ListBox
     private PackIcon? _toggleIcon;
     private PackIcon? _pressedIcon;
     private ListBoxItem? _pressContainer;
-    private FrameworkElement? _pressPill;
-    private FrameworkElement? _pressLayer;
+    private Border? _pressPill;
+    private Border? _pressLayer;
     private bool _pressCanceled;
     private Canvas? _selectionLayer;
-    private Squircle? _selectionIndicator;
+    private Border? _selectionIndicator;
 
     public bool IsCollapsed
     {
@@ -58,13 +58,14 @@ public class NavigationRail : ListBox
 
         if (_selectionLayer is not null)
         {
-            _selectionIndicator = new Squircle
+            _selectionIndicator = new Border
             {
                 Height = 48,
                 Width = IsCollapsed ? 48 : 96,
+                CornerRadius = new CornerRadius(10),
                 IsHitTestVisible = false,
                 Visibility = Visibility.Collapsed,
-                Fill = System.Windows.Application.Current?.TryFindResource("BrushPrimaryContainer") as Brush
+                Background = TryFindResource("BrushPrimaryContainer") as Brush
             };
             Canvas.SetLeft(_selectionIndicator, 16);
             _selectionLayer.Children.Add(_selectionIndicator);
@@ -89,10 +90,6 @@ public class NavigationRail : ListBox
             ItemContainerGenerator.StatusChanged -= OnContainersChanged;
             ItemContainerGenerator.StatusChanged += OnContainersChanged;
         }
-
-        Dispatcher.BeginInvoke(
-            new Action(() => UpdateSelectionIndicator(false)),
-            System.Windows.Threading.DispatcherPriority.Loaded);
     }
 
     protected override void OnSelectionChanged(SelectionChangedEventArgs e)
@@ -106,16 +103,7 @@ public class NavigationRail : ListBox
         }
     }
 
-    private void OnRailLoaded(object sender, RoutedEventArgs e)
-    {
-        if (_selectionIndicator is not null && _selectionIndicator.Fill is null)
-        {
-            _selectionIndicator.Fill = TryFindResource("BrushPrimaryContainer") as Brush
-                ?? System.Windows.Application.Current?.TryFindResource("BrushPrimaryContainer") as Brush;
-        }
-
-        UpdateSelectionIndicator(false);
-    }
+    private void OnRailLoaded(object sender, RoutedEventArgs e) => UpdateSelectionIndicator(false);
 
     private void OnRailSizeChanged(object sender, SizeChangedEventArgs e) => UpdateSelectionIndicator(false);
 
@@ -134,12 +122,6 @@ public class NavigationRail : ListBox
         if (_selectionIndicator is null || _selectionLayer is null)
         {
             return;
-        }
-
-        if (_selectionIndicator.Fill is null)
-        {
-            _selectionIndicator.Fill = TryFindResource("BrushPrimaryContainer") as Brush
-                ?? System.Windows.Application.Current?.TryFindResource("BrushPrimaryContainer") as Brush;
         }
 
         if (SelectedItem is null ||
@@ -201,7 +183,7 @@ public class NavigationRail : ListBox
             return;
         }
 
-        var pill = FindNamed<FrameworkElement>(container, "PillBg");
+        var pill = FindNamed<Border>(container, "PillBg");
         if (pill is null)
         {
             return;
@@ -209,11 +191,11 @@ public class NavigationRail : ListBox
 
         _pressContainer = container;
         _pressPill = pill;
-        _pressLayer = FindNamed<Squircle>(container, "PressBg");
+        _pressLayer = FindNamed<Border>(container, "PressBg");
         _pressedIcon = FindNamed<PackIcon>(container, "NavIcon");
         _pressCanceled = false;
 
-        FadeLayer(_pressLayer, 1, 80);
+        FadeLayer(_pressLayer, 0.12, 80);
         PressIcon(0.82, 80, new CubicEase { EasingMode = EasingMode.EaseOut });
 
         CaptureMouse();
@@ -309,7 +291,7 @@ public class NavigationRail : ListBox
         scale.BeginAnimation(ScaleTransform.ScaleYProperty, animation);
     }
 
-    private static void FadeLayer(FrameworkElement? layer, double to, int milliseconds)
+    private static void FadeLayer(Border? layer, double to, int milliseconds)
     {
         if (layer is null)
         {
@@ -379,7 +361,7 @@ public class NavigationRail : ListBox
                 continue;
             }
 
-            var pill = FindNamed<FrameworkElement>(container, "PillBg");
+            var pill = FindNamed<Border>(container, "PillBg");
             var label = FindNamed<TextBlock>(container, "NavLabel");
 
             if (pill is not null)
