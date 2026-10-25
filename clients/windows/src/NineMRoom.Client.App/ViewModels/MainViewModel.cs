@@ -3493,7 +3493,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
         MyAppText = foreground is null
             ? "-"
-            : $"{match.Name} · {CategoryName(match.Category)}";
+            : $"{ResolveAppName(match.Id)} · {CategoryName(match.Category)}";
         MyMediaText = media is null || string.IsNullOrEmpty(media.Title)
             ? "未在播放"
             : $"{media.Title} - {media.Artist}";
@@ -3509,7 +3509,18 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 ? new FocusTimer("countdown", _timerStartedAt, PhaseMinutes)
                 : null;
             var todo = ActiveTodoText;
-            var status = StatusComposer.Compose(match, media, idle, _bootTime, timer, todo, _commandOutput, CurrentLayout(match.Id, match.Category));
+            var sharedWindowTitle = SharedWindowTitle(appRule, match.Id);
+            var status = StatusComposer.Compose(
+                match,
+                media,
+                idle,
+                _bootTime,
+                timer,
+                todo,
+                _commandOutput,
+                CurrentLayout(match.Id, match.Category),
+                ResolveAppName(match.Id),
+                sharedWindowTitle);
             MyStatusText = RenderStatus(status, now);
         }
 
@@ -3652,13 +3663,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 : null;
             var todo = ActiveTodoText;
 
-            var windowTitle = _foreground.Current?.WindowTitle;
-            var sharedWindowTitle = _settings.ShareWindowTitles &&
-                                    !string.IsNullOrWhiteSpace(windowTitle) &&
-                                    appRule?.HideTitle != true &&
-                                    !TitleWhitelist.Any(item => string.Equals(item.AppId, match.Id, StringComparison.Ordinal))
-                ? windowTitle.Trim()
-                : null;
+            var sharedWindowTitle = SharedWindowTitle(appRule, match.Id);
 
             payload["status"] = StatusComposer.Compose(
                 match,
@@ -3681,6 +3686,20 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         }
 
         return payload;
+    }
+
+    private string? SharedWindowTitle(AppRuleItem? appRule, string appId)
+    {
+        var windowTitle = _foreground.Current?.WindowTitle;
+        if (!_settings.ShareWindowTitles ||
+            string.IsNullOrWhiteSpace(windowTitle) ||
+            appRule?.HideTitle == true ||
+            TitleWhitelist.Any(item => string.Equals(item.AppId, appId, StringComparison.Ordinal)))
+        {
+            return null;
+        }
+
+        return windowTitle.Trim();
     }
 
     private MediaInfo? SharedMedia()
