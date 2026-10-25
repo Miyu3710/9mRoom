@@ -40,13 +40,15 @@
     <Grid Height="64" ClipToBounds="True" ToolTip="{Binding Label}">
       <Canvas x:Name="RippleHost" IsHitTestVisible="False" ClipToBounds="True" />
       <Border x:Name="Pill"
-              Height="56"
-              Margin="12,0,0,0"
-              Padding="16,0"
+              Width="96"
+              Height="48"
+              Margin="16,0,0,0"
+              Padding="12,0"
               HorizontalAlignment="Left"
               VerticalAlignment="Center"
-              CornerRadius="28"
+              CornerRadius="12"
               Background="Transparent"
+              ClipToBounds="True"
               RenderTransformOrigin="0.5,0.5">
         <Border.RenderTransform>
           <ScaleTransform x:Name="PillScale" />
@@ -105,21 +107,44 @@
       </DataTrigger>
       <DataTrigger Binding="{Binding IsCollapsed, RelativeSource={RelativeSource AncestorType={x:Type controls:NavigationRail}}}" Value="True">
         <Setter TargetName="Pill" Property="Width" Value="48" />
-        <Setter TargetName="Pill" Property="Height" Value="48" />
-        <Setter TargetName="Pill" Property="Padding" Value="12,0,0,0" />
-        <Setter TargetName="Pill" Property="Margin" Value="16,0,0,0" />
         <Setter TargetName="NavLabel" Property="Opacity" Value="0" />
         <DataTrigger.EnterActions>
           <BeginStoryboard>
             <Storyboard>
-              <DoubleAnimation Storyboard.TargetName="NavLabel" Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.1" />
+              <!-- 收起：文字先淡出，圆角矩形右端随后向左收缩。 -->
+              <DoubleAnimation Storyboard.TargetName="NavLabel" Storyboard.TargetProperty="Opacity"
+                               From="1" To="0" Duration="0:0:0.10" />
+              <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pill" Storyboard.TargetProperty="Width">
+                <DiscreteDoubleKeyFrame KeyTime="0:0:0.10" Value="96" />
+                <EasingDoubleKeyFrame KeyTime="0:0:0.30" Value="48">
+                  <EasingDoubleKeyFrame.EasingFunction>
+                    <CubicEase EasingMode="EaseInOut" />
+                  </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+              </DoubleAnimationUsingKeyFrames>
             </Storyboard>
           </BeginStoryboard>
         </DataTrigger.EnterActions>
         <DataTrigger.ExitActions>
           <BeginStoryboard>
             <Storyboard>
-              <DoubleAnimation Storyboard.TargetName="NavLabel" Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.18" />
+              <!-- 展开：圆角矩形右端先向右延长，文字再逐渐显现。 -->
+              <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pill" Storyboard.TargetProperty="Width">
+                <DiscreteDoubleKeyFrame KeyTime="0" Value="48" />
+                <EasingDoubleKeyFrame KeyTime="0:0:0.22" Value="96">
+                  <EasingDoubleKeyFrame.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                  </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+              </DoubleAnimationUsingKeyFrames>
+              <DoubleAnimationUsingKeyFrames Storyboard.TargetName="NavLabel" Storyboard.TargetProperty="Opacity">
+                <DiscreteDoubleKeyFrame KeyTime="0:0:0.14" Value="0" />
+                <EasingDoubleKeyFrame KeyTime="0:0:0.30" Value="1">
+                  <EasingDoubleKeyFrame.EasingFunction>
+                    <CubicEase EasingMode="EaseOut" />
+                  </EasingDoubleKeyFrame.EasingFunction>
+                </EasingDoubleKeyFrame>
+              </DoubleAnimationUsingKeyFrames>
             </Storyboard>
           </BeginStoryboard>
         </DataTrigger.ExitActions>
