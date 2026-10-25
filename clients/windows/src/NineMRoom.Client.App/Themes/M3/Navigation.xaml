@@ -38,6 +38,7 @@
   <!-- Expanded: icon + label in a row, 56x32 pill behind the icon. -->
   <DataTemplate x:Key="M3NavRailExpandedItem">
     <Grid Height="64" ClipToBounds="True" ToolTip="{Binding Label}">
+      <Canvas x:Name="RippleHost" IsHitTestVisible="False" ClipToBounds="True" />
       <Border x:Name="Pill"
               Width="96"
               Height="48"
@@ -53,14 +54,20 @@
                   VerticalAlignment="Center"
                   CornerRadius="12"
                   Background="Transparent">
-            <!-- 悬停层跟随背景宽度，用透明度做渐亮 / 渐暗。 -->
-            <Border x:Name="HoverBg"
-                    Background="{DynamicResource BrushSecondaryContainer}"
-                    CornerRadius="12"
-                    Opacity="0"
-                    IsHitTestVisible="False" />
+            <Grid>
+              <!-- 悬停层跟随背景宽度，用透明度做渐亮 / 渐暗。 -->
+              <Border x:Name="HoverBg"
+                      Background="{DynamicResource BrushSecondaryContainer}"
+                      CornerRadius="12"
+                      Opacity="0"
+                      IsHitTestVisible="False" />
+              <Border x:Name="PressBg"
+                      Background="{DynamicResource BrushOnSurface}"
+                      CornerRadius="12"
+                      Opacity="0"
+                      IsHitTestVisible="False" />
+            </Grid>
           </Border>
-          <Canvas x:Name="RippleHost" IsHitTestVisible="False" ClipToBounds="True" />
           <StackPanel Orientation="Horizontal" VerticalAlignment="Center"
                       Margin="12,0"
                       IsHitTestVisible="False">

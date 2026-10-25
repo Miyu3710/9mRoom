@@ -5,6 +5,7 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using MouseButtonEventArgs = System.Windows.Input.MouseButtonEventArgs;
+using Point = System.Windows.Point;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Button = System.Windows.Controls.Button;
 using ListBox = System.Windows.Controls.ListBox;
@@ -27,6 +28,11 @@ public class NavigationRail : ListBox
     private Button? _toggleButton;
     private PackIcon? _toggleIcon;
     private PackIcon? _pressedIcon;
+    private ListBoxItem? _pressContainer;
+    private Border? _pressPill;
+    private Border? _pressLayer;
+    private Canvas? _pressRippleHost;
+    private bool _pressCanceled;
 
     public bool IsCollapsed
     {
@@ -68,44 +74,148 @@ public class NavigationRail : ListBox
     {
         base.OnPreviewMouseLeftButtonDown(e);
 
-        _pressedIcon = FindIcon(e.OriginalSource as DependencyObject);
-        if (_pressedIcon?.RenderTransform is not ScaleTransform scale)
+        if (e.ChangedButton != MouseButton.Left ||
+            e.OriginalSource is not DependencyObject source ||
+            ItemsControl.ContainerFromElement(this, source) is not ListBoxItem container)
         {
             return;
         }
 
-        var press = new DoubleAnimation(0.82, TimeSpan.FromMilliseconds(80))
+        var pill = FindNamed<Border>(container, "PillBg");
+        if (pill is null)
         {
-            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
-            FillBehavior = FillBehavior.HoldEnd
-        };
-        scale.BeginAnimation(ScaleTransform.ScaleXProperty, press);
-        scale.BeginAnimation(ScaleTransform.ScaleYProperty, press);
+            return;
+        }
+
+        _pressContainer = container;
+        _pressPill = pill;
+        _pressLayer = FindNamed<Border>(container, "PressBg");
+        _pressRippleHost = FindNamed<Canvas>(container, "RippleHost");
+        _pressedIcon = FindNamed<PackIcon>(container, "NavIcon");
+        _pressCanceled = false;
+
+        // 点击波纹仍画在原来的 RippleHost 上。
+        if (_pressRippleHost is { ActualWidth: > 0, ActualHeight: > 0 })
+        {
+            Ripple.Play(_pressRippleHost, e.GetPosition(_pressRippleHost), container.Foreground);
+        }
+
+        FadeLayer(_pressLayer, 0.12, 80);
+        PressIcon(0.82, 80, new CubicEase { EasingMode = EasingMode.EaseOut });
+
+        CaptureMouse();
+        // 延迟到松开且未移出胶囊时才真正选中，避免按下即切页。
+        e.Handled = true;
+    }
+
+    protected override void OnMouseMove(MouseEventArgs e)
+    {
+        base.OnMouseMove(e);
+
+        if (_pressPill is null || _pressCanceled)
+        {
+            return;
+        }
+
+        if (!IsInside(_pressPill, e.GetPosition(_pressPill)))
+        {
+            CancelPress();
+        }
     }
 
     protected override void OnPreviewMouseLeftButtonUp(MouseButtonEventArgs e)
     {
         base.OnPreviewMouseLeftButtonUp(e);
+
+        if (_pressPill is null)
+        {
+            return;
+        }
+
+        var container = _pressContainer;
+        var inside = !_pressCanceled && IsInside(_pressPill, e.GetPosition(_pressPill));
+
+        FadeLayer(_pressLayer, 0, 140);
         ReleasePressedIcon();
+        _pressContainer = null;
+        _pressPill = null;
+        _pressLayer = null;
+        _pressRippleHost = null;
+        _pressCanceled = false;
+
+        if (Mouse.Captured == this)
+        {
+            ReleaseMouseCapture();
+        }
+
+        if (inside && container?.DataContext is { } item)
+        {
+            SelectedItem = item;
+            container.Focus();
+        }
+
+        e.Handled = true;
     }
 
     protected override void OnMouseLeave(MouseEventArgs e)
     {
         base.OnMouseLeave(e);
+        CancelPress();
+    }
+
+    protected override void OnLostMouseCapture(MouseEventArgs e)
+    {
+        base.OnLostMouseCapture(e);
+        CancelPress();
+    }
+
+    private void CancelPress()
+    {
+        if (_pressPill is null)
+        {
+            return;
+        }
+
+        _pressCanceled = true;
+        FadeLayer(_pressLayer, 0, 120);
         ReleasePressedIcon();
     }
 
-    private PackIcon? FindIcon(DependencyObject? source)
+    private void PressIcon(double to, int milliseconds, IEasingFunction easing)
     {
-        if (source is null)
+        if (_pressedIcon?.RenderTransform is not ScaleTransform scale)
         {
-            return null;
+            return;
         }
 
-        return ItemsControl.ContainerFromElement(this, source) is ListBoxItem container
-            ? FindNamed<PackIcon>(container, "NavIcon")
-            : null;
+        var animation = new DoubleAnimation(to, TimeSpan.FromMilliseconds(milliseconds))
+        {
+            EasingFunction = easing,
+            FillBehavior = FillBehavior.HoldEnd
+        };
+        scale.BeginAnimation(ScaleTransform.ScaleXProperty, animation);
+        scale.BeginAnimation(ScaleTransform.ScaleYProperty, animation);
     }
+
+    private static void FadeLayer(Border? layer, double to, int milliseconds)
+    {
+        if (layer is null)
+        {
+            return;
+        }
+
+        layer.BeginAnimation(
+            OpacityProperty,
+            new DoubleAnimation(to, TimeSpan.FromMilliseconds(milliseconds))
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+                FillBehavior = FillBehavior.HoldEnd
+            });
+    }
+
+    private static bool IsInside(FrameworkElement element, Point point) =>
+        point.X >= 0 && point.Y >= 0 &&
+        point.X <= element.ActualWidth && point.Y <= element.ActualHeight;
 
     private void ReleasePressedIcon()
     {
