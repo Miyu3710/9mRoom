@@ -6,6 +6,7 @@ using System.Windows.Media;
 using System.Windows.Media.Animation;
 using MouseButtonEventArgs = System.Windows.Input.MouseButtonEventArgs;
 using Point = System.Windows.Point;
+using Brush = System.Windows.Media.Brush;
 using MouseEventArgs = System.Windows.Input.MouseEventArgs;
 using Button = System.Windows.Controls.Button;
 using ListBox = System.Windows.Controls.ListBox;
@@ -33,6 +34,8 @@ public class NavigationRail : ListBox
     private Border? _pressLayer;
     private Canvas? _pressRippleHost;
     private bool _pressCanceled;
+    private Canvas? _selectionLayer;
+    private Border? _selectionIndicator;
 
     public bool IsCollapsed
     {
@@ -51,6 +54,23 @@ public class NavigationRail : ListBox
 
         _toggleButton = GetTemplateChild("PART_ToggleButton") as Button;
         _toggleIcon = GetTemplateChild("PART_ToggleIcon") as PackIcon;
+        _selectionLayer = GetTemplateChild("PART_SelectionLayer") as Canvas;
+        _selectionIndicator = null;
+
+        if (_selectionLayer is not null)
+        {
+            _selectionIndicator = new Border
+            {
+                Height = 48,
+                Width = IsCollapsed ? 48 : 96,
+                CornerRadius = new CornerRadius(12),
+                IsHitTestVisible = false,
+                Visibility = Visibility.Collapsed,
+                Background = TryFindResource("BrushPrimaryContainer") as Brush
+            };
+            Canvas.SetLeft(_selectionIndicator, 16);
+            _selectionLayer.Children.Add(_selectionIndicator);
+        }
 
         if (_toggleButton is not null)
         {
@@ -58,6 +78,88 @@ public class NavigationRail : ListBox
         }
 
         UpdateToggleVisuals();
+
+        Loaded -= OnRailLoaded;
+        Loaded += OnRailLoaded;
+        SizeChanged -= OnRailSizeChanged;
+        SizeChanged += OnRailSizeChanged;
+        RemoveHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(OnRailScrollChanged));
+        AddHandler(ScrollViewer.ScrollChangedEvent, new ScrollChangedEventHandler(OnRailScrollChanged));
+
+        if (ItemContainerGenerator is not null)
+        {
+            ItemContainerGenerator.StatusChanged -= OnContainersChanged;
+            ItemContainerGenerator.StatusChanged += OnContainersChanged;
+        }
+    }
+
+    protected override void OnSelectionChanged(SelectionChangedEventArgs e)
+    {
+        base.OnSelectionChanged(e);
+        if (IsLoaded)
+        {
+            Dispatcher.BeginInvoke(
+                new Action(() => UpdateSelectionIndicator(true)),
+                System.Windows.Threading.DispatcherPriority.Loaded);
+        }
+    }
+
+    private void OnRailLoaded(object sender, RoutedEventArgs e) => UpdateSelectionIndicator(false);
+
+    private void OnRailSizeChanged(object sender, SizeChangedEventArgs e) => UpdateSelectionIndicator(false);
+
+    private void OnRailScrollChanged(object sender, ScrollChangedEventArgs e) => UpdateSelectionIndicator(false);
+
+    private void OnContainersChanged(object? sender, EventArgs e)
+    {
+        if (ItemContainerGenerator.Status == System.Windows.Controls.Primitives.GeneratorStatus.ContainersGenerated)
+        {
+            UpdateSelectionIndicator(false);
+        }
+    }
+
+    private void UpdateSelectionIndicator(bool animate)
+    {
+        if (_selectionIndicator is null || _selectionLayer is null)
+        {
+            return;
+        }
+
+        if (SelectedItem is null ||
+            ItemContainerGenerator.ContainerFromItem(SelectedItem) is not ListBoxItem container)
+        {
+            _selectionIndicator.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        var point = container.TranslatePoint(new Point(0, 0), _selectionLayer);
+        var top = point.Y + (container.ActualHeight - 48) / 2;
+        var width = IsCollapsed ? 48 : 96;
+
+        _selectionIndicator.Visibility = Visibility.Visible;
+
+        if (!animate || !IsLoaded)
+        {
+            Canvas.SetTop(_selectionIndicator, top);
+            _selectionIndicator.Width = width;
+            return;
+        }
+
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        _selectionIndicator.BeginAnimation(
+            Canvas.TopProperty,
+            new DoubleAnimation(top, TimeSpan.FromMilliseconds(220))
+            {
+                EasingFunction = ease,
+                FillBehavior = FillBehavior.HoldEnd
+            });
+        _selectionIndicator.BeginAnimation(
+            WidthProperty,
+            new DoubleAnimation(width, TimeSpan.FromMilliseconds(220))
+            {
+                EasingFunction = ease,
+                FillBehavior = FillBehavior.HoldEnd
+            });
     }
 
     private static void OnIsCollapsedChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
@@ -67,6 +169,7 @@ public class NavigationRail : ListBox
             rail.UpdateToggleVisuals();
             rail.AnimateWidth();
             rail.AnimateItems(e.NewValue is true);
+            rail.UpdateSelectionIndicator(true);
         }
     }
 

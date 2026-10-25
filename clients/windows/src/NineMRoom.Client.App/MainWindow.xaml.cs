@@ -42,6 +42,7 @@ public partial class MainWindow : Window
     private readonly MainViewModel _viewModel;
     private readonly TrayIcon _tray;
     private readonly OverlayWindow _overlay;
+    private UIElement? _visiblePage;
     private HwndSource? _hotkeySource;
     private bool _exiting;
     private bool _suppressMemberSelection;
@@ -499,12 +500,64 @@ public partial class MainWindow : Window
             return;
         }
 
-        RoomPage.Visibility = ReferenceEquals(page, RoomPage) ? Visibility.Visible : Visibility.Collapsed;
-        FocusPage.Visibility = ReferenceEquals(page, FocusPage) ? Visibility.Visible : Visibility.Collapsed;
-        TodoPage.Visibility = ReferenceEquals(page, TodoPage) ? Visibility.Visible : Visibility.Collapsed;
-        LayoutPage.Visibility = ReferenceEquals(page, LayoutPage) ? Visibility.Visible : Visibility.Collapsed;
-        AppPage.Visibility = ReferenceEquals(page, AppPage) ? Visibility.Visible : Visibility.Collapsed;
-        SettingsPage.Visibility = ReferenceEquals(page, SettingsPage) ? Visibility.Visible : Visibility.Collapsed;
+        if (ReferenceEquals(_visiblePage, page))
+        {
+            return;
+        }
+
+        var previous = _visiblePage;
+        _visiblePage = page;
+
+        if (previous is null)
+        {
+            page.Visibility = Visibility.Visible;
+            page.Opacity = 1;
+            return;
+        }
+
+        // 新页面淡入，旧页面同时淡出，避免切换瞬间硬切。
+        page.Visibility = Visibility.Visible;
+        page.IsHitTestVisible = true;
+        page.BeginAnimation(OpacityProperty, null);
+        page.Opacity = 0;
+        FadePage(page, 1, 180);
+
+        previous.IsHitTestVisible = false;
+        if (previous.Visibility != Visibility.Visible)
+        {
+            return;
+        }
+
+        FadePage(previous, 0, 140, () => CollapsePage(previous));
+    }
+
+    private void CollapsePage(UIElement page)
+    {
+        if (ReferenceEquals(_visiblePage, page))
+        {
+            return;
+        }
+
+        page.BeginAnimation(OpacityProperty, null);
+        page.Opacity = 1;
+        page.Visibility = Visibility.Collapsed;
+        page.IsHitTestVisible = true;
+    }
+
+    private static void FadePage(UIElement page, double to, int milliseconds, Action? completed = null)
+    {
+        var animation = new DoubleAnimation(to, TimeSpan.FromMilliseconds(milliseconds))
+        {
+            EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
+            FillBehavior = FillBehavior.HoldEnd
+        };
+
+        if (completed is not null)
+        {
+            animation.Completed += (_, _) => completed();
+        }
+
+        page.BeginAnimation(OpacityProperty, animation);
     }
 
     // ==================== 房间页签 ====================
