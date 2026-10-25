@@ -75,6 +75,26 @@ object AvatarStore {
             val cropped = Bitmap.createBitmap(source, left, top, side, side)
             if (cropped !== source) source.recycle()
 
+            encode(cropped)
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    fun create(bitmap: Bitmap): AvatarData? {
+        return try {
+            val side = minOf(bitmap.width, bitmap.height)
+            val left = (bitmap.width - side) / 2
+            val top = (bitmap.height - side) / 2
+            val cropped = Bitmap.createBitmap(bitmap, left, top, side, side)
+            encode(cropped)
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun encode(cropped: Bitmap): AvatarData? {
+        return try {
             for (size in intArrayOf(OutputSize, 448, 384, 320)) {
                 val scaled = if (size == cropped.width) {
                     cropped
@@ -110,6 +130,7 @@ object AvatarStore {
             cropped.recycle()
             null
         } catch (_: Exception) {
+            cropped.recycle()
             null
         }
     }

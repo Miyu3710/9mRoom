@@ -167,9 +167,10 @@ fun NineRoomApp(
     val overlayLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { roomViewModel.refreshOverlay() }
+    var avatarCropUri by remember { mutableStateOf<Uri?>(null) }
     val avatarPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.GetContent(),
-    ) { uri: Uri? -> uri?.let(roomViewModel::setAvatar) }
+    ) { uri: Uri? -> uri?.let { avatarCropUri = it } }
     val usageAccessLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult(),
     ) { roomViewModel.refreshPresence() }
@@ -476,6 +477,17 @@ fun NineRoomApp(
                 }
             }
         }
+    }
+
+    avatarCropUri?.let { uri ->
+        AvatarCropDialog(
+            uri = uri,
+            onDismiss = { avatarCropUri = null },
+            onConfirm = { bitmap ->
+                avatarCropUri = null
+                roomViewModel.setAvatar(bitmap)
+            },
+        )
     }
 }
 

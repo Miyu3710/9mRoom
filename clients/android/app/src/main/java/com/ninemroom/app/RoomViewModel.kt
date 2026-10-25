@@ -24,6 +24,8 @@ class RoomViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setAvatar(uri: android.net.Uri) = controller.setAvatar(uri)
 
+    fun setAvatar(bitmap: android.graphics.Bitmap) = controller.setAvatar(bitmap)
+
     fun disconnect() = controller.disconnect()
 
     fun setKeepOnline(enabled: Boolean) = controller.setKeepOnline(enabled)

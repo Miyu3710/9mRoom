@@ -759,28 +759,39 @@ class RoomController(
     fun setAvatar(uri: Uri) {
         scope.launch {
             val avatar = AvatarStore.create(appContext, uri)
-            if (avatar == null) {
-                _state.update { it.copy(error = "无法读取头像，请换一张图片") }
-                return@launch
-            }
-
-            AvatarStore.save(appContext, avatar)
-            cachedAvatar = avatar
-            _state.update { state ->
-                state.copy(
-                    selfAvatar = avatar,
-                    error = null,
-                    members = state.members.map { member ->
-                        if (member.id == state.selfId) {
-                            member.copy(avatar = avatar, avatarHash = avatar.hash)
-                        } else {
-                            member
-                        }
-                    },
-                )
-            }
-            socket?.sendAvatar(avatar)
+            applyAvatar(avatar)
         }
+    }
+
+    fun setAvatar(bitmap: android.graphics.Bitmap) {
+        scope.launch {
+            val avatar = AvatarStore.create(bitmap)
+            applyAvatar(avatar)
+        }
+    }
+
+    private fun applyAvatar(avatar: AvatarData?) {
+        if (avatar == null) {
+            _state.update { it.copy(error = "无法读取头像，请换一张图片") }
+            return
+        }
+
+        AvatarStore.save(appContext, avatar)
+        cachedAvatar = avatar
+        _state.update { state ->
+            state.copy(
+                selfAvatar = avatar,
+                error = null,
+                members = state.members.map { member ->
+                    if (member.id == state.selfId) {
+                        member.copy(avatar = avatar, avatarHash = avatar.hash)
+                    } else {
+                        member
+                    }
+                },
+            )
+        }
+        socket?.sendAvatar(avatar)
     }
 
     fun disconnect() {
