@@ -201,6 +201,7 @@
     <Setter Property="FocusVisualStyle" Value="{x:Null}" />
     <Setter Property="HorizontalContentAlignment" Value="Stretch" />
     <Setter Property="MinHeight" Value="48" />
+    <Setter Property="Margin" Value="0,0,4,0" />
     <Setter Property="Template">
       <Setter.Value>
         <ControlTemplate TargetType="CheckBox">
@@ -223,7 +224,7 @@
                       Background="{TemplateBinding Foreground}" Opacity="0" />
               <Border x:Name="Track" Width="52" Height="32" CornerRadius="16"
                       Background="{DynamicResource BrushSurfaceContainerHighest}"
-                      BorderBrush="{DynamicResource BrushOutlineVariant}" BorderThickness="1" />
+                      BorderThickness="0" />
               <Border x:Name="Thumb" Width="24" Height="24" CornerRadius="12"
                       Background="{DynamicResource BrushOnSurfaceVariant}"
                       HorizontalAlignment="Left" VerticalAlignment="Center"
@@ -250,11 +251,11 @@
               <Trigger.EnterActions>
                 <BeginStoryboard>
                   <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="SwitchScale" Storyboard.TargetProperty="ScaleX" To="1.03" Duration="0:0:0.22">
-                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                    <DoubleAnimation Storyboard.TargetName="SwitchScale" Storyboard.TargetProperty="ScaleX" From="1" To="1.03" Duration="0:0:0.2">
+                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
                     </DoubleAnimation>
-                    <DoubleAnimation Storyboard.TargetName="SwitchScale" Storyboard.TargetProperty="ScaleY" To="1.03" Duration="0:0:0.22">
-                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                    <DoubleAnimation Storyboard.TargetName="SwitchScale" Storyboard.TargetProperty="ScaleY" From="1" To="1.03" Duration="0:0:0.2">
+                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
                     </DoubleAnimation>
                   </Storyboard>
                 </BeginStoryboard>
@@ -262,11 +263,11 @@
               <Trigger.ExitActions>
                 <BeginStoryboard>
                   <Storyboard>
-                    <DoubleAnimation Storyboard.TargetName="SwitchScale" Storyboard.TargetProperty="ScaleX" To="1" Duration="0:0:0.22">
-                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                    <DoubleAnimation Storyboard.TargetName="SwitchScale" Storyboard.TargetProperty="ScaleX" From="1.03" To="1" Duration="0:0:0.2">
+                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
                     </DoubleAnimation>
-                    <DoubleAnimation Storyboard.TargetName="SwitchScale" Storyboard.TargetProperty="ScaleY" To="1" Duration="0:0:0.22">
-                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseOut" /></DoubleAnimation.EasingFunction>
+                    <DoubleAnimation Storyboard.TargetName="SwitchScale" Storyboard.TargetProperty="ScaleY" From="1.03" To="1" Duration="0:0:0.2">
+                      <DoubleAnimation.EasingFunction><CubicEase EasingMode="EaseInOut" /></DoubleAnimation.EasingFunction>
                     </DoubleAnimation>
                   </Storyboard>
                 </BeginStoryboard>
