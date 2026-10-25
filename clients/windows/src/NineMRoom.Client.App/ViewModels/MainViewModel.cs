@@ -1653,6 +1653,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             }
         }
 
+        NotifyToast("应用规则已保存", "应用名称、分类与状态模板已更新。", ToastKind.Success, 3000);
         EndAppDraft();
     }
 
@@ -3096,6 +3097,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             _isServerConnected = true;
             MyStatusText = "已连接服务器，尚未进入房间";
             NotifyConnectionState();
+            NotifyToast("已连接服务器", "服务器连接成功。", ToastKind.Success, 3000);
 
             if (!string.IsNullOrWhiteSpace(_settings.HomeRoom))
             {
@@ -3131,10 +3133,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         _isServerConnected = false;
         MyStatusText = "未连接";
         NotifyConnectionState();
+        NotifyToast("已断开服务器", "服务器连接已关闭。", ToastKind.Info, 3000);
     }
 
     public async Task LeaveRoomAsync()
     {
+        var wasInRoom = _client is not null || _joinedRoom.Length > 0;
         _wantsConnection = false;
         _reconnectTimer?.Stop();
         _reconnectAttempt = 0;
@@ -3165,6 +3169,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         ShowRoomCodeNotice(string.Empty);
         NotifyConnectionState();
         Refresh();
+
+        if (wasInRoom)
+        {
+            NotifyToast("已离开房间", "你已退出当前房间。", ToastKind.Info, 3000);
+        }
     }
 
     private DispatcherTimer CreateJoinInfoDebounce()
