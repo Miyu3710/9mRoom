@@ -44,14 +44,16 @@
                 MouseLeftButtonDown="CropViewport_MouseLeftButtonDown"
                 MouseMove="CropViewport_MouseMove"
                 MouseLeftButtonUp="CropViewport_MouseLeftButtonUp">
-            <Image x:Name="CropImage" Stretch="Fill" RenderTransformOrigin="0,0">
-              <Image.RenderTransform>
-                <TransformGroup>
-                  <ScaleTransform x:Name="ImageScale" />
-                  <TranslateTransform x:Name="ImageTranslate" />
-                </TransformGroup>
-              </Image.RenderTransform>
-            </Image>
+            <Canvas x:Name="CropCanvas" Width="360" Height="360" ClipToBounds="False">
+              <Image x:Name="CropImage" Canvas.Left="0" Canvas.Top="0" Stretch="Fill" RenderTransformOrigin="0,0">
+                <Image.RenderTransform>
+                  <TransformGroup>
+                    <ScaleTransform x:Name="ImageScale" />
+                    <TranslateTransform x:Name="ImageTranslate" />
+                  </TransformGroup>
+                </Image.RenderTransform>
+              </Image>
+            </Canvas>
             <Border IsHitTestVisible="False" BorderBrush="#66FFFFFF" BorderThickness="1" />
           </Grid>
         </Border>
