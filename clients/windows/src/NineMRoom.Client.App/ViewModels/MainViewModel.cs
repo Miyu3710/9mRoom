@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Threading;
 using System.Xml.Linq;
+using NineMRoom.Client.App.Controls;
 using NineMRoom.Client.Core;
 using WpfApplication = System.Windows.Application;
 
@@ -46,6 +47,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private bool _wantsConnection;
     private int _reconnectAttempt;
     private bool _isServerConnected;
+    private bool _wasReconnecting;
+    private bool _settingsToastEnabled;
     private string _connectionState = "offline";
     private AvatarPayload? _avatar;
     private ImageSource? _myAvatarImage;
@@ -111,6 +114,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public MainViewModel(AppSettings settings)
     {
         _settings = settings;
+        SettingsStore.Saved += OnSettingsSaved;
         _focusMinutes = Math.Clamp(settings.TimerFocusMinutes > 0 ? settings.TimerFocusMinutes : 25, 1, 600);
         _breakMinutes = Math.Clamp(settings.TimerBreakMinutes > 0 ? settings.TimerBreakMinutes : 5, 1, 600);
         _timerCycleEnabled = settings.TimerCycleEnabled;
@@ -1668,6 +1672,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if (string.IsNullOrEmpty(iconPath))
         {
             ShowNotice("无法从该文件读取图标，请换一个 .exe 或图片文件。");
+            NotifyToast("图标读取失败", "请换一个 .exe 或图片文件。", ToastKind.Error, 7000);
             return;
         }
 
@@ -1675,8 +1680,11 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if (image is null)
         {
             ShowNotice("无法加载图标文件。");
+            NotifyToast("图标读取失败", "无法加载该图标文件。", ToastKind.Error, 7000);
             return;
         }
+
+        NotifyToast("图标已更新", "应用图标已载入，保存规则后生效。", ToastKind.Success, 3000);
 
         draft.PendingIconPath = iconPath;
         draft.ResetIcon = false;
@@ -2151,6 +2159,13 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             var remaining = _timerStartedAt + PhaseMinutes * 60_000L - nowMs;
             if (remaining <= 0)
             {
+                var finishedPhase = _timerPhase;
+                NotifyToast(
+                    finishedPhase == "break" ? "休息结束" : "专注结束",
+                    finishedPhase == "break" ? "休息时间到，准备开始下一轮专注。" : "专注时间到，起身休息一下吧。",
+                    ToastKind.Success,
+                    7000);
+
                 _timerRunning = false;
                 _timerRemainingMs = 0;
 
@@ -2274,14 +2289,18 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if (avatar is null)
         {
             ShowNotice("无法读取或压缩该图片，请换一张不超过 512×512 的图片。");
+            NotifyToast("头像保存失败", "无法读取或压缩该图片，请换一张。", ToastKind.Error, 7000);
             return;
         }
 
         if (!AvatarStore.Save(avatar))
         {
             ShowNotice("头像保存失败，请检查本地缓存目录。");
+            NotifyToast("头像保存失败", "无法写入头像缓存目录。", ToastKind.Error, 7000);
             return;
         }
+
+        NotifyToast("头像已更新", "新头像已保存并同步。", ToastKind.Success, 3000);
 
         _avatar = avatar;
         MyAvatarImage = AvatarStore.ToImage(avatar, 128);
@@ -2639,22 +2658,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         await Task.Delay(TimeSpan.FromSeconds(3));
         await CheckForUpdatesAsync();
-        if (!_isUpdateAvailable)
-        {
-            return;
-        }
-
-        var result = System.Windows.MessageBox.Show(
-            $"检测到新版本：{_updateStatusText}\n\n是否现在下载更新？",
-            "9mRoom 更新",
-            MessageBoxButton.YesNo,
-            MessageBoxImage.Information);
-        if (result == MessageBoxResult.Yes)
-        {
-            await DownloadAndInstallUpdateAsync();
-        }
     }
-
     public async Task DownloadAndInstallUpdateAsync()
     {
         if (string.IsNullOrWhiteSpace(_updateDownloadUrl) ||
@@ -2734,6 +2738,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     public string SettingsPathText => string.IsNullOrEmpty(SettingsStore.CurrentPath)
         ? "尚未写入（退出时保存）"
         : SettingsStore.CurrentPath;
+
+    public event Action<ToastRequest>? ToastRequested;
 
     public event Action? OverlayVisibilityChanged;
 
@@ -2927,12 +2933,15 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                     SettingsStore.Save(_settings);
                     ShowNotice("家房间已不存在，已清除。请手动加入房间。");
                     Refresh();
+                    _settingsToastEnabled = true;
                     return;
                 }
             }
 
             await ToggleConnectionAsync();
         }
+
+        _settingsToastEnabled = true;
     }
 
     public async Task SendChatAsync()
@@ -3111,6 +3120,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             _isServerConnected = false;
             MyStatusText = "未连接";
             ShowNotice($"连接服务器失败：{ex.Message}");
+            NotifyToast("无法连接服务器", ex.Message, ToastKind.Error, 7000);
             NotifyConnectionState();
         }
     }
@@ -3507,6 +3517,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     private void OnClientStateChanged()
     {
+        if (_client is { IsConnected: true } && _wasReconnecting)
+        {
+            _wasReconnecting = false;
+            NotifyToast("已重新连接", "房间连接已恢复。", ToastKind.Success, 3500);
+        }
+
         if (_client is { IsConnected: false } dead && _wantsConnection)
         {
             _client = null;
@@ -3523,6 +3539,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         if (!_wantsConnection || _joinedRoom.Length == 0)
         {
             return;
+        }
+
+        if (!_wasReconnecting)
+        {
+            _wasReconnecting = true;
+            NotifyToast("连接已断开", "网络或服务器异常，正在尝试重新连接…", ToastKind.Warning, 5000);
         }
 
         if (_reconnectTimer is null)
@@ -3883,6 +3905,26 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         };
     }
 
+    private void NotifyToast(string title, string message, ToastKind kind = ToastKind.Info, int durationMs = 5000) =>
+        ToastRequested?.Invoke(new ToastRequest(title, message, kind, durationMs));
+
+    private void OnSettingsSaved(bool saved)
+    {
+        if (!_settingsToastEnabled)
+        {
+            return;
+        }
+
+        if (saved)
+        {
+            NotifyToast("设置已保存", "更改已写入本地配置。", ToastKind.Success, 2200);
+        }
+        else
+        {
+            NotifyToast("设置保存失败", "无法写入本地配置文件，请检查目录权限。", ToastKind.Error, 8000);
+        }
+    }
+
     private void ShowNotice(string text)
     {
         NoticeText = text;
@@ -3898,6 +3940,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
 
     public void Dispose()
     {
+        SettingsStore.Saved -= OnSettingsSaved;
         PersistStats();
         _commandTimer?.Stop();
         _nameDebounce?.Stop();

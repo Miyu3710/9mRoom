@@ -46,6 +46,7 @@ public partial class MainWindow : Window
     private readonly TrayIcon _tray;
     private readonly OverlayWindow _overlay;
     private UIElement? _visiblePage;
+    private bool _updateToastShown;
     private int _roomTabIndex;
     private int _roomTabTransition;
     private HwndSource? _hotkeySource;
@@ -122,6 +123,9 @@ public partial class MainWindow : Window
         _viewModel.OverlayClickThroughChanged += () => _overlay.ClickThrough = _viewModel.OverlayClickThrough;
         _viewModel.OverlayPositionResetRequested += () => _overlay.ResetPosition();
         _viewModel.OverlayThemeChanged += () => _overlay.ApplyTheme(_viewModel.GetEffectiveTheme());
+
+        Loaded += (_, _) => TryShowUpdateToast();
+        IsVisibleChanged += (_, _) => TryShowUpdateToast();
 
         Closing += OnClosing;
         Closed += (_, _) => UnregisterHotKeys();
@@ -435,8 +439,25 @@ public partial class MainWindow : Window
         }
     }
 
+    private void TryShowUpdateToast()
+    {
+        if (_updateToastShown || !IsVisible || WindowState == WindowState.Minimized ||
+            _viewModel is null || !_viewModel.IsUpdateAvailable)
+        {
+            return;
+        }
+
+        _updateToastShown = true;
+        Toasts.Show(new Controls.ToastRequest(
+            "发现新版本",
+            _viewModel.UpdateStatusText,
+            Controls.ToastKind.Info,
+            12000));
+    }
+
     private void Window_StateChanged(object sender, EventArgs e)
     {
+        TryShowUpdateToast();
         if (MaximizeIcon is not null)
         {
             MaximizeIcon.Kind = WindowState == WindowState.Maximized

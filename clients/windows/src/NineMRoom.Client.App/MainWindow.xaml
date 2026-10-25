@@ -830,6 +830,11 @@
     </Grid>
 
     <!-- ==================== 确认对话框与 Snackbar ==================== -->
+    <!-- ==================== 应用内气泡通知 ==================== -->
+    <controls:ToastHost x:Name="Toasts" Grid.RowSpan="3"
+                        VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                        Margin="0,0,28,24" Panel.ZIndex="60" />
+
     <controls:M3DialogHost x:Name="DialogHost" Grid.RowSpan="3" />
 
     <controls:M3Snackbar x:Name="Snackbar" Grid.RowSpan="3"

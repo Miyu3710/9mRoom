@@ -54,6 +54,8 @@ public static class SettingsStore
 
     public static string CurrentPath { get; private set; } = string.Empty;
 
+    public static event Action<bool>? Saved;
+
     public static AppSettings Load()
     {
         foreach (var path in Candidates())
@@ -87,8 +89,10 @@ public static class SettingsStore
         return new AppSettings();
     }
 
-    public static void Save(AppSettings settings)
+    public static void Save(AppSettings settings, bool notify = true)
     {
+        var saved = false;
+
         foreach (var path in Candidates())
         {
             try
@@ -102,12 +106,18 @@ public static class SettingsStore
                 Directory.CreateDirectory(directory);
                 File.WriteAllText(path, JsonSerializer.Serialize(settings, Json));
                 CurrentPath = path;
-                return;
+                saved = true;
+                break;
             }
             catch
             {
                 // 尝试下一个候选位置
             }
+        }
+
+        if (notify)
+        {
+            Saved?.Invoke(saved);
         }
     }
 

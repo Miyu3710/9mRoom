@@ -126,7 +126,7 @@ public partial class OverlayWindow : Window
     {
         _settings.OverlayLeft = Left;
         _settings.OverlayTop = Top;
-        SettingsStore.Save(_settings);
+        SettingsStore.Save(_settings, notify: false);
     }
 
     public void ResetPosition()
@@ -359,7 +359,7 @@ public partial class OverlayWindow : Window
             _settings.OverlayLeft = Left;
             _settings.OverlayTop = Top;
             _userMoved = true;
-            SettingsStore.Save(_settings);
+            SettingsStore.Save(_settings, notify: false);
         }
 
         e.Handled = true;
