@@ -48,7 +48,8 @@ public static class StatusComposer
         string? todo = null,
         string? commandOutput = null,
         IReadOnlyList<StatusBlockRule>? layout = null,
-        string? appName = null)
+        string? appName = null,
+        string? windowTitle = null)
     {
         var rules = layout is { Count: > 0 } ? layout : StatusLayouts.Default();
         var blocks = new List<object>();
@@ -60,7 +61,7 @@ public static class StatusComposer
                 continue;
             }
 
-            var block = BuildBlock(rule, app, media, idle, bootTimeMs, timer, todo, commandOutput, appName);
+            var block = BuildBlock(rule, app, media, idle, bootTimeMs, timer, todo, commandOutput, appName, windowTitle);
             if (block is not null)
             {
                 blocks.Add(block);
@@ -84,26 +85,41 @@ public static class StatusComposer
         FocusTimer? timer,
         string? todo,
         string? commandOutput,
-        string? appName)
+        string? appName,
+        string? windowTitle)
     {
         var template = string.IsNullOrWhiteSpace(rule.Template) ? null : rule.Template;
 
         switch (rule.Type)
         {
             case "app":
+            {
+                var appTemplate = template ?? AppTemplate;
+                var title = windowTitle?.Trim() ?? string.Empty;
+                const string titleSuffix = "：{title}";
+                if (title.Length > 0 &&
+                    !appTemplate.Contains("{title}", StringComparison.OrdinalIgnoreCase) &&
+                    appTemplate.Length + titleSuffix.Length <= 80)
+                {
+                    // 窗口标题直接接在应用状态后面，不再单独占一行。
+                    appTemplate += titleSuffix;
+                }
+
                 return new
                 {
                     id = "app",
                     type = "app",
-                    template = template ?? AppTemplate,
+                    template = appTemplate,
                     data = new
                     {
                         appId = app.Id,
                         category = app.Category,
                         name = string.IsNullOrWhiteSpace(appName) ? app.Name : appName,
+                        title,
                         idleSeconds = (int)idle.TotalSeconds
                     }
                 };
+            }
 
             case "media" when media is { Title.Length: > 0 }:
                 return new

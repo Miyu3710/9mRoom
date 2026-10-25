@@ -494,9 +494,6 @@
                             </StackPanel>
                             <TextBlock Text="{Binding StatusText}" Style="{StaticResource ItemSupporting}"
                                        TextTrimming="CharacterEllipsis" Margin="0,2,0,0" />
-                            <TextBlock Text="{Binding WindowTitle}" Style="{StaticResource ItemSupporting}"
-                                       TextTrimming="CharacterEllipsis" Margin="0,2,0,0"
-                                       Visibility="{Binding HasWindowTitle, Converter={StaticResource BoolToVisibility}}" />
                           </StackPanel>
 
                           <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
@@ -685,18 +682,6 @@
             </Grid>
             <Border Style="{StaticResource M3Divider}" />
 
-            <StackPanel Visibility="{Binding HasWindowTitle, Converter={StaticResource BoolToVisibility}}">
-              <Grid MinHeight="56">
-                <Grid.ColumnDefinitions>
-                  <ColumnDefinition Width="96" />
-                  <ColumnDefinition Width="*" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="窗口标题" Style="{StaticResource ItemSupporting}" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="{Binding WindowTitle}" Style="{StaticResource ValueText}"
-                           TextWrapping="Wrap" VerticalAlignment="Center" />
-              </Grid>
-              <Border Style="{StaticResource M3Divider}" />
-            </StackPanel>
           </StackPanel>
         </ScrollViewer>
       </Border>

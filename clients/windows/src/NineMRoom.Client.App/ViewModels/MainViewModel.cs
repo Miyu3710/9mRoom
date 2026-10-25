@@ -3652,6 +3652,14 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 : null;
             var todo = ActiveTodoText;
 
+            var windowTitle = _foreground.Current?.WindowTitle;
+            var sharedWindowTitle = _settings.ShareWindowTitles &&
+                                    !string.IsNullOrWhiteSpace(windowTitle) &&
+                                    appRule?.HideTitle != true &&
+                                    !TitleWhitelist.Any(item => string.Equals(item.AppId, match.Id, StringComparison.Ordinal))
+                ? windowTitle.Trim()
+                : null;
+
             payload["status"] = StatusComposer.Compose(
                 match,
                 SharedMedia(),
@@ -3661,15 +3669,12 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 todo,
                 _commandOutput,
                 CurrentLayout(match.Id, match.Category),
-                ResolveAppName(match.Id));
+                ResolveAppName(match.Id),
+                sharedWindowTitle);
 
-            var windowTitle = _foreground.Current?.WindowTitle;
-            if (_settings.ShareWindowTitles &&
-                !string.IsNullOrWhiteSpace(windowTitle) &&
-                appRule?.HideTitle != true &&
-                !TitleWhitelist.Any(item => string.Equals(item.AppId, match.Id, StringComparison.Ordinal)))
+            if (sharedWindowTitle is not null)
             {
-                payload["windowTitle"] = windowTitle.Trim();
+                payload["windowTitle"] = sharedWindowTitle;
             }
 
             payload["focusSecondsToday"] = _settings.StatsEnabled ? TodaySeconds() : 0;
