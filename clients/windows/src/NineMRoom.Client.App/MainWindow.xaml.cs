@@ -60,6 +60,7 @@ public partial class MainWindow : Window
         _visiblePage = RoomPage;
 
         _viewModel = new MainViewModel(settings);
+        _viewModel.ToastRequested += toast => Toasts.Show(toast);
         DataContext = _viewModel;
         _viewModel.PropertyChanged += ViewModel_PropertyChanged;
 
