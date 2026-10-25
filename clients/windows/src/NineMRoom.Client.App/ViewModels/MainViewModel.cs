@@ -267,7 +267,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             }
 
             _settings.AppSortMode = mode;
-            SettingsStore.Save(_settings);
+            SettingsStore.Save(_settings, notify: false);
             OnPropertyChanged();
             OnPropertyChanged(nameof(AppSortLabel));
             ApplyAppSort();
@@ -538,7 +538,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             }
 
             _settings.NavRailCollapsed = value;
-            SettingsStore.Save(_settings);
+            SettingsStore.Save(_settings, notify: false);
             OnPropertyChanged();
         }
     }
@@ -2931,8 +2931,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                     homeInfo is { Exists: true, Kind: not "server" })
                 {
                     _settings.HomeRoom = string.Empty;
-                    SettingsStore.Save(_settings);
-                    ShowNotice("家房间已不存在，已清除。请手动加入房间。");
+                    SettingsStore.Save(_settings, notify: false);
+                    NotifyToast("家房间已清除", "原家房间不存在或已不可用，已清除；请手动加入房间。", ToastKind.Warning, 6000);
                     Refresh();
                     _settingsToastEnabled = true;
                     return;
@@ -3112,8 +3112,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
                 else if (info is { Exists: false })
                 {
                     _settings.HomeRoom = string.Empty;
-                    SettingsStore.Save(_settings);
-                    ShowNotice("家房间已不存在，已清除。");
+                    SettingsStore.Save(_settings, notify: false);
+                    NotifyToast("家房间已清除", "原家房间不存在，已清除。", ToastKind.Warning, 6000);
                 }
             }
         }
@@ -3314,7 +3314,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             if (string.Equals(_settings.HomeRoom, room, StringComparison.OrdinalIgnoreCase))
             {
                 _settings.HomeRoom = string.Empty;
-                SettingsStore.Save(_settings);
+                SettingsStore.Save(_settings, notify: false);
+                NotifyToast("家房间已清除", "原家房间已不存在，已清除。", ToastKind.Warning, 6000);
             }
 
             _settings.RoomName = string.Empty;
@@ -3342,7 +3343,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             _settings.HomeRoom = room;
         }
 
-        SettingsStore.Save(_settings);
+        SettingsStore.Save(_settings, notify: !setHome);
 
         _joinedRoom = room;
         _joinedName = name;
@@ -3357,7 +3358,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         NotifyConnectionState();
         if (setHome)
         {
-            ShowNotice($"已把 {room} 设为家房间");
+            NotifyToast("已设为家房间", $"下次启动会自动进入 {room}。", ToastKind.Success, 4000);
         }
 
         return true;
@@ -3444,7 +3445,8 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             if (string.Equals(_settings.HomeRoom, room, StringComparison.OrdinalIgnoreCase))
             {
                 _settings.HomeRoom = string.Empty;
-                SettingsStore.Save(_settings);
+                SettingsStore.Save(_settings, notify: false);
+                NotifyToast("家房间已清除", "原家房间已不存在，已清除。", ToastKind.Warning, 6000);
             }
 
             JoinRoomInfoText = "房间不存在或已被管理员删除";
