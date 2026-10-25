@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.ime
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -36,7 +37,6 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -284,25 +284,17 @@ private fun ChatList(
     }
 
     val listState = rememberLazyListState()
-    var previousSize by remember { mutableIntStateOf(chat.size) }
-    var previousLatestId by remember { mutableStateOf(chat.lastOrNull()?.id) }
-
-    LaunchedEffect(chat.size) {
-        val oldLatestVisible = listState.layoutInfo.visibleItemsInfo
-            .any { it.key == previousLatestId }
-        if (chat.size > previousSize && oldLatestVisible) {
-            listState.scrollToItem(0)
-        }
-        previousSize = chat.size
-        previousLatestId = chat.lastOrNull()?.id
-    }
 
     LazyColumn(
         state = listState,
         reverseLayout = true,
-        contentPadding = PaddingValues(20.dp),
+        contentPadding = PaddingValues(horizontal = 20.dp, vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp),
-    ) {        items(chat.asReversed(), key = { it.id }) { line ->
+    ) {
+        item(key = "chat-bottom-anchor") {
+            Spacer(Modifier.height(1.dp))
+        }
+        items(chat.asReversed(), key = { it.id }) { line ->
             val mine = line.memberId == selfId
             val member = members.firstOrNull { it.id == line.memberId }
             val avatar = member?.avatar
@@ -311,7 +303,8 @@ private fun ChatList(
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 2.dp),
+                    .padding(vertical = 2.dp)
+                    .animateItem(),
                 horizontalArrangement = if (mine) Arrangement.End else Arrangement.Start,
                 verticalAlignment = Alignment.Top,
             ) {
