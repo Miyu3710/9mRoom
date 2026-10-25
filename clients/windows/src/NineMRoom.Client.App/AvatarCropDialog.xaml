@@ -43,7 +43,8 @@
                 ClipToBounds="True"
                 MouseLeftButtonDown="CropViewport_MouseLeftButtonDown"
                 MouseMove="CropViewport_MouseMove"
-                MouseLeftButtonUp="CropViewport_MouseLeftButtonUp">
+                MouseLeftButtonUp="CropViewport_MouseLeftButtonUp"
+                PreviewMouseWheel="CropViewport_PreviewMouseWheel">
             <Canvas x:Name="CropCanvas" Width="360" Height="360" ClipToBounds="False">
               <Image x:Name="CropImage" Canvas.Left="0" Canvas.Top="0" Stretch="Fill" RenderTransformOrigin="0,0">
                 <Image.RenderTransform>

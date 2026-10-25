@@ -23,6 +23,7 @@ public partial class AvatarCropDialog : Window
     private double _dragTranslateX;
     private double _dragTranslateY;
     private bool _dragging;
+    private bool _suppressZoom;
 
     public AvatarCropDialog(string path)
     {
@@ -107,7 +108,7 @@ public partial class AvatarCropDialog : Window
 
     private void ZoomSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
     {
-        if (_source is null || _baseScale <= 0 || ZoomSlider is null)
+        if (_source is null || _baseScale <= 0 || ZoomSlider is null || _suppressZoom)
         {
             return;
         }
@@ -159,6 +160,36 @@ public partial class AvatarCropDialog : Window
     {
         _dragging = false;
         CropViewport.ReleaseMouseCapture();
+    }
+
+    private void CropViewport_PreviewMouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (_source is null || _baseScale <= 0 || e.Delta == 0)
+        {
+            return;
+        }
+
+        var oldScale = _baseScale * _zoom;
+        var point = e.GetPosition(CropViewport);
+        var factor = e.Delta > 0 ? 1.12 : 1 / 1.12;
+        var zoom = Math.Clamp(_zoom * factor, ZoomSlider.Minimum, ZoomSlider.Maximum);
+        if (Math.Abs(zoom - _zoom) < 0.001)
+        {
+            e.Handled = true;
+            return;
+        }
+
+        var newScale = _baseScale * zoom;
+        _translateX = point.X - (point.X - _translateX) * (newScale / oldScale);
+        _translateY = point.Y - (point.Y - _translateY) * (newScale / oldScale);
+        _zoom = zoom;
+
+        _suppressZoom = true;
+        ZoomSlider.Value = zoom;
+        _suppressZoom = false;
+
+        ApplyTransform();
+        e.Handled = true;
     }
 
     private Int32Rect? GetCropRect()
