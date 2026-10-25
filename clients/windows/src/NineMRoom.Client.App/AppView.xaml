@@ -21,19 +21,19 @@
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="ListBoxItem">
-            <Border x:Name="Tile"
-                    Background="{DynamicResource BrushSurfaceContainerLow}"
-                    CornerRadius="{DynamicResource ShapeMedium}"
-                    Padding="{TemplateBinding Padding}">
-              <Grid>
-                <Border x:Name="HoverLayer"
-                        Background="{DynamicResource BrushSurfaceContainerHigh}"
-                        CornerRadius="{DynamicResource ShapeMedium}"
-                        Opacity="0"
-                        IsHitTestVisible="False" />
-                <ContentPresenter />
-              </Grid>
-            </Border>
+            <Grid>
+              <Border x:Name="Tile"
+                      Background="{DynamicResource BrushSurfaceContainerLow}"
+                      CornerRadius="{DynamicResource ShapeMedium}" />
+              <Border x:Name="HoverLayer"
+                      Background="{DynamicResource BrushSurfaceContainerHigh}"
+                      CornerRadius="{DynamicResource ShapeMedium}"
+                      Opacity="0"
+                      IsHitTestVisible="False" />
+              <ContentPresenter Margin="{TemplateBinding Padding}"
+                                HorizontalAlignment="Stretch"
+                                VerticalAlignment="Stretch" />
+            </Grid>
             <ControlTemplate.Triggers>
               <Trigger Property="IsMouseOver" Value="True">
                 <Trigger.EnterActions>

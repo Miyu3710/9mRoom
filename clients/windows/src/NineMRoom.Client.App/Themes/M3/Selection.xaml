@@ -243,9 +243,6 @@
             </Grid>
           </Grid>
           <ControlTemplate.Triggers>
-            <Trigger Property="IsMouseOver" Value="True">
-              <Setter TargetName="StateLayer" Property="Opacity" Value="{DynamicResource StateHover}" />
-            </Trigger>
             <Trigger Property="IsChecked" Value="True">
               <Setter TargetName="Track" Property="Background" Value="{DynamicResource BrushPrimary}" />
               <Setter TargetName="Track" Property="BorderBrush" Value="{DynamicResource BrushPrimary}" />
