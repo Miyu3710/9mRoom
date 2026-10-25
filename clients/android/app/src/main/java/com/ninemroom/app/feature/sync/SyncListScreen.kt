@@ -49,6 +49,7 @@ import com.ninemroom.app.NineRoomApplication
 import com.ninemroom.app.data.StatusBlockRule
 import com.ninemroom.app.data.StatusLayoutStore
 import com.ninemroom.app.data.statusBlockTypes
+import com.ninemroom.app.ui.adaptiveImePadding
 import sh.calvin.reorderable.ReorderableItem
 import sh.calvin.reorderable.rememberReorderableLazyListState
 
@@ -65,7 +66,11 @@ fun SyncListScreen(onBack: () -> Unit) {
     var expandedId by remember { mutableStateOf<String?>(null) }
     var addMenuOpen by remember { mutableStateOf(false) }
 
-    Column(Modifier.fillMaxSize()) {
+    Column(
+        Modifier
+            .fillMaxSize()
+            .adaptiveImePadding(),
+    ) {
         Row(
             Modifier
                 .fillMaxWidth()

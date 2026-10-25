@@ -56,6 +56,7 @@ import com.ninemroom.app.data.ChatLine
 import com.ninemroom.app.data.LogLine
 import com.ninemroom.app.data.RoomMember
 import com.ninemroom.app.data.chatTime
+import com.ninemroom.app.ui.adaptiveImePadding
 import com.ninemroom.app.ui.MemberAvatar
 import kotlin.math.roundToInt
 
@@ -379,23 +380,6 @@ private fun EmptyState(text: String) {
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-}
-
-@Composable
-private fun Modifier.adaptiveImePadding(): Modifier {
-    val density = LocalDensity.current
-    val windowInfo = LocalWindowInfo.current
-    val imeBottom = WindowInsets.ime.getBottom(density)
-    var rootBottom by remember { mutableIntStateOf(0) }
-    val bottomPadding = (
-        rootBottom - (windowInfo.containerSize.height - imeBottom)
-        ).coerceAtLeast(0)
-
-    return this
-        .onGloballyPositioned {
-            rootBottom = it.boundsInWindow().bottom.roundToInt()
-        }
-        .padding(bottom = with(density) { bottomPadding.toDp() })
 }
 
 @Composable
