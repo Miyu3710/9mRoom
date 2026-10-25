@@ -178,6 +178,7 @@
         </Grid.RowDefinitions>
 
         <controls:NavigationRail x:Name="NavRail" Grid.Row="0"
+                                 HorizontalAlignment="Left"
                                  SelectedIndex="0"
                                  SelectionChanged="NavRail_SelectionChanged"
                                  AutomationProperties.Name="主导航">

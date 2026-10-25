@@ -92,7 +92,7 @@ public class NavigationRail : ListBox
                 continue;
             }
 
-            var pill = FindNamed<Border>(container, "Pill");
+            var pill = FindNamed<Border>(container, "PillBg");
             var label = FindNamed<TextBlock>(container, "NavLabel");
 
             if (pill is not null)
