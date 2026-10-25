@@ -1,5 +1,7 @@
 using System.Windows;
 using System.Windows.Automation;
+using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using Button = System.Windows.Controls.Button;
 using ListBox = System.Windows.Controls.ListBox;
@@ -54,6 +56,7 @@ public class NavigationRail : ListBox
         {
             rail.UpdateToggleVisuals();
             rail.AnimateWidth();
+            rail.AnimateItems(e.NewValue is true);
         }
     }
 
@@ -75,6 +78,81 @@ public class NavigationRail : ListBox
                 EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut },
                 FillBehavior = FillBehavior.HoldEnd
             });
+    }
+
+    private void AnimateItems(bool collapsed)
+    {
+        var ease = new CubicEase { EasingMode = EasingMode.EaseOut };
+        var duration = TimeSpan.FromMilliseconds(220);
+
+        for (var index = 0; index < Items.Count; index++)
+        {
+            if (ItemContainerGenerator.ContainerFromIndex(index) is not ListBoxItem container)
+            {
+                continue;
+            }
+
+            var pill = FindNamed<Border>(container, "Pill");
+            var label = FindNamed<TextBlock>(container, "NavLabel");
+
+            if (pill is not null)
+            {
+                // 与侧边栏宽度动画同时开始、同时结束，避免侧栏先收回、背景再收缩。
+                pill.BeginAnimation(
+                    WidthProperty,
+                    new DoubleAnimation
+                    {
+                        From = collapsed ? 96 : 48,
+                        To = collapsed ? 48 : 96,
+                        Duration = duration,
+                        EasingFunction = ease,
+                        FillBehavior = FillBehavior.HoldEnd
+                    });
+            }
+
+            if (label is not null)
+            {
+                if (collapsed)
+                {
+                    label.BeginAnimation(
+                        OpacityProperty,
+                        new DoubleAnimation
+                        {
+                            From = 1,
+                            To = 0,
+                            Duration = TimeSpan.FromMilliseconds(100),
+                            FillBehavior = FillBehavior.HoldEnd
+                        });
+                }
+                else
+                {
+                    var animation = new DoubleAnimationUsingKeyFrames { FillBehavior = FillBehavior.HoldEnd };
+                    animation.KeyFrames.Add(new DiscreteDoubleKeyFrame(0, KeyTime.FromTimeSpan(TimeSpan.FromMilliseconds(120))));
+                    animation.KeyFrames.Add(new EasingDoubleKeyFrame(1, KeyTime.FromTimeSpan(duration)) { EasingFunction = ease });
+                    label.BeginAnimation(OpacityProperty, animation);
+                }
+            }
+        }
+    }
+
+    private static T? FindNamed<T>(DependencyObject root, string name)
+        where T : FrameworkElement
+    {
+        for (var index = 0; index < VisualTreeHelper.GetChildrenCount(root); index++)
+        {
+            var child = VisualTreeHelper.GetChild(root, index);
+            if (child is T element && element.Name == name)
+            {
+                return element;
+            }
+
+            if (FindNamed<T>(child, name) is { } nested)
+            {
+                return nested;
+            }
+        }
+
+        return null;
     }
 
     private double ResolveWidth(string key, double fallback) =>

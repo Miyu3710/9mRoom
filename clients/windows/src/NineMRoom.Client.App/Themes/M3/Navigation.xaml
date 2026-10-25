@@ -50,9 +50,6 @@
               Background="Transparent"
               ClipToBounds="True"
               RenderTransformOrigin="0.5,0.5">
-        <Border.RenderTransform>
-          <ScaleTransform x:Name="PillScale" />
-        </Border.RenderTransform>
         <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
           <materialDesign:PackIcon x:Name="NavIcon"
                                     Kind="{Binding Glyph}"
@@ -72,7 +69,7 @@
       <Border x:Name="FocusRing"
               BorderBrush="{DynamicResource BrushPrimary}"
               BorderThickness="3"
-              CornerRadius="28"
+              CornerRadius="12"
               Margin="10,2,10,2"
               Visibility="Collapsed"
               IsHitTestVisible="False" />
@@ -86,68 +83,10 @@
         <Setter TargetName="NavIcon" Property="Foreground" Value="{DynamicResource BrushOnPrimaryContainer}" />
         <Setter TargetName="NavLabel" Property="Foreground" Value="{DynamicResource BrushOnPrimaryContainer}" />
         <Setter TargetName="NavLabel" Property="FontWeight" Value="SemiBold" />
-        <DataTrigger.EnterActions>
-          <BeginStoryboard>
-            <Storyboard>
-              <DoubleAnimation Storyboard.TargetName="PillScale" Storyboard.TargetProperty="ScaleX"
-                               From="0.94" To="1" Duration="0:0:0.22">
-                <DoubleAnimation.EasingFunction>
-                  <CubicEase EasingMode="EaseOut" />
-                </DoubleAnimation.EasingFunction>
-              </DoubleAnimation>
-              <DoubleAnimation Storyboard.TargetName="PillScale" Storyboard.TargetProperty="ScaleY"
-                               From="0.94" To="1" Duration="0:0:0.22">
-                <DoubleAnimation.EasingFunction>
-                  <CubicEase EasingMode="EaseOut" />
-                </DoubleAnimation.EasingFunction>
-              </DoubleAnimation>
-            </Storyboard>
-          </BeginStoryboard>
-        </DataTrigger.EnterActions>
       </DataTrigger>
       <DataTrigger Binding="{Binding IsCollapsed, RelativeSource={RelativeSource AncestorType={x:Type controls:NavigationRail}}}" Value="True">
         <Setter TargetName="Pill" Property="Width" Value="48" />
         <Setter TargetName="NavLabel" Property="Opacity" Value="0" />
-        <DataTrigger.EnterActions>
-          <BeginStoryboard>
-            <Storyboard>
-              <!-- 收起：文字先淡出，圆角矩形右端随后向左收缩。 -->
-              <DoubleAnimation Storyboard.TargetName="NavLabel" Storyboard.TargetProperty="Opacity"
-                               From="1" To="0" Duration="0:0:0.10" />
-              <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pill" Storyboard.TargetProperty="Width">
-                <DiscreteDoubleKeyFrame KeyTime="0:0:0.10" Value="96" />
-                <EasingDoubleKeyFrame KeyTime="0:0:0.30" Value="48">
-                  <EasingDoubleKeyFrame.EasingFunction>
-                    <CubicEase EasingMode="EaseInOut" />
-                  </EasingDoubleKeyFrame.EasingFunction>
-                </EasingDoubleKeyFrame>
-              </DoubleAnimationUsingKeyFrames>
-            </Storyboard>
-          </BeginStoryboard>
-        </DataTrigger.EnterActions>
-        <DataTrigger.ExitActions>
-          <BeginStoryboard>
-            <Storyboard>
-              <!-- 展开：圆角矩形右端先向右延长，文字再逐渐显现。 -->
-              <DoubleAnimationUsingKeyFrames Storyboard.TargetName="Pill" Storyboard.TargetProperty="Width">
-                <DiscreteDoubleKeyFrame KeyTime="0" Value="48" />
-                <EasingDoubleKeyFrame KeyTime="0:0:0.22" Value="96">
-                  <EasingDoubleKeyFrame.EasingFunction>
-                    <CubicEase EasingMode="EaseOut" />
-                  </EasingDoubleKeyFrame.EasingFunction>
-                </EasingDoubleKeyFrame>
-              </DoubleAnimationUsingKeyFrames>
-              <DoubleAnimationUsingKeyFrames Storyboard.TargetName="NavLabel" Storyboard.TargetProperty="Opacity">
-                <DiscreteDoubleKeyFrame KeyTime="0:0:0.14" Value="0" />
-                <EasingDoubleKeyFrame KeyTime="0:0:0.30" Value="1">
-                  <EasingDoubleKeyFrame.EasingFunction>
-                    <CubicEase EasingMode="EaseOut" />
-                  </EasingDoubleKeyFrame.EasingFunction>
-                </EasingDoubleKeyFrame>
-              </DoubleAnimationUsingKeyFrames>
-            </Storyboard>
-          </BeginStoryboard>
-        </DataTrigger.ExitActions>
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
@@ -170,9 +109,6 @@
               CornerRadius="24"
               Background="Transparent"
               RenderTransformOrigin="0.5,0.5">
-        <Border.RenderTransform>
-          <ScaleTransform x:Name="PillScale" />
-        </Border.RenderTransform>
         <materialDesign:PackIcon x:Name="NavIcon"
                                   Kind="{Binding Glyph}"
                                   Width="24" Height="24"
@@ -194,24 +130,6 @@
       <DataTrigger Binding="{Binding IsSelected, RelativeSource={RelativeSource AncestorType=ListBoxItem}}" Value="True">
         <Setter TargetName="Pill" Property="Background" Value="{DynamicResource BrushPrimaryContainer}" />
         <Setter TargetName="NavIcon" Property="Foreground" Value="{DynamicResource BrushOnPrimaryContainer}" />
-        <DataTrigger.EnterActions>
-          <BeginStoryboard>
-            <Storyboard>
-              <DoubleAnimation Storyboard.TargetName="PillScale" Storyboard.TargetProperty="ScaleX"
-                               From="0.9" To="1" Duration="0:0:0.2">
-                <DoubleAnimation.EasingFunction>
-                  <CubicEase EasingMode="EaseOut" />
-                </DoubleAnimation.EasingFunction>
-              </DoubleAnimation>
-              <DoubleAnimation Storyboard.TargetName="PillScale" Storyboard.TargetProperty="ScaleY"
-                               From="0.9" To="1" Duration="0:0:0.2">
-                <DoubleAnimation.EasingFunction>
-                  <CubicEase EasingMode="EaseOut" />
-                </DoubleAnimation.EasingFunction>
-              </DoubleAnimation>
-            </Storyboard>
-          </BeginStoryboard>
-        </DataTrigger.EnterActions>
       </DataTrigger>
       <MultiDataTrigger>
         <MultiDataTrigger.Conditions>
