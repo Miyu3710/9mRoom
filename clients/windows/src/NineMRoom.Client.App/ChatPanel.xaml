@@ -14,54 +14,135 @@
 
     <Grid Grid.Row="0" Margin="0,0,0,12">
       <ScrollViewer x:Name="ChatScroll" Style="{StaticResource M3PageScroll}">
-        <ItemsControl ItemsSource="{Binding ChatMessages}">
+        <ItemsControl x:Name="ChatItems" ItemsSource="{Binding ChatMessages}">
           <ItemsControl.ItemTemplate>
             <DataTemplate>
-              <Border MaxWidth="620" Padding="14,10" Margin="0,0,0,8" CornerRadius="12">
-                <Border.Style>
-                  <Style TargetType="Border">
-                    <Setter Property="Background" Value="{StaticResource BrushSurfaceContainerHigh}" />
-                    <Setter Property="HorizontalAlignment" Value="Left" />
-                    <Style.Triggers>
-                      <DataTrigger Binding="{Binding IsOwn}" Value="True">
-                        <Setter Property="Background" Value="{StaticResource BrushPrimaryContainer}" />
-                        <Setter Property="HorizontalAlignment" Value="Right" />
-                      </DataTrigger>
-                    </Style.Triggers>
-                  </Style>
-                </Border.Style>
-                <StackPanel>
-                  <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding Name}">
-                      <TextBlock.Style>
-                        <Style TargetType="TextBlock" BasedOn="{StaticResource ItemSupporting}">
-                          <Setter Property="Foreground" Value="{StaticResource BrushOnSurfaceVariant}" />
-                          <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsOwn}" Value="True">
-                              <Setter Property="Foreground" Value="{StaticResource BrushOnPrimaryContainer}" />
-                              <Setter Property="FontWeight" Value="SemiBold" />
-                            </DataTrigger>
-                          </Style.Triggers>
-                        </Style>
-                      </TextBlock.Style>
-                    </TextBlock>
-                    <TextBlock Text="{Binding Time}" Style="{StaticResource ItemSupporting}"
-                               Margin="8,0,0,0" VerticalAlignment="Center" />
-                  </StackPanel>
-                  <TextBlock Text="{Binding Text}" TextWrapping="Wrap" Margin="0,4,0,0">
+              <Grid Margin="0,0,0,10">
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="Auto" />
+                  <ColumnDefinition Width="*" />
+                  <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <!-- 其他成员头像：气泡左侧 -->
+                <Border Grid.Column="0" Width="32" Height="32" CornerRadius="8"
+                        Margin="0,0,8,4" VerticalAlignment="Bottom">
+                  <Border.Style>
+                    <Style TargetType="Border">
+                      <Setter Property="Background" Value="{StaticResource BrushPrimaryContainer}" />
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsOwn}" Value="True">
+                          <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                          <Setter Property="Background">
+                            <Setter.Value>
+                              <ImageBrush ImageSource="{Binding Avatar}" Stretch="UniformToFill" />
+                            </Setter.Value>
+                          </Setter>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </Border.Style>
+                  <TextBlock Text="{Binding Initial}"
+                             Foreground="{StaticResource BrushOnPrimaryContainer}"
+                             FontSize="{StaticResource TypeTitleSmallSize}" FontWeight="SemiBold"
+                             HorizontalAlignment="Center" VerticalAlignment="Center">
                     <TextBlock.Style>
-                      <Style TargetType="TextBlock" BasedOn="{StaticResource BodyText}">
-                        <Setter Property="Foreground" Value="{StaticResource BrushOnSurface}" />
+                      <Style TargetType="TextBlock">
                         <Style.Triggers>
-                          <DataTrigger Binding="{Binding IsOwn}" Value="True">
-                            <Setter Property="Foreground" Value="{StaticResource BrushOnPrimaryContainer}" />
+                          <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
                           </DataTrigger>
                         </Style.Triggers>
                       </Style>
                     </TextBlock.Style>
                   </TextBlock>
-                </StackPanel>
-              </Border>
+                </Border>
+
+                <Border Grid.Column="1" MaxWidth="560" Padding="14,10" CornerRadius="12">
+                  <Border.Style>
+                    <Style TargetType="Border">
+                      <Setter Property="Background" Value="{StaticResource BrushSurfaceContainerHigh}" />
+                      <Setter Property="HorizontalAlignment" Value="Left" />
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsOwn}" Value="True">
+                          <Setter Property="Background" Value="{StaticResource BrushPrimaryContainer}" />
+                          <Setter Property="HorizontalAlignment" Value="Right" />
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </Border.Style>
+                  <StackPanel>
+                    <StackPanel Orientation="Horizontal">
+                      <TextBlock Text="{Binding Name}">
+                        <TextBlock.Style>
+                          <Style TargetType="TextBlock" BasedOn="{StaticResource ItemSupporting}">
+                            <Setter Property="Foreground" Value="{StaticResource BrushOnSurfaceVariant}" />
+                            <Style.Triggers>
+                              <DataTrigger Binding="{Binding IsOwn}" Value="True">
+                                <Setter Property="Foreground" Value="{StaticResource BrushOnPrimaryContainer}" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                              </DataTrigger>
+                            </Style.Triggers>
+                          </Style>
+                        </TextBlock.Style>
+                      </TextBlock>
+                      <TextBlock Text="{Binding Time}" Style="{StaticResource ItemSupporting}"
+                                 Margin="8,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Text="{Binding Text}" TextWrapping="Wrap" Margin="0,4,0,0">
+                      <TextBlock.Style>
+                        <Style TargetType="TextBlock" BasedOn="{StaticResource BodyText}">
+                          <Setter Property="Foreground" Value="{StaticResource BrushOnSurface}" />
+                          <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsOwn}" Value="True">
+                              <Setter Property="Foreground" Value="{StaticResource BrushOnPrimaryContainer}" />
+                            </DataTrigger>
+                          </Style.Triggers>
+                        </Style>
+                      </TextBlock.Style>
+                    </TextBlock>
+                  </StackPanel>
+                </Border>
+
+                <!-- 自己的头像：气泡右侧 -->
+                <Border Grid.Column="2" Width="32" Height="32" CornerRadius="8"
+                        Margin="8,0,0,4" VerticalAlignment="Bottom">
+                  <Border.Style>
+                    <Style TargetType="Border">
+                      <Setter Property="Visibility" Value="Collapsed" />
+                      <Setter Property="Background" Value="{StaticResource BrushPrimaryContainer}" />
+                      <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsOwn}" Value="True">
+                          <Setter Property="Visibility" Value="Visible" />
+                        </DataTrigger>
+                        <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                          <Setter Property="Background">
+                            <Setter.Value>
+                              <ImageBrush ImageSource="{Binding Avatar}" Stretch="UniformToFill" />
+                            </Setter.Value>
+                          </Setter>
+                        </DataTrigger>
+                      </Style.Triggers>
+                    </Style>
+                  </Border.Style>
+                  <TextBlock Text="{Binding Initial}"
+                             Foreground="{StaticResource BrushOnPrimaryContainer}"
+                             FontSize="{StaticResource TypeTitleSmallSize}" FontWeight="SemiBold"
+                             HorizontalAlignment="Center" VerticalAlignment="Center">
+                    <TextBlock.Style>
+                      <Style TargetType="TextBlock">
+                        <Style.Triggers>
+                          <DataTrigger Binding="{Binding HasAvatar}" Value="True">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                          </DataTrigger>
+                        </Style.Triggers>
+                      </Style>
+                    </TextBlock.Style>
+                  </TextBlock>
+                </Border>
+              </Grid>
             </DataTemplate>
           </ItemsControl.ItemTemplate>
         </ItemsControl>

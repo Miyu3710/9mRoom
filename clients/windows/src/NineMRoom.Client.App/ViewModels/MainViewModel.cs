@@ -3386,13 +3386,16 @@ public sealed class MainViewModel : ObservableObject, IDisposable
         client.ChatReceived += message => _dispatcher.Invoke(() =>
         {
             var isSelf = string.Equals(message.MemberId, client.SelfId, StringComparison.Ordinal);
+            var sender = client.Members.FirstOrDefault(member => string.Equals(member.Id, message.MemberId, StringComparison.Ordinal));
+            var avatar = isSelf ? MyAvatarImage : sender is null ? null : GetAvatarImage(sender);
             ChatMessages.Add(new ChatMessageItem(
                 message.Id,
                 message.Name,
                 message.Device,
                 message.Text,
                 DateTimeOffset.FromUnixTimeMilliseconds(message.At).ToLocalTime().ToString("HH:mm"),
-                isSelf));
+                isSelf,
+                avatar));
 
             while (ChatMessages.Count > 500)
             {
