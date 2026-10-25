@@ -93,8 +93,6 @@ public partial class ToastHost : UserControl
             Width = 360,
             Margin = new Thickness(0, 8, 0, 0),
             CornerRadius = new CornerRadius(12),
-            BorderThickness = new Thickness(1),
-            ClipToBounds = true,
             Effect = new DropShadowEffect
             {
                 BlurRadius = 18,
@@ -104,9 +102,12 @@ public partial class ToastHost : UserControl
             }
         };
         card.SetResourceReference(Border.BackgroundProperty, "BrushSurfaceContainerHigh");
-        card.SetResourceReference(Border.BorderBrushProperty, "BrushOutlineVariant");
 
         var root = new Grid();
+        root.SizeChanged += (_, e) =>
+        {
+            root.Clip = new RectangleGeometry(new Rect(0, 0, e.NewSize.Width, e.NewSize.Height), 12, 12);
+        };
         root.RowDefinitions.Add(new RowDefinition { Height = new GridLength(3) });
         root.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 

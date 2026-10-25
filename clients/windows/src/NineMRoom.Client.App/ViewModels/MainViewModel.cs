@@ -958,7 +958,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     private void PersistStats()
     {
         _settings.StatsHistoryJson = JsonSerializer.Serialize(_focusHistory);
-        SettingsStore.Save(_settings);
+        SettingsStore.Save(_settings, notify: false);
     }
 
     private static string FormatDuration(long seconds)
@@ -1166,7 +1166,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             .ToList();
 
         _settings.TodosJson = JsonSerializer.Serialize(data);
-        SettingsStore.Save(_settings);
+        SettingsStore.Save(_settings, notify: false);
     }
 
     private int PhaseMinutes => _timerPhase == "break" ? _breakMinutes : _focusMinutes;
@@ -1522,7 +1522,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             .ToList();
 
         _settings.StatusLayoutJson = JsonSerializer.Serialize(rules);
-        SettingsStore.Save(_settings);
+        SettingsStore.Save(_settings, notify: false);
     }
 
     private IReadOnlyList<StatusBlockRule> CurrentLayout(string appId, string category)
@@ -2066,7 +2066,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             .ToList();
 
         _settings.AppCategoriesJson = JsonSerializer.Serialize(data);
-        SettingsStore.Save(_settings);
+        SettingsStore.Save(_settings, notify: false);
     }
 
     private void PersistAppRules()
@@ -2089,7 +2089,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
             .ToList();
 
         _settings.AppRulesJson = JsonSerializer.Serialize(data);
-        SettingsStore.Save(_settings);
+        SettingsStore.Save(_settings, notify: false);
     }
 
     public void AddTitleWhitelist(string appId)
@@ -2150,7 +2150,7 @@ public sealed class MainViewModel : ObservableObject, IDisposable
     {
         _settings.TitleWhitelistJson = JsonSerializer.Serialize(
             TitleWhitelist.Select(item => item.AppId).ToList());
-        SettingsStore.Save(_settings);
+        SettingsStore.Save(_settings, notify: false);
     }
 
     private void UpdateTimer(long nowMs)
